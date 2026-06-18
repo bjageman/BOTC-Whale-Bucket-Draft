@@ -1,73 +1,90 @@
-# React + TypeScript + Vite
+# 🐋 Whale Bucket — Blood on the Clocktower Draft Tool
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web app for **Blood on the Clocktower** (BotC) storytellers to manage **"whale bucket"** style games — where players submit role preferences and the grimoire is randomly assembled based on those preferences.
 
-Currently, two official plugins are available:
+## What It Does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Whale Bucket replaces the traditional storyteller-curated grimoire with a semi-randomized draft system:
 
-## React Compiler
+1. **Setup Phase** — Add players and let each one pick a preferred role for every team (Townsfolk, Outsider, Minion, Demon).
+2. **Draft Phase** — The app randomly assigns roles, weighting toward player preferences when possible. It respects the official BotC team distribution for the player count (5–15 players) and handles special-case characters:
+   - **Legion** — ~60% of players become Legion, the rest get Townsfolk roles.
+   - **Riot** — Demon + Minion count players become Riot, the rest Townsfolk.
+   - **Atheist** — All-Townsfolk/Outsider grimoire with no evil team.
+   - **Baron / Fang Gu / Balloonist / Godfather** — Outsider count adjustments are applied automatically.
+   - **Choirboy ↔ King / Huntsman ↔ Damsel** — Linked-role jinxes are enforced.
+3. **Game Phase** — Track the game in progress: mark players as dead or drunk, view assigned roles, and manage the grimoire.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+All state is persisted to `localStorage`, so refreshing the page won't lose your game.
 
-## Expanding the ESLint configuration
+## Included Roles
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The app ships with the full catalogue of official BotC roles across all editions:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| Team | Count |
+|------|-------|
+| Townsfolk | 60+ |
+| Outsider | 20+ |
+| Minion | 25+ |
+| Demon | 15+ |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Getting Started
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) 20+
+- npm
+
+### Development
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The dev server starts at **http://localhost:5173** with hot module replacement.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Production Build
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
+npm run preview
 ```
+
+## Docker
+
+### Docker Compose (recommended)
+
+```bash
+docker compose up --build
+```
+
+The app will be available at **http://localhost:8080**.
+
+```bash
+# Run detached
+docker compose up --build -d
+
+# Stop
+docker compose down
+```
+
+### Docker (manual)
+
+```bash
+docker build -t whalebucket .
+docker run -p 8080:80 whalebucket
+```
+
+## Tech Stack
+
+- **React 19** + **TypeScript**
+- **Vite** — build tooling and dev server
+- **Tailwind CSS** — styling
+- **Lucide React** — icons
+- **Nginx** — production static file serving (in Docker)
+
+## License
+
+This project is not affiliated with or endorsed by The Pandemonium Institute.
+Blood on the Clocktower is a trademark of Steven Medway and The Pandemonium Institute.
