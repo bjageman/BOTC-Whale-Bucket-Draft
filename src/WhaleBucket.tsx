@@ -706,7 +706,7 @@ export default function WhaleBucket() {
               </button>
             </div>
             
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+            <div className="space-y-3">
               {players.map((p, index) => (
                 <div key={p.id} className="bg-gray-900/60 p-3 rounded-lg border border-gray-800/50 space-y-2">
                   <div className="flex items-center gap-2">

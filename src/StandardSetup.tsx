@@ -271,7 +271,7 @@ export default function StandardSetup() {
               </button>
             </div>
 
-            <div className="space-y-2.5 max-h-[55vh] overflow-y-auto pr-1">
+            <div className="space-y-2.5">
               {players.map((p, index) => {
                 const roleObj = (rolesData as Role[]).find(r => r.id === p.roleId);
                 return (
