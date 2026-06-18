@@ -445,7 +445,7 @@ export default function StandardSetup() {
             </div>
           </div>
 
-          <div className="relative w-full aspect-square bg-gray-950/40 rounded-full border border-gray-900/60 shadow-inner flex items-center justify-center overflow-hidden my-4 max-w-[380px] mx-auto">
+          <div className="relative w-full aspect-square bg-gray-950/40 rounded-full border border-gray-900/60 shadow-inner flex items-center justify-center overflow-visible my-4 max-w-[380px] mx-auto">
             <div className="absolute w-20 h-20 rounded-full border border-clocktower-blood/10 flex flex-col items-center justify-center pointer-events-none bg-clocktower-night/30">
               <span className="text-[10px] text-clocktower-blood/40 font-serif tracking-widest font-bold">BOTC</span>
               <span className="text-[8px] text-gray-700 font-mono mt-0.5">NIGHT</span>
@@ -470,7 +470,7 @@ export default function StandardSetup() {
                     top: `${topPos}%`,
                     transform: 'translate(-50%, -50%)',
                   }}
-                  className="z-10 group"
+                  className="z-10 hover:z-50 group"
                 >
                   <div className="relative flex flex-col items-center">
                     <button
@@ -521,7 +521,7 @@ export default function StandardSetup() {
                       DRK
                     </button>
 
-                    <div className="absolute top-12 scale-0 group-hover:scale-100 bg-gray-900/95 border border-gray-800 p-2 rounded text-center shadow-xl transition-all z-30 pointer-events-none min-w-[100px]">
+                    <div className="absolute top-12 scale-0 group-hover:scale-100 bg-gray-900/95 border border-gray-800 p-2 rounded text-center shadow-xl transition-all z-50 pointer-events-none min-w-[100px]">
                       <p className="font-bold text-xs text-white">{p.name}</p>
                       <p className={cn(
                         "text-[10px] font-medium",
