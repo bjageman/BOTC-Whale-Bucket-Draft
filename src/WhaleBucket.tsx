@@ -666,35 +666,35 @@ export default function WhaleBucket() {
     if (count <= 6) {
       return {
         boardClass: "max-w-[350px] rounded-[32px]",
-        radiusPercent: 36,
-        btnClass: "w-16 h-16",
-        nameClass: "text-[11px] font-bold font-sans tracking-tighter mt-1.5 truncate max-w-[58px] text-center leading-tight",
-        roleClass: "text-[8px] font-semibold truncate max-w-[58px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
-        charLimit: 12,
-        drunkClass: "-bottom-1 text-[7.5px] px-1 scale-95",
-        tooltipClass: "top-14",
+        radiusPercent: 34,
+        btnClass: "w-20 h-20",
+        nameClass: "text-xs font-bold font-sans tracking-tighter mt-2 truncate max-w-[70px] text-center leading-tight",
+        roleClass: "text-[9.5px] font-semibold truncate max-w-[70px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
+        charLimit: 16,
+        drunkClass: "-bottom-2 text-[8px] px-1.5 scale-95",
+        tooltipClass: "top-18",
       };
     } else if (count <= 10) {
       return {
         boardClass: "max-w-[400px] rounded-[38px]",
-        radiusPercent: 37,
-        btnClass: "w-[60px] h-[60px]",
-        nameClass: "text-[10px] font-bold font-sans tracking-tighter mt-1 truncate max-w-[52px] text-center leading-tight",
-        roleClass: "text-[7.5px] font-semibold truncate max-w-[52px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
-        charLimit: 10,
-        drunkClass: "-bottom-1 text-[7px] px-1 scale-90",
-        tooltipClass: "top-13",
+        radiusPercent: 36,
+        btnClass: "w-[72px] h-[72px]",
+        nameClass: "text-[11px] font-bold font-sans tracking-tighter mt-2 truncate max-w-[64px] text-center leading-tight",
+        roleClass: "text-[8.5px] font-semibold truncate max-w-[64px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
+        charLimit: 14,
+        drunkClass: "-bottom-1.5 text-[7.5px] px-1 scale-90",
+        tooltipClass: "top-16",
       };
     } else {
       return {
         boardClass: "max-w-[450px] rounded-[48px]",
         radiusPercent: 38,
-        btnClass: "w-[52px] h-[52px]",
-        nameClass: "text-[9px] font-bold font-sans tracking-tighter mt-0.5 truncate max-w-[46px] text-center leading-tight",
-        roleClass: "text-[7px] font-semibold truncate max-w-[46px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
-        charLimit: 8,
-        drunkClass: "-bottom-1.5 text-[6.5px] px-0.5 scale-90",
-        tooltipClass: "top-11",
+        btnClass: "w-16 h-16",
+        nameClass: "text-[10px] font-bold font-sans tracking-tighter mt-1.5 truncate max-w-[58px] text-center leading-tight",
+        roleClass: "text-[8px] font-semibold truncate max-w-[58px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
+        charLimit: 12,
+        drunkClass: "-bottom-1 text-[7px] px-1 scale-90",
+        tooltipClass: "top-14",
       };
     }
   }, [players.length]);
