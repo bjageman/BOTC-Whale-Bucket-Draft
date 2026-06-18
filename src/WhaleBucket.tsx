@@ -369,10 +369,10 @@ export default function WhaleBucket() {
   }, [players, phase]);
 
   const addPlayer = () => {
-    if (!newPlayerName.trim()) return;
+    const name = newPlayerName.trim() || `Player #${players.length + 1}`;
     const newPlayer: Player = {
       id: Math.random().toString(36).substr(2, 9),
-      name: newPlayerName.trim(),
+      name,
       preferences: {
         townsfolk: [],
         outsider: [],
@@ -388,6 +388,10 @@ export default function WhaleBucket() {
 
   const removePlayer = (id: string) => {
     setPlayers(players.filter(p => p.id !== id));
+  };
+
+  const updatePlayerName = (id: string, name: string) => {
+    setPlayers(players.map(p => p.id === id ? { ...p, name } : p));
   };
 
   const togglePreference = (playerId: string, team: Role['team'], roleId: string) => {
@@ -711,7 +715,12 @@ export default function WhaleBucket() {
                 <div key={p.id} className="bg-gray-900/60 p-3 rounded-lg border border-gray-800/50 space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-500 font-mono w-5">#{index + 1}</span>
-                    <span className="flex-grow font-semibold text-gray-200">{p.name}</span>
+                    <input
+                      type="text"
+                      value={p.name}
+                      onChange={(e) => updatePlayerName(p.id, e.target.value)}
+                      className="flex-grow font-semibold text-gray-200 bg-transparent border-b border-transparent hover:border-gray-800/80 focus:border-clocktower-blood focus:outline-none px-1.5 py-0.5 rounded transition-all"
+                    />
                     <button
                       onClick={() => autoFillPlayerPreferences(p.id)}
                       className="text-[10px] text-clocktower-townsfolk hover:underline flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-clocktower-townsfolk/5 border border-clocktower-townsfolk/20"

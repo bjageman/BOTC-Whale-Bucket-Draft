@@ -65,10 +65,10 @@ export default function StandardSetup() {
   }, [players, phase]);
 
   const addPlayer = () => {
-    if (!newPlayerName.trim()) return;
+    const name = newPlayerName.trim() || `Player #${players.length + 1}`;
     const newPlayer: Player = {
       id: Math.random().toString(36).substr(2, 9),
-      name: newPlayerName.trim(),
+      name,
       isDead: false,
       isDrunk: false,
     };
@@ -78,6 +78,10 @@ export default function StandardSetup() {
 
   const removePlayer = (id: string) => {
     setPlayers(players.filter(p => p.id !== id));
+  };
+
+  const updatePlayerName = (id: string, name: string) => {
+    setPlayers(players.map(p => p.id === id ? { ...p, name } : p));
   };
 
   const updatePlayerRole = (id: string, roleId: string) => {
@@ -278,7 +282,12 @@ export default function StandardSetup() {
                   <div key={p.id} className="bg-gray-900/60 p-3 rounded-lg border border-gray-800/50 space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-500 font-mono w-5">#{index + 1}</span>
-                      <span className="flex-grow font-semibold text-gray-200">{p.name}</span>
+                      <input
+                        type="text"
+                        value={p.name}
+                        onChange={(e) => updatePlayerName(p.id, e.target.value)}
+                        className="flex-grow font-semibold text-gray-200 bg-transparent border-b border-transparent hover:border-gray-800/80 focus:border-clocktower-blood focus:outline-none px-1.5 py-0.5 rounded transition-all"
+                      />
                       <button onClick={() => removePlayer(p.id)} className="text-gray-600 hover:text-red-500 p-1 transition-colors">
                         <Trash2 size={16} />
                       </button>
