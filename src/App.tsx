@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Trash2, Search, RefreshCcw, Check, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Search, RefreshCcw, AlertTriangle } from 'lucide-react';
 import rolesData from './roles.json';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
