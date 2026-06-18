@@ -661,6 +661,44 @@ export default function WhaleBucket() {
     );
   }, [searchTerm]);
 
+  const grimoireConfig = useMemo(() => {
+    const count = players.length;
+    if (count <= 6) {
+      return {
+        boardClass: "max-w-[350px] rounded-[32px]",
+        radiusPercent: 36,
+        btnClass: "w-16 h-16",
+        nameClass: "text-[11px] font-bold font-sans tracking-tighter mt-1.5 truncate max-w-[58px] text-center leading-tight",
+        roleClass: "text-[8px] font-semibold truncate max-w-[58px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
+        charLimit: 12,
+        drunkClass: "-bottom-1 text-[7.5px] px-1 scale-95",
+        tooltipClass: "top-14",
+      };
+    } else if (count <= 10) {
+      return {
+        boardClass: "max-w-[400px] rounded-[38px]",
+        radiusPercent: 37,
+        btnClass: "w-[60px] h-[60px]",
+        nameClass: "text-[10px] font-bold font-sans tracking-tighter mt-1 truncate max-w-[52px] text-center leading-tight",
+        roleClass: "text-[7.5px] font-semibold truncate max-w-[52px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
+        charLimit: 10,
+        drunkClass: "-bottom-1 text-[7px] px-1 scale-90",
+        tooltipClass: "top-13",
+      };
+    } else {
+      return {
+        boardClass: "max-w-[450px] rounded-[48px]",
+        radiusPercent: 38,
+        btnClass: "w-[52px] h-[52px]",
+        nameClass: "text-[9px] font-bold font-sans tracking-tighter mt-0.5 truncate max-w-[46px] text-center leading-tight",
+        roleClass: "text-[7px] font-semibold truncate max-w-[46px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
+        charLimit: 8,
+        drunkClass: "-bottom-1.5 text-[6.5px] px-0.5 scale-90",
+        tooltipClass: "top-11",
+      };
+    }
+  }, [players.length]);
+
   return (
     <div className="min-h-screen bg-clocktower-night text-clocktower-parchment p-4 font-sans max-w-xl mx-auto">
       <header className="flex justify-between items-center mb-6 border-b border-clocktower-blood pb-2">
@@ -993,7 +1031,7 @@ export default function WhaleBucket() {
               <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-demon" /> DEM</span>
             </div>
           </div>
-                 <div className="relative w-full aspect-square bg-gray-950/40 rounded-[40px] border border-gray-900/60 shadow-inner flex items-center justify-center overflow-visible my-4 max-w-[450px] mx-auto">
+          <div className={cn("relative w-full aspect-square bg-gray-950/40 border border-gray-900/60 shadow-inner flex items-center justify-center overflow-visible my-4 mx-auto", grimoireConfig.boardClass)}>
             <div className="absolute w-20 h-20 rounded-full border border-clocktower-blood/10 flex flex-col items-center justify-center pointer-events-none bg-clocktower-night/30">
               <span className="text-[10px] text-clocktower-blood/40 font-serif tracking-widest font-bold">BOTC</span>
               <span className="text-[8px] text-gray-755 font-mono mt-0.5">NIGHT</span>
@@ -1003,7 +1041,7 @@ export default function WhaleBucket() {
               const total = players.length;
               const angle = (index * (360 / total) - 90) * (Math.PI / 180);
               
-              const radiusPercent = 38; 
+              const radiusPercent = grimoireConfig.radiusPercent; 
               const leftPos = 50 + radiusPercent * Math.cos(angle);
               const topPos = 50 + radiusPercent * Math.sin(angle);
 
@@ -1024,7 +1062,8 @@ export default function WhaleBucket() {
                     <button
                       onClick={() => togglePlayerDead(p.id)}
                       className={cn(
-                        "w-16 h-16 rounded-full border-2 flex flex-col items-center justify-center transition-all shadow-md relative",
+                        "rounded-full border-2 flex flex-col items-center justify-center transition-all shadow-md relative",
+                        grimoireConfig.btnClass,
                         p.isDead 
                           ? "bg-black border-gray-800 text-gray-655 scale-95 opacity-50" 
                           : "bg-gray-900 border-gray-700 text-clocktower-parchment hover:border-gray-500"
@@ -1039,21 +1078,21 @@ export default function WhaleBucket() {
                       )} />
 
                       <span className={cn(
-                        "text-[10px] font-bold font-sans tracking-tighter mt-1.5 truncate max-w-[58px] text-center leading-tight",
+                        grimoireConfig.nameClass,
                         p.isDead && "line-through text-gray-700"
                       )}>
-                        {p.name.substring(0, 12)}
+                        {p.name.substring(0, grimoireConfig.charLimit)}
                       </span>
 
                       <span className={cn(
-                        "text-[8px] font-semibold truncate max-w-[58px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
+                        grimoireConfig.roleClass,
                         roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk/80",
                         roleObj?.team === 'outsider' && "text-clocktower-outsider/80",
                         roleObj?.team === 'minion' && "text-clocktower-minion/80",
                         roleObj?.team === 'demon' && "text-clocktower-demon/80",
                         p.isDead && "text-gray-700"
                       )}>
-                        {roleObj?.name.substring(0, 12)}
+                        {roleObj?.name.substring(0, grimoireConfig.charLimit)}
                       </span>
                     </button>
 
@@ -1063,7 +1102,8 @@ export default function WhaleBucket() {
                         togglePlayerDrunk(p.id);
                       }}
                       className={cn(
-                        "absolute -bottom-1 text-[7px] font-extrabold px-1 rounded scale-90 border transition-all z-20 shadow-xs",
+                        "absolute border transition-all z-20 shadow-xs",
+                        grimoireConfig.drunkClass,
                         p.isDrunk 
                           ? "bg-yellow-600 border-yellow-755 text-black font-black" 
                           : "bg-gray-900/90 border-gray-800 text-gray-600 hover:text-gray-400"
@@ -1072,7 +1112,7 @@ export default function WhaleBucket() {
                       DRK
                     </button>
 
-                    <div className="absolute top-14 scale-0 group-hover:scale-100 bg-gray-900/95 border border-gray-800 p-2 rounded text-center shadow-xl transition-all z-50 pointer-events-none min-w-[100px]">
+                    <div className={cn("absolute scale-0 group-hover:scale-100 bg-gray-900/95 border border-gray-800 p-2 rounded text-center shadow-xl transition-all z-50 pointer-events-none min-w-[100px]", grimoireConfig.tooltipClass)}>
                       <p className="font-bold text-xs text-white">{p.name}</p>
                       <p className={cn(
                         "text-[10px] font-medium",
