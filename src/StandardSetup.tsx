@@ -500,57 +500,57 @@ export default function StandardSetup() {
   }, [players]);
 
   const filteredRoles = useMemo(() => {
-    return (rolesData as Role[]).filter(r =>
+    return currentScriptRoles.filter(r =>
       r.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm]);
+  }, [searchTerm, currentScriptRoles]);
 
   const grimoireConfig = useMemo(() => {
     const count = players.length;
     if (count <= 6) {
       return {
-        boardClass: "w-[92vw] h-[70vw] max-w-[560px] max-h-[340px] rounded-[28px]",
+        boardClass: "w-[88vw] h-[84vw] max-w-[560px] max-h-[620px] md:max-h-[500px] landscape:max-h-[500px] rounded-[28px]",
         radiusX: 38,
         radiusY: 36,
-        btnStyle: { width: '22cqw', height: '22cqw' } as CSSProperties,
+        btnStyle: { width: '25cqw', height: '25cqw' } as CSSProperties,
         dotStyle: { top: '6%', width: '1.8cqw', height: '1.8cqw' } as CSSProperties,
-        nameStyle: { fontSize: '3.8cqw', maxWidth: '20cqw', marginTop: '0.5cqw' } as CSSProperties,
-        roleStyle: { fontSize: '3.0cqw', maxWidth: '20cqw', marginTop: '0cqw' } as CSSProperties,
+        nameStyle: { fontSize: '4.2cqw', maxWidth: '23cqw', marginTop: '0.5cqw' } as CSSProperties,
+        roleStyle: { fontSize: '3.3cqw', maxWidth: '23cqw', marginTop: '0cqw' } as CSSProperties,
         charLimit: 16,
         tooltipClass: "top-18",
-        centerBtnStyle: { width: '22cqw', height: '22cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '3cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '2.4cqw', marginTop: '0.1cqw' } as CSSProperties,
+        centerBtnStyle: { width: '25cqw', height: '25cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '3.5cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '2.8cqw', marginTop: '0.1cqw' } as CSSProperties,
       };
     } else if (count <= 10) {
       return {
-        boardClass: "w-[94vw] h-[72vw] max-w-[620px] max-h-[380px] rounded-[34px]",
+        boardClass: "w-[90vw] h-[86vw] max-w-[620px] max-h-[680px] md:max-h-[500px] landscape:max-h-[500px] rounded-[34px]",
         radiusX: 40,
         radiusY: 37,
-        btnStyle: { width: '18cqw', height: '18cqw' } as CSSProperties,
+        btnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
         dotStyle: { top: '6%', width: '1.5cqw', height: '1.5cqw' } as CSSProperties,
-        nameStyle: { fontSize: '3.2cqw', maxWidth: '17cqw', marginTop: '0.4cqw' } as CSSProperties,
-        roleStyle: { fontSize: '2.5cqw', maxWidth: '17cqw', marginTop: '0cqw' } as CSSProperties,
+        nameStyle: { fontSize: '3.6cqw', maxWidth: '19cqw', marginTop: '0.4cqw' } as CSSProperties,
+        roleStyle: { fontSize: '2.8cqw', maxWidth: '19cqw', marginTop: '0cqw' } as CSSProperties,
         charLimit: 14,
         tooltipClass: "top-16",
-        centerBtnStyle: { width: '18cqw', height: '18cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '2.5cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '2.0cqw', marginTop: '0.1cqw' } as CSSProperties,
+        centerBtnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '2.9cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '2.3cqw', marginTop: '0.1cqw' } as CSSProperties,
       };
     } else {
       return {
-        boardClass: "w-[96vw] h-[74vw] max-w-[680px] max-h-[420px] rounded-[40px]",
+        boardClass: "w-[92vw] h-[88vw] max-w-[680px] max-h-[740px] md:max-h-[500px] landscape:max-h-[500px] rounded-[40px]",
         radiusX: 42,
         radiusY: 38,
-        btnStyle: { width: '14.5cqw', height: '14.5cqw' } as CSSProperties,
+        btnStyle: { width: '16.5cqw', height: '16.5cqw' } as CSSProperties,
         dotStyle: { top: '6%', width: '1.2cqw', height: '1.2cqw' } as CSSProperties,
-        nameStyle: { fontSize: '2.7cqw', maxWidth: '14cqw', marginTop: '0.3cqw' } as CSSProperties,
-        roleStyle: { fontSize: '2.1cqw', maxWidth: '14cqw', marginTop: '0cqw' } as CSSProperties,
+        nameStyle: { fontSize: '3.0cqw', maxWidth: '15cqw', marginTop: '0.3cqw' } as CSSProperties,
+        roleStyle: { fontSize: '2.3cqw', maxWidth: '15cqw', marginTop: '0cqw' } as CSSProperties,
         charLimit: 12,
         tooltipClass: "top-14",
-        centerBtnStyle: { width: '15cqw', height: '15cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '2.1cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '1.7cqw', marginTop: '0.1cqw' } as CSSProperties,
+        centerBtnStyle: { width: '17cqw', height: '17cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '2.4cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '1.9cqw', marginTop: '0.1cqw' } as CSSProperties,
       };
     }
   }, [players.length]);
@@ -568,20 +568,25 @@ export default function StandardSetup() {
         : "bg-clocktower-night text-clocktower-parchment"
     )}>
       <header className={cn(
-        "flex justify-between items-center mb-6 border-b pb-2",
+        "flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 border-b pb-2 gap-3 sm:gap-0",
         phase === 'game' && timeOfDay === 'day' ? "border-clocktower-blood/20" : "border-clocktower-blood"
       )}>
-        <div className="flex items-center gap-3">
-          <a href="#/" className={cn("transition-colors text-sm", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-800" : "text-gray-500 hover:text-gray-300")}>← Home</a>
-          <h1 className="text-2xl font-bold text-clocktower-blood tracking-wide">Standard Setup</h1>
-          <div className="flex gap-2.5 text-[9px] font-bold tracking-wider text-gray-500">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="relative flex justify-center items-center w-full sm:w-auto sm:justify-start sm:gap-3">
+            <a href="#/" className={cn("absolute left-0 transition-colors text-sm sm:static", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-800" : "text-gray-500 hover:text-gray-300")}>← Home</a>
+            <h1 className="text-2xl font-bold text-clocktower-blood tracking-wide text-center sm:text-left">Standard Setup</h1>
+            <button id="reset-game-button" onClick={resetGame} className={cn("absolute right-0 p-2 transition-colors sm:hidden", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")} title="Reset game">
+              <RefreshCcw size={20} />
+            </button>
+          </div>
+          <div id="character-type-legend" className="flex justify-center sm:justify-start gap-2.5 text-[9px] font-bold tracking-wider text-gray-500 w-full sm:w-auto">
             <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-townsfolk" /> Townsfolk</span>
             <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-outsider" /> Outsider</span>
             <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-minion" /> Minion</span>
             <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-demon" /> Demon</span>
           </div>
         </div>
-        <button onClick={resetGame} className={cn("p-2 transition-colors", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")} title="Reset game">
+        <button id="reset-game-button-desktop" onClick={resetGame} className={cn("hidden sm:block p-2 transition-colors", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")} title="Reset game">
           <RefreshCcw size={20} />
         </button>
       </header>
@@ -611,6 +616,7 @@ export default function StandardSetup() {
               </div>
               <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 <input
+                  id="script-upload-input"
                   type="file"
                   ref={fileInputRef}
                   onChange={handleScriptUpload}
@@ -618,6 +624,7 @@ export default function StandardSetup() {
                   className="hidden"
                 />
                 <button
+                  id="script-upload-button"
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="bg-gray-800 hover:bg-gray-700 border border-gray-750 text-gray-300 px-3 py-1.5 rounded text-xs font-bold transition-all flex items-center gap-1.5"
@@ -626,6 +633,7 @@ export default function StandardSetup() {
                 </button>
                 {customScriptRoles && (
                   <button
+                    id="script-reset-button"
                     type="button"
                     onClick={clearCustomScript}
                     className="bg-transparent hover:bg-gray-800 border border-transparent text-gray-500 hover:text-gray-300 px-2.5 py-1.5 rounded text-xs font-semibold transition-all"
@@ -634,6 +642,7 @@ export default function StandardSetup() {
                   </button>
                 )}
                 <button
+                  id="random-assign-button"
                   type="button"
                   onClick={randomlyAssignRoles}
                   className="bg-clocktower-blood hover:bg-red-800 text-white px-3 py-1.5 rounded text-xs font-bold transition-all flex items-center gap-1.5 shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
@@ -651,6 +660,7 @@ export default function StandardSetup() {
 
             <div className="flex gap-2 mb-4">
               <input
+                id="new-player-input"
                 type="text"
                 value={newPlayerName}
                 onChange={(e) => setNewPlayerName(e.target.value)}
@@ -660,6 +670,7 @@ export default function StandardSetup() {
                 className="flex-1 bg-gray-900 border border-gray-800 rounded px-3 py-2 text-white focus:outline-none focus:border-clocktower-blood text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <button 
+                id="add-player-button"
                 onClick={addPlayer} 
                 disabled={players.length >= 15}
                 className={cn(
@@ -679,6 +690,7 @@ export default function StandardSetup() {
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-500 font-mono w-5">#{index + 1}</span>
                       <input
+                        id={`player-name-input-${p.id}`}
                         type="text"
                         value={p.name}
                         onChange={(e) => updatePlayerName(p.id, e.target.value)}
@@ -694,7 +706,7 @@ export default function StandardSetup() {
                           THE MARIONETTE
                         </span>
                       )}
-                      <button onClick={() => removePlayer(p.id)} className="text-gray-600 hover:text-red-500 p-1 transition-colors">
+                      <button id={`remove-player-${p.id}`} onClick={() => removePlayer(p.id)} className="text-gray-600 hover:text-red-500 p-1 transition-colors">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -723,6 +735,7 @@ export default function StandardSetup() {
                             </span>
                           </div>
                           <button
+                            id={`change-role-button-${p.id}`}
                             onClick={() => { setActivePlayerId(p.id); setSearchTerm(''); }}
                             className="text-gray-500 hover:text-gray-300 text-xs underline font-medium"
                           >
@@ -733,6 +746,7 @@ export default function StandardSetup() {
                         {/* Secret Role Draft Toggles */}
                         <div className="flex gap-2 justify-end">
                           <button
+                            id={`toggle-drunk-button-${p.id}`}
                             type="button"
                             onClick={() => togglePlayerTheDrunk(p.id)}
                             className={cn(
@@ -745,13 +759,14 @@ export default function StandardSetup() {
                             🍺 The Drunk
                           </button>
                           <button
+                            id={`toggle-marionette-button-${p.id}`}
                             type="button"
                             onClick={() => togglePlayerTheMarionette(p.id)}
                             className={cn(
                               "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1",
                               p.isTheMarionette
                                 ? "bg-clocktower-minion border-clocktower-minion/40 text-white font-black"
-                                : "bg-gray-950 border-gray-855 text-gray-500 hover:text-gray-400"
+                                : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
                             )}
                           >
                             🎭 The Marionette
@@ -760,6 +775,7 @@ export default function StandardSetup() {
                       </div>
                     ) : (
                       <div
+                        id={`select-role-placeholder-${p.id}`}
                         onClick={() => { setActivePlayerId(p.id); setSearchTerm(''); }}
                         className="flex items-center bg-gray-800/50 rounded px-3 py-1.5 border border-gray-700/60 cursor-pointer text-sm text-gray-400 hover:border-gray-600 transition-colors"
                       >
@@ -860,6 +876,7 @@ export default function StandardSetup() {
           )}
 
           <button
+            id="open-grimoire-button"
             disabled={!allAssigned}
             onClick={() => setPhase('game')}
             className="w-full bg-clocktower-blood hover:bg-red-800 text-white py-3 rounded-lg font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-black/40 flex items-center justify-center gap-2"
@@ -872,10 +889,10 @@ export default function StandardSetup() {
       {phase === 'game' && (
         <div className="space-y-6 animate-fadeIn md:grid md:grid-cols-[3fr_2fr] md:gap-8 md:space-y-0 md:items-start landscape:grid landscape:grid-cols-[3fr_2fr] landscape:gap-6 landscape:space-y-0 landscape:items-start">
           {/* Column 1: Board Visual & Header */}
-          <div className="space-y-4">
+          <div id="grimoire-board-container" className="space-y-4">
 
-            <div className={cn(
-              "relative w-full border shadow-inner flex items-center justify-center overflow-visible my-4 mx-auto transition-colors duration-300",
+            <div id="grimoire-circle-board" className={cn(
+              "relative border shadow-inner flex items-center justify-center overflow-visible my-4 mx-auto transition-colors duration-300",
               timeOfDay === 'day'
                 ? "bg-white/50 border-gray-300 shadow-gray-200/50"
                 : "bg-gray-950/40 border-gray-900/60 shadow-black/45",
@@ -884,6 +901,7 @@ export default function StandardSetup() {
             style={{ containerType: 'size' }}
             >
               <button
+                id="grimoire-time-toggle-button"
                 onClick={toggleTimeOfDay}
                 style={grimoireConfig.centerBtnStyle}
                 className={cn(
@@ -933,6 +951,7 @@ export default function StandardSetup() {
                   >
                     <div className="relative flex flex-col items-center">
                       <button
+                        id={`grimoire-player-${p.id}`}
                         onClick={() => setSelectedPlayerId(p.id)}
                         style={grimoireConfig.btnStyle}
                         className={cn(
@@ -1017,8 +1036,9 @@ export default function StandardSetup() {
           </div>
 
           {/* Column 2: Ledger & Controls */}
-          <div className="space-y-6 md:pt-10 landscape:pt-10">
+          <div id="grimoire-controls-container" className="space-y-6 md:pt-10 landscape:pt-10">
             <button
+              id="return-to-setup-button"
               onClick={() => setPhase('setup')}
               className={cn(
                 "w-full py-3 rounded-lg font-bold transition-all text-sm shadow-md",
@@ -1030,7 +1050,7 @@ export default function StandardSetup() {
               Return to Setup
             </button>
 
-            <div className={cn(
+            <div id="grimoire-ledger-container" className={cn(
               "rounded-lg border p-3 space-y-1.5 transition-colors duration-300",
               timeOfDay === 'day'
                 ? "bg-white/50 border-gray-300 text-clocktower-night"
@@ -1044,7 +1064,7 @@ export default function StandardSetup() {
                 {players.map((p, index) => {
                   const rObj = (rolesData as Role[]).find(r => r.id === p.roleId);
                   return (
-                    <div key={p.id} onClick={() => setSelectedPlayerId(p.id)} className={cn(
+                    <div id={`ledger-player-${p.id}`} key={p.id} onClick={() => setSelectedPlayerId(p.id)} className={cn(
                       "flex items-center gap-1.5 py-0.5 px-1.5 rounded border transition-colors min-w-0 cursor-pointer hover:ring-1 hover:ring-gray-500/50",
                       p.isDead && "opacity-45",
                       timeOfDay === 'day'
@@ -1085,14 +1105,15 @@ export default function StandardSetup() {
               <h3 className="font-bold text-sm text-gray-300">
                 Select Role for {players.find(p => p.id === activePlayerId)?.name}
               </h3>
-              <button onClick={() => { setActivePlayerId(null); setSearchTerm(''); }} className="text-xs text-gray-500 underline">
+              <button id="close-role-modal-button" onClick={() => { setActivePlayerId(null); setSearchTerm(''); }} className="text-xs text-gray-500 underline">
                 Close
               </button>
             </div>
 
-            <div className="flex items-center bg-gray-950 border border-gray-800 rounded px-3 py-2 text-sm">
+            <div className="flex items-center bg-gray-955 border border-gray-800 rounded px-3 py-2 text-sm">
               <Search size={14} className="text-gray-500 mr-2" />
               <input
+                id="role-search-input"
                 type="text"
                 autoFocus
                 placeholder="Search character name..."
@@ -1105,6 +1126,7 @@ export default function StandardSetup() {
             <div className="overflow-y-auto flex-1 border border-gray-800 rounded bg-gray-950/40 divide-y divide-gray-800/60 pr-1">
               {filteredRoles.map(role => (
                 <button
+                  id={`role-option-${role.id}`}
                   key={role.id}
                   onClick={() => {
                     updatePlayerRole(activePlayerId, role.id);
@@ -1138,7 +1160,7 @@ export default function StandardSetup() {
         const p = players.find(x => x.id === selectedPlayerId);
         if (!p) return null;
         const roleObj = (rolesData as Role[]).find(r => r.id === p.roleId);
-        const filteredModalRoles = (rolesData as Role[]).filter(r =>
+        const filteredModalRoles = currentScriptRoles.filter(r =>
           r.name.toLowerCase().includes(modalRoleSearch.toLowerCase())
         );
         const currentIndex = players.findIndex(x => x.id === selectedPlayerId);
@@ -1161,6 +1183,7 @@ export default function StandardSetup() {
             >
               <div className="flex justify-between items-center">
                 <button
+                  id="detail-prev-player-button"
                   type="button"
                   onClick={() => setSelectedPlayerId(prevPlayer.id)}
                   title={prevPlayer.name}
@@ -1185,6 +1208,7 @@ export default function StandardSetup() {
 
                 <div className="flex items-center gap-2">
                   <button
+                    id="detail-next-player-button"
                     type="button"
                     onClick={() => setSelectedPlayerId(nextPlayer.id)}
                     title={nextPlayer.name}
@@ -1198,6 +1222,7 @@ export default function StandardSetup() {
                     <ChevronRight size={16} />
                   </button>
                   <button
+                    id="detail-close-button"
                     type="button"
                     onClick={closeDetailsModal}
                     className={cn(
@@ -1220,6 +1245,7 @@ export default function StandardSetup() {
                 <div>
                   <label className="text-[10px] uppercase font-bold tracking-wider opacity-60 block mb-1">Player Name</label>
                   <input
+                    id="detail-player-name-input"
                     type="text"
                     value={p.name}
                     onChange={(e) => updatePlayerName(p.id, e.target.value)}
@@ -1242,6 +1268,7 @@ export default function StandardSetup() {
                       <div className="flex items-center bg-gray-955 border border-gray-800 rounded px-2.5 py-1 text-sm">
                         <Search size={12} className="text-gray-500 mr-2" />
                         <input
+                          id="detail-role-search-input"
                           type="text"
                           placeholder="Search character name..."
                           className="bg-transparent flex-1 outline-none text-white text-xs placeholder-gray-650"
@@ -1254,6 +1281,7 @@ export default function StandardSetup() {
                       <div className="overflow-y-auto max-h-40 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
                         {p.roleId && (
                           <button
+                            id="detail-clear-role-button"
                             type="button"
                             onClick={() => {
                               updatePlayerRole(p.id, '');
@@ -1267,6 +1295,7 @@ export default function StandardSetup() {
                         )}
                         {filteredModalRoles.map(role => (
                           <button
+                            id={`detail-role-option-${role.id}`}
                             key={role.id}
                             type="button"
                             onClick={() => {
@@ -1294,6 +1323,7 @@ export default function StandardSetup() {
                       </div>
 
                       <button
+                        id="detail-cancel-role-search-button"
                         type="button"
                         onClick={() => {
                           setIsSearchingRole(false);
@@ -1331,6 +1361,7 @@ export default function StandardSetup() {
                           </span>
                         </div>
                         <button
+                          id="detail-change-role-button"
                           type="button"
                           onClick={() => setIsSearchingRole(true)}
                           className={cn(
@@ -1345,6 +1376,7 @@ export default function StandardSetup() {
                       <div className="flex items-center justify-between gap-2 mt-1">
                         <p className="text-sm italic opacity-60">No character assigned</p>
                         <button
+                          id="detail-select-role-button"
                           type="button"
                           onClick={() => setIsSearchingRole(true)}
                           className={cn(
@@ -1369,6 +1401,7 @@ export default function StandardSetup() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button
+                      id="detail-status-alive-button"
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1379,13 +1412,14 @@ export default function StandardSetup() {
                         !p.isDead 
                           ? "bg-clocktower-outsider border-clocktower-outsider/40 text-white" 
                           : timeOfDay === 'day' 
-                            ? "bg-white border-gray-300 text-gray-400 hover:text-gray-650" 
+                            ? "bg-white border-gray-300 text-gray-400 hover:text-gray-655" 
                             : "bg-gray-955/40 border-gray-800 text-gray-500 hover:text-gray-300"
                       )}
                     >
                       Alive
                     </button>
                     <button
+                      id="detail-status-dead-button"
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1396,7 +1430,7 @@ export default function StandardSetup() {
                         p.isDead 
                           ? "bg-clocktower-blood border-clocktower-blood/40 text-white" 
                           : timeOfDay === 'day' 
-                            ? "bg-white border-gray-300 text-gray-400 hover:text-gray-650" 
+                            ? "bg-white border-gray-300 text-gray-400 hover:text-gray-655" 
                             : "bg-gray-955/40 border-gray-800 text-gray-500 hover:text-gray-300"
                       )}
                     >
