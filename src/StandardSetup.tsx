@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import type { CSSProperties } from 'react';
-import { Plus, Trash2, Search, RefreshCcw, AlertTriangle, CheckCircle, Upload, Shuffle } from 'lucide-react';
+import { Plus, Trash2, Search, RefreshCcw, AlertTriangle, CheckCircle, Upload, Shuffle, ChevronLeft, ChevronRight } from 'lucide-react';
 import rolesData from './roles.json';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -575,6 +575,12 @@ export default function StandardSetup() {
         <div className="flex items-center gap-3">
           <a href="#/" className={cn("transition-colors text-sm", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-800" : "text-gray-500 hover:text-gray-300")}>← Home</a>
           <h1 className="text-2xl font-bold text-clocktower-blood tracking-wide">Standard Setup</h1>
+          <div className="flex gap-2.5 text-[9px] font-bold tracking-wider text-gray-500">
+            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-townsfolk" /> Townsfolk</span>
+            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-outsider" /> Outsider</span>
+            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-minion" /> Minion</span>
+            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-demon" /> Demon</span>
+          </div>
         </div>
         <button onClick={resetGame} className={cn("p-2 transition-colors", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")} title="Reset game">
           <RefreshCcw size={20} />
@@ -868,18 +874,6 @@ export default function StandardSetup() {
         <div className="space-y-6 animate-fadeIn md:grid md:grid-cols-2 md:gap-8 md:space-y-0 md:items-start landscape:grid landscape:grid-cols-2 landscape:gap-6 landscape:space-y-0 landscape:items-start">
           {/* Column 1: Board Visual & Header */}
           <div className="space-y-4">
-            <div className={cn(
-              "flex justify-between items-center border-b pb-2",
-              timeOfDay === 'day' ? "border-clocktower-night/10" : "border-gray-800/85"
-            )}>
-              <h2 className={cn("text-lg font-semibold", timeOfDay === 'day' ? "text-clocktower-night" : "text-gray-300")}>Circular Grimoire</h2>
-              <div className="flex gap-2.5 text-[9px] font-bold tracking-wider text-gray-500">
-                <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-townsfolk" /> Townsfolk</span>
-                <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-outsider" /> Outsider</span>
-                <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-minion" /> Minion</span>
-                <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-demon" /> Demon</span>
-              </div>
-            </div>
 
             <div className={cn(
               "relative w-full aspect-square border shadow-inner flex items-center justify-center overflow-visible my-4 mx-auto transition-colors duration-300",
@@ -1026,50 +1020,6 @@ export default function StandardSetup() {
 
           {/* Column 2: Ledger & Controls */}
           <div className="space-y-6 md:pt-10 landscape:pt-10">
-            <div className={cn(
-              "rounded-lg border p-3 space-y-1.5 max-h-48 md:max-h-[380px] landscape:max-h-[250px] overflow-y-auto transition-colors duration-300",
-              timeOfDay === 'day'
-                ? "bg-white/50 border-gray-300 text-clocktower-night"
-                : "bg-gray-900/40 border-gray-800/80"
-            )}>
-              <h4 className={cn(
-                "text-[10px] uppercase font-bold tracking-wider",
-                timeOfDay === 'day' ? "text-gray-600" : "text-gray-500"
-              )}>Grimoire Ledger Reference</h4>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {players.map((p, index) => {
-                  const rObj = (rolesData as Role[]).find(r => r.id === p.roleId);
-                  return (
-                    <div key={p.id} className={cn(
-                      "flex items-center gap-1.5 py-0.5 px-1 rounded border transition-colors",
-                      p.isDead && "opacity-45",
-                      timeOfDay === 'day'
-                        ? "bg-white/40 border-gray-200"
-                        : "bg-gray-950/20 border-gray-900/40"
-                    )}>
-                      <span className={cn("text-[9px] font-mono w-4", timeOfDay === 'day' ? "text-gray-500" : "text-gray-600")}>{index + 1}</span>
-                      <span className={cn(
-                        "font-medium truncate flex-1",
-                        p.isDead && "line-through text-gray-500",
-                        timeOfDay === 'day' && !p.isDead ? "text-clocktower-night" : "text-gray-200"
-                      )}>{p.name}</span>
-                      <span className={cn(
-                        "font-semibold text-[10px] flex items-center gap-1",
-                        rObj?.team === 'townsfolk' && "text-clocktower-townsfolk",
-                        rObj?.team === 'outsider' && "text-clocktower-outsider",
-                        rObj?.team === 'minion' && "text-clocktower-minion",
-                        rObj?.team === 'demon' && "text-clocktower-demon",
-                      )}>
-                        {rObj?.name.substring(0, 6)}..
-                        {p.isTheDrunk && <span className="text-[8px] bg-yellow-600 text-black px-0.5 rounded leading-none">DK</span>}
-                        {p.isTheMarionette && <span className="text-[8px] bg-clocktower-minion text-white px-0.5 rounded leading-none">MN</span>}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
             <button
               onClick={() => setPhase('setup')}
               className={cn(
@@ -1081,6 +1031,50 @@ export default function StandardSetup() {
             >
               Return to Setup
             </button>
+
+            <div className={cn(
+              "rounded-lg border p-3 space-y-1.5 transition-colors duration-300",
+              timeOfDay === 'day'
+                ? "bg-white/50 border-gray-300 text-clocktower-night"
+                : "bg-gray-900/40 border-gray-800/80"
+            )}>
+              <h4 className={cn(
+                "text-[10px] uppercase font-bold tracking-wider",
+                timeOfDay === 'day' ? "text-gray-600" : "text-gray-500"
+              )}>Grimoire Ledger Reference</h4>
+              <div className="grid grid-cols-1 gap-1.5 text-xs">
+                {players.map((p, index) => {
+                  const rObj = (rolesData as Role[]).find(r => r.id === p.roleId);
+                  return (
+                    <div key={p.id} onClick={() => setSelectedPlayerId(p.id)} className={cn(
+                      "flex items-center gap-1.5 py-0.5 px-1.5 rounded border transition-colors min-w-0 cursor-pointer hover:ring-1 hover:ring-gray-500/50",
+                      p.isDead && "opacity-45",
+                      timeOfDay === 'day'
+                        ? "bg-white/40 border-gray-200 hover:bg-white/70"
+                        : "bg-gray-950/20 border-gray-900/40 hover:bg-gray-900/60"
+                    )}>
+                      <span className={cn("text-[9px] font-mono w-4 shrink-0", timeOfDay === 'day' ? "text-gray-500" : "text-gray-600")}>{index + 1}</span>
+                      <span className={cn(
+                        "font-medium truncate flex-1 min-w-0",
+                        p.isDead && "line-through text-gray-500",
+                        timeOfDay === 'day' && !p.isDead ? "text-clocktower-night" : "text-gray-200"
+                      )}>{p.name}</span>
+                      <span className={cn(
+                        "font-semibold text-[10px] flex items-center gap-1 shrink-0 max-w-[45%] min-w-0",
+                        rObj?.team === 'townsfolk' && "text-clocktower-townsfolk",
+                        rObj?.team === 'outsider' && "text-clocktower-outsider",
+                        rObj?.team === 'minion' && "text-clocktower-minion",
+                        rObj?.team === 'demon' && "text-clocktower-demon",
+                      )}>
+                        <span className="truncate">{rObj?.name ?? '—'}</span>
+                        {p.isTheDrunk && <span className="text-[8px] bg-yellow-600 text-black px-0.5 rounded leading-none shrink-0">DK</span>}
+                        {p.isTheMarionette && <span className="text-[8px] bg-clocktower-minion text-white px-0.5 rounded leading-none shrink-0">MN</span>}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1149,6 +1143,9 @@ export default function StandardSetup() {
         const filteredModalRoles = (rolesData as Role[]).filter(r =>
           r.name.toLowerCase().includes(modalRoleSearch.toLowerCase())
         );
+        const currentIndex = players.findIndex(x => x.id === selectedPlayerId);
+        const prevPlayer = players[(currentIndex - 1 + players.length) % players.length];
+        const nextPlayer = players[(currentIndex + 1) % players.length];
 
         return (
           <div 
@@ -1164,25 +1161,55 @@ export default function StandardSetup() {
                   : "bg-gray-900 border-gray-800 text-clocktower-parchment"
               )}
             >
-              <div className="flex justify-between items-start">
-                <div>
+              <div className="flex justify-between items-center">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPlayerId(prevPlayer.id)}
+                  title={prevPlayer.name}
+                  className={cn(
+                    "p-1.5 rounded-lg border transition-colors",
+                    timeOfDay === 'day'
+                      ? "border-gray-300 text-gray-600 hover:bg-gray-100"
+                      : "border-gray-700 text-gray-400 hover:bg-gray-800"
+                  )}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                <div className="text-center">
                   <h3 className={cn("font-bold text-xl", timeOfDay === 'day' ? "text-clocktower-night" : "text-white")}>
                     Player Details
                   </h3>
                   <p className={cn("text-xs", timeOfDay === 'day' ? "text-gray-600" : "text-gray-400")}>
-                    Grimoire status and role info
+                    {currentIndex + 1} of {players.length}
                   </p>
                 </div>
-                <button 
-                  type="button"
-                  onClick={closeDetailsModal} 
-                  className={cn(
-                    "text-sm font-semibold hover:underline",
-                    timeOfDay === 'day' ? "text-clocktower-blood" : "text-clocktower-townsfolk"
-                  )}
-                >
-                  Close
-                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlayerId(nextPlayer.id)}
+                    title={nextPlayer.name}
+                    className={cn(
+                      "p-1.5 rounded-lg border transition-colors",
+                      timeOfDay === 'day'
+                        ? "border-gray-300 text-gray-600 hover:bg-gray-100"
+                        : "border-gray-700 text-gray-400 hover:bg-gray-800"
+                    )}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeDetailsModal}
+                    className={cn(
+                      "text-sm font-semibold hover:underline",
+                      timeOfDay === 'day' ? "text-clocktower-blood" : "text-clocktower-townsfolk"
+                    )}
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
 
               {/* Player Info Card */}
@@ -1198,6 +1225,7 @@ export default function StandardSetup() {
                     type="text"
                     value={p.name}
                     onChange={(e) => updatePlayerName(p.id, e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && closeDetailsModal()}
                     className={cn(
                       "w-full font-semibold text-base px-2 py-1 rounded border focus:outline-none focus:border-clocktower-blood bg-transparent transition-colors",
                       timeOfDay === 'day'
