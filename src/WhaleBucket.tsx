@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Plus, Trash2, Search, RefreshCcw, AlertTriangle, Sparkles, Shuffle, CheckCircle, ChevronLeft, ChevronRight, Sun, Moon } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Plus, Trash2, Search, RefreshCcw, AlertTriangle, Sparkles, Shuffle, CheckCircle, ChevronLeft, ChevronRight, Sun, Moon, ChevronUp, ChevronDown, GripVertical } from 'lucide-react';
 import rolesData from './roles.json';
 import { cn } from './utils/cn';
 import type { Role, Player as BasePlayer, PlayerPreferences } from './types';
@@ -38,6 +38,57 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [isSearchingRole, setIsSearchingRole] = useState(false);
   const [modalRoleSearch, setModalRoleSearch] = useState('');
+
+  // Drag and drop states
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    const sourceIndexStr = e.dataTransfer.getData("text/plain");
+    const sourceIndex = sourceIndexStr ? parseInt(sourceIndexStr, 10) : draggedIndex;
+    if (sourceIndex !== null && sourceIndex !== undefined && !isNaN(sourceIndex)) {
+      if (sourceIndex !== targetIndex) {
+        const updated = [...players];
+        const [removed] = updated.splice(sourceIndex, 1);
+        updated.splice(targetIndex, 0, removed);
+        setPlayers(updated);
+      }
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const movePlayer = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= players.length) return;
+    const updated = [...players];
+    const [removed] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, removed);
+    setPlayers(updated);
+  };
 
   // Load from localStorage
   useEffect(() => {
@@ -647,8 +698,24 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
 
               <div className="space-y-3">
                 {players.map((p, index) => (
-                  <div key={p.id} className="bg-gray-900/60 p-3 rounded-lg border border-gray-800/50 space-y-2">
+                  <div
+                    key={p.id}
+                    draggable={true}
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={cn(
+                      "bg-gray-900/60 p-3 rounded-lg border border-gray-800/50 space-y-2 transition-all",
+                      draggedIndex === index && "opacity-40 border-dashed border-clocktower-blood/50 scale-[0.98]",
+                      dragOverIndex === index && draggedIndex !== index && "border-t-2 border-t-clocktower-blood bg-gray-800/20"
+                    )}
+                  >
                     <div className="flex items-center gap-2">
+                      <div className="text-gray-600 cursor-grab active:cursor-grabbing hover:text-gray-400 p-0.5 shrink-0 flex items-center">
+                        <GripVertical size={14} />
+                      </div>
                       <span className="text-xs text-gray-500 font-mono w-5">#{index + 1}</span>
                       <input
                         type="text"
@@ -663,6 +730,26 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                       >
                         <Shuffle size={10} /> Auto
                       </button>
+                      <div className="flex gap-0.5 items-center bg-gray-955/45 px-1 py-0.5 rounded border border-gray-800">
+                        <button
+                          type="button"
+                          disabled={index === 0}
+                          onClick={() => movePlayer(index, 'up')}
+                          className="text-gray-500 hover:text-gray-200 disabled:opacity-20 disabled:hover:text-gray-500 transition-colors p-0.5"
+                          title="Move player up"
+                        >
+                          <ChevronUp size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={index === players.length - 1}
+                          onClick={() => movePlayer(index, 'down')}
+                          className="text-gray-500 hover:text-gray-200 disabled:opacity-20 disabled:hover:text-gray-500 transition-colors p-0.5"
+                          title="Move player down"
+                        >
+                          <ChevronDown size={12} />
+                        </button>
+                      </div>
                       <button onClick={() => removePlayer(p.id)} className="text-gray-600 hover:text-red-500 p-1 transition-colors">
                         <Trash2 size={16} />
                       </button>
@@ -1052,13 +1139,28 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                 {players.map((p, index) => {
                   const rObj = (rolesData as Role[]).find(r => r.id === p.roleId);
                   return (
-                    <div key={p.id} onClick={() => setSelectedPlayerId(p.id)} className={cn(
-                      "flex items-center gap-1.5 py-0.5 px-1.5 rounded border transition-colors min-w-0 cursor-pointer hover:ring-1 hover:ring-gray-500/50",
-                      p.isDead && "opacity-45",
-                      isLightModeActive
-                        ? "bg-white/40 border-gray-200 hover:bg-white/70"
-                        : "bg-gray-955/20 border-gray-900/40 hover:bg-gray-900/60"
-                    )}>
+                    <div
+                      key={p.id}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragEnd={handleDragEnd}
+                      onClick={() => setSelectedPlayerId(p.id)}
+                      className={cn(
+                        "flex items-center gap-1.5 py-0.5 px-1.5 rounded border transition-colors min-w-0 cursor-move hover:ring-1 hover:ring-gray-500/50",
+                        p.isDead && "opacity-45",
+                        draggedIndex === index && "opacity-40 border-dashed border-clocktower-blood/50 scale-[0.98]",
+                        dragOverIndex === index && draggedIndex !== index && "border-t-2 border-t-clocktower-blood bg-gray-800/20",
+                        isLightModeActive
+                          ? "bg-white/40 border-gray-200 hover:bg-white/70"
+                          : "bg-gray-955/20 border-gray-900/40 hover:bg-gray-900/60"
+                      )}
+                    >
+                      <div className="text-gray-500 cursor-grab active:cursor-grabbing hover:text-gray-400 p-0.5 shrink-0 flex items-center">
+                        <GripVertical size={10} />
+                      </div>
                       <span className={cn("text-[9px] font-mono w-4 shrink-0", isLightModeActive ? "text-gray-505" : "text-gray-600")}>{index + 1}</span>
                       <span className={cn(
                         "font-medium truncate flex-1 min-w-0",
@@ -1106,7 +1208,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                     "w-full rounded px-2.5 py-1.5 text-xs focus:outline-none border transition-colors",
                     isLightModeActive
                       ? "bg-white border-gray-300 text-clocktower-night focus:border-clocktower-blood"
-                      : "bg-gray-905 border-gray-800 text-gray-250 focus:border-clocktower-blood"
+                      : "bg-gray-950 border-gray-800 text-gray-200 focus:border-clocktower-blood"
                   )}
                 />
                 
@@ -1119,11 +1221,17 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                       "flex-1 rounded px-2 py-1.5 text-xs focus:outline-none border transition-colors",
                       isLightModeActive
                         ? "bg-white border-gray-300 text-clocktower-night focus:border-clocktower-blood"
-                        : "bg-gray-955 border-gray-800 text-gray-200 focus:border-clocktower-blood"
+                        : "bg-gray-950 border-gray-800 text-gray-200 focus:border-clocktower-blood"
                     )}
                   >
                     {(rolesData as Role[]).filter(r => r.team === 'traveler').map(r => (
-                      <option key={r.id} value={r.id}>{r.name}</option>
+                      <option
+                        key={r.id}
+                        value={r.id}
+                        className={isLightModeActive ? "bg-white text-clocktower-night" : "bg-gray-950 text-gray-200"}
+                      >
+                        {r.name}
+                      </option>
                     ))}
                   </select>
                   
