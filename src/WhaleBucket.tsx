@@ -298,12 +298,24 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     
     const updatedPlayers = players.map(p => {
       const assigned = result.find(r => r.player.id === p.id);
+      let roleId = assigned?.fromPref ? assigned?.role.id : undefined;
+      let isTheLunatic = false;
+
+      if (assigned && assigned.role.id === 'lunatic') {
+        isTheLunatic = true;
+        // Pick a random demon from rolesData
+        const demons = (rolesData as Role[]).filter(r => r.team === 'demon');
+        const chosenDemon = demons[Math.floor(Math.random() * demons.length)] || { id: 'imp' };
+        roleId = chosenDemon.id;
+      }
+
       return {
         ...p,
-        roleId: assigned?.fromPref ? assigned?.role.id : undefined,
+        roleId,
         assignedFromPref: assigned?.fromPref || false,
         isTheDrunk: false,
         isTheMarionette: false,
+        isTheLunatic,
       };
     });
     setPlayers(updatedPlayers);
@@ -359,6 +371,21 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     }));
   };
 
+  const togglePlayerTheLunatic = (id: string) => {
+    setPlayers(players.map(p => {
+      if (p.id === id) {
+        const nextVal = !p.isTheLunatic;
+        return {
+          ...p,
+          isTheLunatic: nextVal,
+          isTheDrunk: nextVal ? false : p.isTheDrunk,
+          isTheMarionette: nextVal ? false : p.isTheMarionette
+        };
+      }
+      return p;
+    }));
+  };
+
   const closeDetailsModal = () => {
     setSelectedPlayerId(null);
     setIsSearchingRole(false);
@@ -395,6 +422,8 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           acc.minion++;
         } else if (p.isTheDrunk) {
           acc.outsider++;
+        } else if (p.isTheLunatic) {
+          acc.outsider++;
         } else if (p.roleId === 'lilmonsta') {
           acc.minion++;
         } else {
@@ -408,6 +437,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     const assignedRoles = players.map(p => {
       if (p.isTheMarionette) return (rolesData as Role[]).find(r => r.id === 'marionette');
       if (p.isTheDrunk) return (rolesData as Role[]).find(r => r.id === 'drunk');
+      if (p.isTheLunatic) return (rolesData as Role[]).find(r => r.id === 'lunatic');
       return (rolesData as Role[]).find(r => r.id === p.roleId);
     }).filter(Boolean) as Role[];
     const hasLegion = assignedRoles.some(r => r.id === 'legion');
@@ -501,7 +531,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     });
     const marionettePlayers = basePlayersInOrder.filter(p => p.isTheMarionette);
     const demonPlayers = basePlayersInOrder.filter(p => {
-      if (!p.roleId || p.isTheMarionette || p.isTheDrunk) return false;
+      if (!p.roleId || p.isTheMarionette || p.isTheDrunk || p.isTheLunatic) return false;
       const r = (rolesData as Role[]).find(role => role.id === p.roleId);
       return r?.team === 'demon';
     });
@@ -907,11 +937,32 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           </div>
 
           <div className="space-y-2.5">
-            {players.map(p => {
+            {players.map((p, idx) => {
               const roleObj = (rolesData as Role[]).find(r => r.id === p.roleId);
+              
+              const isTownsfolk = roleObj?.team === 'townsfolk';
+              const isGood = roleObj?.team === 'townsfolk' || roleObj?.team === 'outsider';
+
+              const N = players.length;
+              const leftNeighbor = players[(idx - 1 + N) % N];
+              const rightNeighbor = players[(idx + 1) % N];
+              const leftRoleObj = (rolesData as Role[]).find(r => r.id === leftNeighbor?.roleId);
+              const rightRoleObj = (rolesData as Role[]).find(r => r.id === rightNeighbor?.roleId);
+              const isLeftDemon = leftRoleObj?.team === 'demon' && !leftNeighbor?.isTheLunatic;
+              const isRightDemon = rightRoleObj?.team === 'demon' && !rightNeighbor?.isTheLunatic;
+              const isNextToDemon = isLeftDemon || isRightDemon;
+              const canBeDrunk = p.isTheDrunk || isTownsfolk;
+              const canBeMarionette = p.isTheMarionette || (isGood && isNextToDemon);
+
+              const isDemon = roleObj?.team === 'demon';
+              const canBeLunatic = p.isTheLunatic || isDemon;
+
+              const isDrunkSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheDrunk);
+              const isMarionetteSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheMarionette);
+              const isLunaticSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheLunatic);
               return (
                 <div key={p.id} className="bg-gray-900 p-3 rounded-lg border border-gray-855 space-y-2">
-                  <div className="flex justify-between items-center">
+                   <div className="flex justify-between items-center">
                     <span className="font-bold text-gray-200">{p.name}</span>
                     <div className="flex items-center gap-2">
                       {p.isTheDrunk && (
@@ -922,6 +973,11 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                       {p.isTheMarionette && (
                         <span className="text-[8px] font-black text-white bg-clocktower-minion border border-clocktower-minion/30 px-1 py-0.5 rounded uppercase">
                           THE MARIONETTE
+                        </span>
+                      )}
+                      {p.isTheLunatic && (
+                        <span className="text-[8px] font-black text-white bg-clocktower-outsider border border-clocktower-outsider/30 px-1 py-0.5 rounded uppercase">
+                          THE LUNATIC
                         </span>
                       )}
                       {p.assignedFromPref ? (
@@ -980,34 +1036,56 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                           Change
                         </button>
                       </div>
-
                       {/* Secret Role Draft Toggles */}
-                      <div className="flex gap-2 justify-end">
-                        <button
-                          type="button"
-                          onClick={() => togglePlayerTheDrunk(p.id)}
-                          className={cn(
-                            "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1",
-                            p.isTheDrunk
-                              ? "bg-yellow-600 border-yellow-755 text-black font-black"
-                              : "bg-gray-950 border-gray-855 text-gray-500 hover:text-gray-400"
+                      {(canBeDrunk || canBeMarionette || canBeLunatic) && (
+                        <div className="flex gap-2 justify-end">
+                          {canBeDrunk && (
+                            <button
+                              type="button"
+                              disabled={isDrunkSelectedElsewhere}
+                              onClick={() => togglePlayerTheDrunk(p.id)}
+                              className={cn(
+                                "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-gray-500",
+                                p.isTheDrunk
+                                  ? "bg-yellow-600 border-yellow-755 text-black font-black"
+                                  : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
+                              )}
+                            >
+                              🍺 The Drunk
+                            </button>
                           )}
-                        >
-                          🍺 The Drunk
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => togglePlayerTheMarionette(p.id)}
-                          className={cn(
-                            "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1",
-                            p.isTheMarionette
-                              ? "bg-clocktower-minion border-clocktower-minion/40 text-white font-black"
-                              : "bg-gray-950 border-gray-855 text-gray-500 hover:text-gray-400"
+                          {canBeMarionette && (
+                            <button
+                              type="button"
+                              disabled={isMarionetteSelectedElsewhere}
+                              onClick={() => togglePlayerTheMarionette(p.id)}
+                              className={cn(
+                                "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-gray-500",
+                                p.isTheMarionette
+                                  ? "bg-clocktower-minion border-clocktower-minion/40 text-white font-black"
+                                  : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
+                              )}
+                            >
+                              🎭 The Marionette
+                            </button>
                           )}
-                        >
-                          🎭 The Marionette
-                        </button>
-                      </div>
+                          {canBeLunatic && (
+                            <button
+                              type="button"
+                              disabled={isLunaticSelectedElsewhere}
+                              onClick={() => togglePlayerTheLunatic(p.id)}
+                              className={cn(
+                                "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-gray-500",
+                                p.isTheLunatic
+                                  ? "bg-clocktower-outsider border-clocktower-outsider/40 text-white font-black"
+                                  : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
+                              )}
+                            >
+                              👹 The Lunatic
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1213,6 +1291,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                         <span className="truncate">{rObj?.name ?? '—'}</span>
                         {p.isTheDrunk && <span className="text-[8px] bg-yellow-600 text-black px-0.5 rounded leading-none shrink-0">DK</span>}
                         {p.isTheMarionette && <span className="text-[8px] bg-clocktower-minion text-white px-0.5 rounded leading-none shrink-0">MN</span>}
+                        {p.isTheLunatic && <span className="text-[8px] bg-clocktower-outsider text-white px-0.5 rounded leading-none shrink-0">LN</span>}
                       </span>
                     </div>
                   );

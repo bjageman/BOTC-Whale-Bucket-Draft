@@ -232,6 +232,21 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     }));
   };
 
+  const togglePlayerTheLunatic = (id: string) => {
+    setPlayers(players.map(p => {
+      if (p.id === id) {
+        const nextVal = !p.isTheLunatic;
+        return {
+          ...p,
+          isTheLunatic: nextVal,
+          isTheDrunk: nextVal ? false : p.isTheDrunk,
+          isTheMarionette: nextVal ? false : p.isTheMarionette
+        };
+      }
+      return p;
+    }));
+  };
+
 
 
   const handleScriptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -446,6 +461,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       let roleId = role.id;
       let isTheDrunk = false;
       let isTheMarionette = false;
+      let isTheLunatic = false;
 
       if (role.id === 'drunk') {
         isTheDrunk = true;
@@ -462,13 +478,18 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           ? availableFakeRoles[Math.floor(Math.random() * availableFakeRoles.length)] 
           : tfsAndOuts[Math.floor(Math.random() * tfsAndOuts.length)];
         roleId = chosenFake?.id || 'washerwoman';
+      } else if (role.id === 'lunatic') {
+        isTheLunatic = true;
+        const chosenDemon = dems[Math.floor(Math.random() * dems.length)] || { id: 'imp' };
+        roleId = chosenDemon.id;
       }
 
       return {
         ...p,
         roleId,
         isTheDrunk,
-        isTheMarionette
+        isTheMarionette,
+        isTheLunatic,
       };
     });
 
@@ -484,6 +505,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         roleId: role.id,
         isTheDrunk: false,
         isTheMarionette: false,
+        isTheLunatic: false,
       };
     });
 
@@ -521,6 +543,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           acc.minion++;
         } else if (p.isTheDrunk) {
           acc.outsider++;
+        } else if (p.isTheLunatic) {
+          acc.outsider++;
         } else if (p.roleId === 'lilmonsta') {
           acc.minion++;
         } else {
@@ -534,6 +558,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     const assignedRoles = players.map(p => {
       if (p.isTheMarionette) return (rolesData as Role[]).find(r => r.id === 'marionette');
       if (p.isTheDrunk) return (rolesData as Role[]).find(r => r.id === 'drunk');
+      if (p.isTheLunatic) return (rolesData as Role[]).find(r => r.id === 'lunatic');
       return (rolesData as Role[]).find(r => r.id === p.roleId);
     }).filter(Boolean) as Role[];
     const hasLegion = assignedRoles.some(r => r.id === 'legion');
@@ -627,7 +652,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     });
     const marionettePlayers = basePlayersInOrder.filter(p => p.isTheMarionette);
     const demonPlayers = basePlayersInOrder.filter(p => {
-      if (!p.roleId || p.isTheMarionette || p.isTheDrunk) return false;
+      if (!p.roleId || p.isTheMarionette || p.isTheDrunk || p.isTheLunatic) return false;
       const r = (rolesData as Role[]).find(role => role.id === p.roleId);
       return r?.team === 'demon';
     });
@@ -850,6 +875,32 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
               <div className="space-y-2.5">
                 {players.map((p, index) => {
                   const roleObj = (rolesData as Role[]).find(r => r.id === p.roleId);
+                  
+                  const hasDrunkInScript = !customScriptRoles || customScriptRoles.some(r => r.id === 'drunk');
+                  const hasMarionetteInScript = !customScriptRoles || customScriptRoles.some(r => r.id === 'marionette');
+
+                  const isTownsfolk = roleObj?.team === 'townsfolk';
+                  const isGood = roleObj?.team === 'townsfolk' || roleObj?.team === 'outsider';
+
+                  const N = players.length;
+                  const leftNeighbor = players[(index - 1 + N) % N];
+                  const rightNeighbor = players[(index + 1) % N];
+                  const leftRoleObj = (rolesData as Role[]).find(r => r.id === leftNeighbor?.roleId);
+                  const rightRoleObj = (rolesData as Role[]).find(r => r.id === rightNeighbor?.roleId);
+                  const isLeftDemon = leftRoleObj?.team === 'demon' && !leftNeighbor?.isTheLunatic;
+                  const isRightDemon = rightRoleObj?.team === 'demon' && !rightNeighbor?.isTheLunatic;
+                  const isNextToDemon = isLeftDemon || isRightDemon;
+
+                  const canBeDrunk = p.isTheDrunk || (isTownsfolk && hasDrunkInScript);
+                  const canBeMarionette = p.isTheMarionette || (isGood && isNextToDemon && hasMarionetteInScript);
+
+                  const hasLunaticInScript = !customScriptRoles || customScriptRoles.some(r => r.id === 'lunatic');
+                  const isDemon = roleObj?.team === 'demon';
+                  const canBeLunatic = p.isTheLunatic || (isDemon && hasLunaticInScript);
+
+                  const isDrunkSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheDrunk);
+                  const isMarionetteSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheMarionette);
+                  const isLunaticSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheLunatic);
                   return (
                     <div
                       key={p.id}
@@ -885,6 +936,11 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
                         {p.isTheMarionette && (
                           <span className="text-[8px] font-black text-white bg-clocktower-minion border border-clocktower-minion/30 px-1 py-0.5 rounded uppercase leading-none">
                             THE MARIONETTE
+                          </span>
+                        )}
+                        {p.isTheLunatic && (
+                          <span className="text-[8px] font-black text-white bg-clocktower-outsider border border-clocktower-outsider/30 px-1 py-0.5 rounded uppercase leading-none">
+                            THE LUNATIC
                           </span>
                         )}
                         <div className="flex gap-0.5 items-center bg-gray-950/45 px-1 py-0.5 rounded border border-gray-850">
@@ -955,34 +1011,58 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
                           </div>
 
                           {/* Secret Role Draft Toggles */}
-                          <div className="flex gap-2 justify-end">
-                            <button
-                              id={`toggle-drunk-button-${p.id}`}
-                              type="button"
-                              onClick={() => togglePlayerTheDrunk(p.id)}
-                              className={cn(
-                                "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1",
-                                p.isTheDrunk
-                                  ? "bg-yellow-600 border-yellow-755 text-black font-black"
-                                  : "bg-gray-950 border-gray-855 text-gray-500 hover:text-gray-400"
+                          {(canBeDrunk || canBeMarionette || canBeLunatic) && (
+                            <div className="flex gap-2 justify-end">
+                              {canBeDrunk && (
+                                <button
+                                  id={`toggle-drunk-button-${p.id}`}
+                                  type="button"
+                                  disabled={isDrunkSelectedElsewhere}
+                                  onClick={() => togglePlayerTheDrunk(p.id)}
+                                  className={cn(
+                                    "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-gray-500",
+                                    p.isTheDrunk
+                                      ? "bg-yellow-600 border-yellow-755 text-black font-black"
+                                      : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
+                                  )}
+                                >
+                                  🍺 The Drunk
+                                </button>
                               )}
-                            >
-                              🍺 The Drunk
-                            </button>
-                            <button
-                              id={`toggle-marionette-button-${p.id}`}
-                              type="button"
-                              onClick={() => togglePlayerTheMarionette(p.id)}
-                              className={cn(
-                                "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1",
-                                p.isTheMarionette
-                                  ? "bg-clocktower-minion border-clocktower-minion/40 text-white font-black"
-                                  : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
+                              {canBeMarionette && (
+                                <button
+                                  id={`toggle-marionette-button-${p.id}`}
+                                  type="button"
+                                  disabled={isMarionetteSelectedElsewhere}
+                                  onClick={() => togglePlayerTheMarionette(p.id)}
+                                  className={cn(
+                                    "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-gray-500",
+                                    p.isTheMarionette
+                                      ? "bg-clocktower-minion border-clocktower-minion/40 text-white font-black"
+                                      : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
+                                  )}
+                                >
+                                  🎭 The Marionette
+                                </button>
                               )}
-                            >
-                              🎭 The Marionette
-                            </button>
-                          </div>
+                              {canBeLunatic && (
+                                <button
+                                  id={`toggle-lunatic-button-${p.id}`}
+                                  type="button"
+                                  disabled={isLunaticSelectedElsewhere}
+                                  onClick={() => togglePlayerTheLunatic(p.id)}
+                                  className={cn(
+                                    "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-gray-500",
+                                    p.isTheLunatic
+                                      ? "bg-clocktower-outsider border-clocktower-outsider/40 text-white font-black"
+                                      : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
+                                  )}
+                                >
+                                  👹 The Lunatic
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div
@@ -1239,6 +1319,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
                         <span className="truncate">{rObj?.name ?? '—'}</span>
                         {p.isTheDrunk && <span className="text-[8px] bg-yellow-600 text-black px-0.5 rounded leading-none shrink-0">DK</span>}
                         {p.isTheMarionette && <span className="text-[8px] bg-clocktower-minion text-white px-0.5 rounded leading-none shrink-0">MN</span>}
+                        {p.isTheLunatic && <span className="text-[8px] bg-clocktower-outsider text-white px-0.5 rounded leading-none shrink-0">LN</span>}
                       </span>
                     </div>
                   );
