@@ -1,25 +1,30 @@
-# 🐋 Whale Bucket — Blood on the Clocktower Draft Tool
+# 📖 BotC Grimoire & Draft Companion
 
-A web app for **Blood on the Clocktower** (BotC) storytellers to manage **"whale bucket"** style games — where players submit role preferences and the grimoire is randomly assembled based on those preferences.
+A lightweight storyteller and setup companion web application for **Blood on the Clocktower** (BotC) storytellers. It offers two distinct modes: standard manual grimoire tracking and the custom **"Whale Bucket"** preference draft mode.
 
-## What It Does
+## Core Features
 
-Whale Bucket replaces the traditional storyteller-curated grimoire with a semi-randomized draft system:
+### 1. Standard Setup Mode
+Classic manual storyteller mode:
+- **Custom Script Support** — Upload custom `.json` script files to automatically load character lists, icons, and attributes.
+- **Manual Assignment** — Fully dictate player assignments, set Drunk/Marionette status, and adjust team composition.
+- **Interactive Grimoire** — Responsive, circular layout showing alive status, dead votes, traveler characters, custom storyteller notes, and game phase states (Day/Night toggles).
 
-1. **Setup Phase** — Add players and let each one pick a preferred role for every team (Townsfolk, Outsider, Minion, Demon).
-2. **Draft Phase** — The app randomly assigns roles, weighting toward player preferences when possible. It respects the official BotC team distribution for the player count (5–15 players) and handles special-case characters:
+### 2. Whale Bucket Draft Mode
+Semi-randomized player preference draft:
+- **Preference Drafting** — Add players and let them submit up to 4 preferred roles for Townsfolk, Outsider, Minion, and Demon teams.
+- **Auto-Distribution Algorithm** — Assigns roles matching player inputs, respects official team counts for 5–15 players, and dynamically resolves complex setup roles and jinxes:
    - **Legion** — ~60% of players become Legion, the rest get Townsfolk roles.
    - **Riot** — Demon + Minion count players become Riot, the rest Townsfolk.
    - **Atheist** — All-Townsfolk/Outsider grimoire with no evil team.
    - **Baron / Fang Gu / Balloonist / Godfather** — Outsider count adjustments are applied automatically.
    - **Choirboy ↔ King / Huntsman ↔ Damsel** — Linked-role jinxes are enforced.
-3. **Game Phase** — Track the game in progress: mark players as dead or drunk, view assigned roles, and manage the grimoire.
 
-All state is persisted to `localStorage`, so refreshing the page won't lose your game.
+All state is persisted to `localStorage`, so refreshing the page won't lose your storyteller grimoire.
 
 ## Included Roles
 
-The app ships with the full catalogue of official BotC roles across all editions:
+The app ships with the full catalogue of official BotC roles across all standard editions:
 
 | Team | Count |
 |------|-------|
@@ -72,8 +77,8 @@ docker compose down
 ### Docker (manual)
 
 ```bash
-docker build -t whalebucket .
-docker run -p 8080:80 whalebucket
+docker build -t botc-grimoire-companion .
+docker run -p 8080:80 botc-grimoire-companion
 ```
 
 ## Tech Stack
