@@ -163,10 +163,19 @@ export default function GrimoireBoard({
                   <img
                     src={`/icons/${roleObj.id}.svg`}
                     alt={roleObj.name}
-                    style={{ width: '30%', height: '30%', objectFit: 'contain' }}
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      padding: '12%',
+                      opacity: p.isDead ? 0.06 : 0.16,
+                      pointerEvents: 'none',
+                    }}
                     className={cn(
-                      "mt-1.5 select-none pointer-events-none transition-all duration-200",
-                      p.isDead && "opacity-40 grayscale"
+                      "select-none transition-all duration-200 z-0",
+                      p.isDead && "grayscale"
                     )}
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
@@ -177,7 +186,7 @@ export default function GrimoireBoard({
                 <span
                   style={grimoireConfig.nameStyle}
                   className={cn(
-                    "font-bold font-sans tracking-tighter truncate text-center leading-tight",
+                    "font-bold font-sans tracking-tighter truncate text-center leading-tight z-10 relative",
                     p.isDead && "line-through",
                     timeOfDay === 'day'
                       ? p.isDead
@@ -194,7 +203,7 @@ export default function GrimoireBoard({
                 <span
                   style={grimoireConfig.roleStyle}
                   className={cn(
-                    "font-semibold truncate leading-none text-gray-400 px-0.5 text-center",
+                    "font-semibold truncate leading-none text-gray-400 px-0.5 text-center z-10 relative",
                     roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk/85",
                     roleObj?.team === 'outsider' && "text-clocktower-outsider/85",
                     roleObj?.team === 'minion' && "text-clocktower-minion/85",
