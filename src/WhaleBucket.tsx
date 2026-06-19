@@ -716,7 +716,10 @@ export default function WhaleBucket() {
 
   return (
     <div className={cn(
-      "min-h-screen p-4 font-sans max-w-xl mx-auto transition-colors duration-300",
+      "min-h-screen p-4 font-sans mx-auto transition-colors duration-300",
+      phase === 'game' 
+        ? "max-w-xl md:max-w-4xl landscape:max-w-4xl" 
+        : "max-w-xl",
       phase === 'game' && timeOfDay === 'day'
         ? "bg-clocktower-parchment text-clocktower-night"
         : "bg-clocktower-night text-clocktower-parchment"
@@ -1044,199 +1047,205 @@ export default function WhaleBucket() {
       )}
 
       {phase === 'game' && (
-        <div className="space-y-6 animate-fadeIn">
-          <div className={cn(
-            "flex justify-between items-center border-b pb-2",
-            timeOfDay === 'day' ? "border-clocktower-night/10" : "border-gray-800/85"
-          )}>
-            <h2 className={cn("text-lg font-semibold", timeOfDay === 'day' ? "text-clocktower-night" : "text-gray-300")}>Circular Grimoire</h2>
-            <div className="flex gap-2.5 text-[9px] font-bold tracking-wider text-gray-500">
-              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-townsfolk" /> Townsfolk</span>
-              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-outsider" /> Outsider</span>
-              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-minion" /> Minion</span>
-              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-demon" /> Demon</span>
+        <div className="space-y-6 animate-fadeIn md:grid md:grid-cols-2 md:gap-8 md:space-y-0 md:items-start landscape:grid landscape:grid-cols-2 landscape:gap-6 landscape:space-y-0 landscape:items-start">
+          {/* Column 1: Board Visual & Header */}
+          <div className="space-y-4">
+            <div className={cn(
+              "flex justify-between items-center border-b pb-2",
+              timeOfDay === 'day' ? "border-clocktower-night/10" : "border-gray-800/85"
+            )}>
+              <h2 className={cn("text-lg font-semibold", timeOfDay === 'day' ? "text-clocktower-night" : "text-gray-300")}>Circular Grimoire</h2>
+              <div className="flex gap-2.5 text-[9px] font-bold tracking-wider text-gray-500">
+                <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-townsfolk" /> Townsfolk</span>
+                <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-outsider" /> Outsider</span>
+                <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-minion" /> Minion</span>
+                <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-demon" /> Demon</span>
+              </div>
             </div>
-          </div>
 
-          <div className={cn(
-            "relative w-full aspect-square border shadow-inner flex items-center justify-center overflow-visible my-4 mx-auto transition-colors duration-300",
-            timeOfDay === 'day'
-              ? "bg-white/50 border-gray-300 shadow-gray-200/50"
-              : "bg-gray-950/40 border-gray-900/60 shadow-black/45",
-            grimoireConfig.boardClass
-          )}>
-            <button
-              onClick={toggleTimeOfDay}
-              className={cn(
-                "absolute w-20 h-20 rounded-full border flex flex-col items-center justify-center transition-all cursor-pointer z-20 select-none shadow-md",
-                timeOfDay === 'day'
-                  ? "bg-yellow-50 border-yellow-300 text-yellow-800 hover:bg-yellow-100/70"
-                  : "bg-clocktower-night/50 border-clocktower-blood/20 text-clocktower-parchment hover:bg-clocktower-blood/10"
-              )}
-              title="Click to toggle Day/Night"
-            >
-              <span className={cn(
-                "text-[10px] font-serif tracking-widest font-bold transition-colors",
-                timeOfDay === 'day' ? "text-yellow-600" : "text-clocktower-blood/60"
-              )}>BOTC</span>
-              <span className="text-[9px] font-bold font-mono mt-0.5 uppercase tracking-wide">
-                {timeOfDay} {dayNumber}
-              </span>
-            </button>
+            <div className={cn(
+              "relative w-full aspect-square border shadow-inner flex items-center justify-center overflow-visible my-4 mx-auto transition-colors duration-300",
+              timeOfDay === 'day'
+                ? "bg-white/50 border-gray-300 shadow-gray-200/50"
+                : "bg-gray-950/40 border-gray-900/60 shadow-black/45",
+              grimoireConfig.boardClass
+            )}>
+              <button
+                onClick={toggleTimeOfDay}
+                className={cn(
+                  "absolute w-20 h-20 rounded-full border flex flex-col items-center justify-center transition-all cursor-pointer z-20 select-none shadow-md",
+                  timeOfDay === 'day'
+                    ? "bg-yellow-50 border-yellow-300 text-yellow-800 hover:bg-yellow-100/70"
+                    : "bg-clocktower-night/50 border-clocktower-blood/20 text-clocktower-parchment hover:bg-clocktower-blood/10"
+                )}
+                title="Click to toggle Day/Night"
+              >
+                <span className={cn(
+                  "text-[10px] font-serif tracking-widest font-bold transition-colors",
+                  timeOfDay === 'day' ? "text-yellow-600" : "text-clocktower-blood/60"
+                )}>BOTC</span>
+                <span className="text-[9px] font-bold font-mono mt-0.5 uppercase tracking-wide">
+                  {timeOfDay} {dayNumber}
+                </span>
+              </button>
 
-            {players.map((p, index) => {
-              const total = players.length;
-              const angle = (index * (360 / total) - 90) * (Math.PI / 180);
-              
-              const radiusPercent = grimoireConfig.radiusPercent; 
-              const leftPos = 50 + radiusPercent * Math.cos(angle);
-              const topPos = 50 + radiusPercent * Math.sin(angle);
-
-              const roleObj = (rolesData as Role[]).find(r => r.id === p.roleId);
-
-              return (
-                <div 
-                  key={p.id}
-                  style={{
-                    position: 'absolute',
-                    left: `${leftPos}%`,
-                    top: `${topPos}%`,
-                    transform: 'translate(-50%, -50%)',
-                  }}
-                  className="z-10 hover:z-50 group"
-                >
-                  <div className="relative flex flex-col items-center">
-                    <button
-                      onClick={() => togglePlayerDead(p.id)}
-                      className={cn(
-                        "rounded-full border-2 flex flex-col items-center justify-center transition-all shadow-md relative",
-                        grimoireConfig.btnClass,
-                        timeOfDay === 'day'
-                          ? p.isDead
-                            ? "bg-gray-200 border-gray-300 text-gray-400 scale-95 opacity-50"
-                            : "bg-white border-gray-300 text-clocktower-night hover:border-gray-400 hover:bg-gray-50"
-                          : p.isDead
-                            ? "bg-black border-gray-800 text-gray-655 scale-95 opacity-50" 
-                            : "bg-gray-900 border-gray-700 text-clocktower-parchment hover:border-gray-500"
-                      )}
-                    >
-                      <div className={cn(
-                        "absolute top-0.5 w-1.5 h-1.5 rounded-full shadow-xs",
-                        roleObj?.team === 'townsfolk' && "bg-clocktower-townsfolk",
-                        roleObj?.team === 'outsider' && "bg-clocktower-outsider",
-                        roleObj?.team === 'minion' && "bg-clocktower-minion",
-                        roleObj?.team === 'demon' && "bg-clocktower-demon",
-                      )} />
-
-                      <span className={cn(
-                        grimoireConfig.nameClass,
-                        p.isDead && "line-through",
-                        timeOfDay === 'day'
-                          ? p.isDead ? "text-gray-400" : "text-clocktower-night font-bold"
-                          : p.isDead ? "text-gray-700" : "text-clocktower-parchment"
-                      )}>
-                        {p.name.substring(0, grimoireConfig.charLimit)}
-                      </span>
-
-                      <span className={cn(
-                        grimoireConfig.roleClass,
-                        roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk/85",
-                        roleObj?.team === 'outsider' && "text-clocktower-outsider/85",
-                        roleObj?.team === 'minion' && "text-clocktower-minion/85",
-                        roleObj?.team === 'demon' && "text-clocktower-demon/85",
-                        p.isDead && "line-through opacity-50"
-                      )}>
-                        {roleObj?.name.substring(0, grimoireConfig.charLimit)}
-                      </span>
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        togglePlayerDrunk(p.id);
-                      }}
-                      className={cn(
-                        "absolute border transition-all z-20 shadow-xs",
-                        grimoireConfig.drunkClass,
-                        p.isDrunk 
-                          ? "bg-yellow-600 border-yellow-755 text-black font-black" 
-                          : timeOfDay === 'day'
-                            ? "bg-gray-100 border-gray-300 text-gray-400 hover:text-gray-600"
-                            : "bg-gray-900/90 border-gray-800 text-gray-600 hover:text-gray-400"
-                      )}
-                    >
-                      DRK
-                    </button>
-
-                    <div className={cn("absolute scale-0 group-hover:scale-100 bg-gray-900/95 border border-gray-800 p-2 rounded text-center shadow-xl transition-all z-50 pointer-events-none min-w-[100px]", grimoireConfig.tooltipClass)}>
-                      <p className="font-bold text-xs text-white">{p.name}</p>
-                      <p className={cn(
-                        "text-[10px] font-medium",
-                        roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk",
-                        roleObj?.team === 'outsider' && "text-clocktower-outsider",
-                        roleObj?.team === 'minion' && "text-clocktower-minion",
-                        roleObj?.team === 'demon' && "text-clocktower-demon",
-                      )}>{roleObj?.name}</p>
-                      <p className="text-[8px] text-gray-500 italic mt-0.5">{p.isDead ? 'Dead' : 'Alive'} {p.isDrunk ? '(Drunk)' : ''}</p>
-                    </div>
-
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className={cn(
-            "rounded-lg border p-3 space-y-1.5 max-h-48 overflow-y-auto transition-colors duration-300",
-            timeOfDay === 'day'
-              ? "bg-white/50 border-gray-300 text-clocktower-night"
-              : "bg-gray-900/40 border-gray-800/80"
-          )}>
-            <h4 className={cn(
-              "text-[10px] uppercase font-bold tracking-wider",
-              timeOfDay === 'day' ? "text-gray-600" : "text-gray-500"
-            )}>Grimoire Ledger Reference</h4>
-            <div className="grid grid-cols-2 gap-2 text-xs">
               {players.map((p, index) => {
-                const rObj = (rolesData as Role[]).find(r => r.id === p.roleId);
+                const total = players.length;
+                const angle = (index * (360 / total) - 90) * (Math.PI / 180);
+                
+                const radiusPercent = grimoireConfig.radiusPercent; 
+                const leftPos = 50 + radiusPercent * Math.cos(angle);
+                const topPos = 50 + radiusPercent * Math.sin(angle);
+
+                const roleObj = (rolesData as Role[]).find(r => r.id === p.roleId);
+
                 return (
-                  <div key={p.id} className={cn(
-                    "flex items-center gap-1.5 py-0.5 px-1 rounded border transition-colors",
-                    p.isDead && "opacity-45",
-                    timeOfDay === 'day'
-                      ? "bg-white/40 border-gray-200"
-                      : "bg-gray-950/20 border-gray-900/40"
-                  )}>
-                    <span className={cn("text-[9px] font-mono w-4", timeOfDay === 'day' ? "text-gray-500" : "text-gray-600")}>{index + 1}</span>
-                    <span className={cn(
-                      "font-medium truncate flex-1",
-                      p.isDead && "line-through text-gray-500",
-                      timeOfDay === 'day' && !p.isDead ? "text-clocktower-night" : "text-gray-200"
-                    )}>{p.name}</span>
-                    <span className={cn(
-                      "font-semibold text-[10px]",
-                      rObj?.team === 'townsfolk' && "text-clocktower-townsfolk",
-                      rObj?.team === 'outsider' && "text-clocktower-outsider",
-                      rObj?.team === 'minion' && "text-clocktower-minion",
-                      rObj?.team === 'demon' && "text-clocktower-demon",
-                    )}>{rObj?.name.substring(0, 6)}..</span>
+                  <div 
+                    key={p.id}
+                    style={{
+                      position: 'absolute',
+                      left: `${leftPos}%`,
+                      top: `${topPos}%`,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                    className="z-10 hover:z-50 group"
+                  >
+                    <div className="relative flex flex-col items-center">
+                      <button
+                        onClick={() => togglePlayerDead(p.id)}
+                        className={cn(
+                          "rounded-full border-2 flex flex-col items-center justify-center transition-all shadow-md relative",
+                          grimoireConfig.btnClass,
+                          timeOfDay === 'day'
+                            ? p.isDead
+                              ? "bg-gray-200 border-gray-300 text-gray-400 scale-95 opacity-50"
+                              : "bg-white border-gray-300 text-clocktower-night hover:border-gray-400 hover:bg-gray-50"
+                            : p.isDead
+                              ? "bg-black border-gray-800 text-gray-655 scale-95 opacity-50" 
+                              : "bg-gray-900 border-gray-700 text-clocktower-parchment hover:border-gray-500"
+                        )}
+                      >
+                        <div className={cn(
+                          "absolute top-0.5 w-1.5 h-1.5 rounded-full shadow-xs",
+                          roleObj?.team === 'townsfolk' && "bg-clocktower-townsfolk",
+                          roleObj?.team === 'outsider' && "bg-clocktower-outsider",
+                          roleObj?.team === 'minion' && "bg-clocktower-minion",
+                          roleObj?.team === 'demon' && "bg-clocktower-demon",
+                        )} />
+
+                        <span className={cn(
+                          grimoireConfig.nameClass,
+                          p.isDead && "line-through",
+                          timeOfDay === 'day'
+                            ? p.isDead ? "text-gray-400" : "text-clocktower-night font-bold"
+                            : p.isDead ? "text-gray-700" : "text-clocktower-parchment"
+                        )}>
+                          {p.name.substring(0, grimoireConfig.charLimit)}
+                        </span>
+
+                        <span className={cn(
+                          grimoireConfig.roleClass,
+                          roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk/85",
+                          roleObj?.team === 'outsider' && "text-clocktower-outsider/85",
+                          roleObj?.team === 'minion' && "text-clocktower-minion/85",
+                          roleObj?.team === 'demon' && "text-clocktower-demon/85",
+                          p.isDead && "line-through opacity-50"
+                        )}>
+                          {roleObj?.name.substring(0, grimoireConfig.charLimit)}
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          togglePlayerDrunk(p.id);
+                        }}
+                        className={cn(
+                          "absolute border transition-all z-20 shadow-xs",
+                          grimoireConfig.drunkClass,
+                          p.isDrunk 
+                            ? "bg-yellow-600 border-yellow-755 text-black font-black" 
+                            : timeOfDay === 'day'
+                              ? "bg-gray-100 border-gray-300 text-gray-400 hover:text-gray-600"
+                              : "bg-gray-900/90 border-gray-800 text-gray-600 hover:text-gray-400"
+                        )}
+                      >
+                        DRK
+                      </button>
+
+                      <div className={cn("absolute scale-0 group-hover:scale-100 bg-gray-900/95 border border-gray-800 p-2 rounded text-center shadow-xl transition-all z-50 pointer-events-none min-w-[100px]", grimoireConfig.tooltipClass)}>
+                        <p className="font-bold text-xs text-white">{p.name}</p>
+                        <p className={cn(
+                          "text-[10px] font-medium",
+                          roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk",
+                          roleObj?.team === 'outsider' && "text-clocktower-outsider",
+                          roleObj?.team === 'minion' && "text-clocktower-minion",
+                          roleObj?.team === 'demon' && "text-clocktower-demon",
+                        )}>{roleObj?.name}</p>
+                        <p className="text-[8px] text-gray-500 italic mt-0.5">{p.isDead ? 'Dead' : 'Alive'} {p.isDrunk ? '(Drunk)' : ''}</p>
+                      </div>
+
+                    </div>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          <button
-            onClick={() => setPhase('draft')}
-            className={cn(
-              "w-full py-3 rounded-lg font-bold transition-all text-sm shadow-md",
+          {/* Column 2: Ledger & Controls */}
+          <div className="space-y-6 md:pt-10 landscape:pt-10">
+            <div className={cn(
+              "rounded-lg border p-3 space-y-1.5 max-h-48 md:max-h-[380px] landscape:max-h-[250px] overflow-y-auto transition-colors duration-300",
               timeOfDay === 'day'
-                ? "bg-white hover:bg-gray-50 text-clocktower-night border border-gray-300"
-                : "bg-gray-800 hover:bg-gray-700 text-gray-300"
-            )}
-          >
-            Return to Draft Screen
-          </button>
+                ? "bg-white/50 border-gray-300 text-clocktower-night"
+                : "bg-gray-900/40 border-gray-800/80"
+            )}>
+              <h4 className={cn(
+                "text-[10px] uppercase font-bold tracking-wider",
+                timeOfDay === 'day' ? "text-gray-600" : "text-gray-500"
+              )}>Grimoire Ledger Reference</h4>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {players.map((p, index) => {
+                  const rObj = (rolesData as Role[]).find(r => r.id === p.roleId);
+                  return (
+                    <div key={p.id} className={cn(
+                      "flex items-center gap-1.5 py-0.5 px-1 rounded border transition-colors",
+                      p.isDead && "opacity-45",
+                      timeOfDay === 'day'
+                        ? "bg-white/40 border-gray-200"
+                        : "bg-gray-950/20 border-gray-900/40"
+                    )}>
+                      <span className={cn("text-[9px] font-mono w-4", timeOfDay === 'day' ? "text-gray-500" : "text-gray-600")}>{index + 1}</span>
+                      <span className={cn(
+                        "font-medium truncate flex-1",
+                        p.isDead && "line-through text-gray-500",
+                        timeOfDay === 'day' && !p.isDead ? "text-clocktower-night" : "text-gray-200"
+                      )}>{p.name}</span>
+                      <span className={cn(
+                        "font-semibold text-[10px]",
+                        rObj?.team === 'townsfolk' && "text-clocktower-townsfolk",
+                        rObj?.team === 'outsider' && "text-clocktower-outsider",
+                        rObj?.team === 'minion' && "text-clocktower-minion",
+                        rObj?.team === 'demon' && "text-clocktower-demon",
+                      )}>{rObj?.name.substring(0, 6)}..</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setPhase('draft')}
+              className={cn(
+                "w-full py-3 rounded-lg font-bold transition-all text-sm shadow-md",
+                timeOfDay === 'day'
+                  ? "bg-white hover:bg-gray-50 text-clocktower-night border border-gray-300"
+                  : "bg-gray-800 hover:bg-gray-700 text-gray-300"
+              )}
+            >
+              Return to Draft Screen
+            </button>
+          </div>
         </div>
       )}
 
