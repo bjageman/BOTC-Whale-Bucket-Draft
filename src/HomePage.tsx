@@ -6,8 +6,8 @@ export default function HomePage() {
       <div className="max-w-md w-full space-y-8 text-center">
         {/* Title */}
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold text-clocktower-blood tracking-wide">BotC Toolbox</h1>
-          <p className="text-gray-500 text-sm">Blood on the Clocktower — Storyteller Tools</p>
+          <h1 className="text-4xl font-bold text-clocktower-blood tracking-wide">BotC Grimoire & Draft Companion</h1>
+          <p className="text-gray-500 text-sm">Blood on the Clocktower — Storyteller & Setup Companion</p>
         </div>
 
         {/* Mode Cards */}
