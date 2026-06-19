@@ -103,7 +103,6 @@
   {"id": "fearmonger", "name": "Fearmonger", "team": "minion"},
   {"id": "psychopath", "name": "Psychopath", "team": "minion"},
   {"id": "goblin", "name": "Goblin", "team": "minion"},
-  {"id": "mephit", "name": "Mephit", "team": "minion"},
   {"id": "mezepheles", "name": "Mezepheles", "team": "minion"},
   {"id": "marionette", "name": "Marionette", "team": "minion"},
   {"id": "boomdandy", "name": "Boomdandy", "team": "minion"},

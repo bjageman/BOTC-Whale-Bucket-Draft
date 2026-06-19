@@ -19,7 +19,6 @@ interface Player {
   name: string;
   roleId?: string;
   isDead: boolean;
-  isDrunk: boolean;
 }
 
 type Phase = 'setup' | 'game';
@@ -78,12 +77,12 @@ export default function StandardSetup() {
   };
 
   const addPlayer = () => {
+    if (players.length >= 15) return;
     const name = newPlayerName.trim() || `Player #${players.length + 1}`;
     const newPlayer: Player = {
       id: Math.random().toString(36).substr(2, 9),
       name,
       isDead: false,
-      isDrunk: false,
     };
     setPlayers([...players, newPlayer]);
     setNewPlayerName('');
@@ -110,9 +109,7 @@ export default function StandardSetup() {
     setPlayers(players.map(p => p.id === id ? { ...p, isDead: !p.isDead } : p));
   };
 
-  const togglePlayerDrunk = (id: string) => {
-    setPlayers(players.map(p => p.id === id ? { ...p, isDrunk: !p.isDrunk } : p));
-  };
+
 
   const resetGame = () => {
     if (confirm('Are you sure you want to reset the game? This clears all players and roles.')) {
@@ -267,7 +264,6 @@ export default function StandardSetup() {
         nameClass: "text-xs font-bold font-sans tracking-tighter mt-2 truncate max-w-[70px] text-center leading-tight",
         roleClass: "text-[9.5px] font-semibold truncate max-w-[70px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
         charLimit: 16,
-        drunkClass: "-bottom-2 text-[8px] px-1.5 scale-95",
         tooltipClass: "top-18",
       };
     } else if (count <= 10) {
@@ -278,7 +274,6 @@ export default function StandardSetup() {
         nameClass: "text-[11px] font-bold font-sans tracking-tighter mt-2 truncate max-w-[64px] text-center leading-tight",
         roleClass: "text-[8.5px] font-semibold truncate max-w-[64px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
         charLimit: 14,
-        drunkClass: "-bottom-1.5 text-[7.5px] px-1 scale-90",
         tooltipClass: "top-16",
       };
     } else {
@@ -289,7 +284,6 @@ export default function StandardSetup() {
         nameClass: "text-[10px] font-bold font-sans tracking-tighter mt-1.5 truncate max-w-[58px] text-center leading-tight",
         roleClass: "text-[8px] font-semibold truncate max-w-[58px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
         charLimit: 12,
-        drunkClass: "-bottom-1 text-[7px] px-1 scale-90",
         tooltipClass: "top-14",
       };
     }
@@ -331,10 +325,20 @@ export default function StandardSetup() {
                 value={newPlayerName}
                 onChange={(e) => setNewPlayerName(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
-                placeholder="Enter player name in seating order..."
-                className="flex-1 bg-gray-900 border border-gray-800 rounded px-3 py-2 text-white focus:outline-none focus:border-clocktower-blood text-sm"
+                disabled={players.length >= 15}
+                placeholder={players.length >= 15 ? "Maximum players reached (15)" : "Enter player name in seating order..."}
+                className="flex-1 bg-gray-900 border border-gray-800 rounded px-3 py-2 text-white focus:outline-none focus:border-clocktower-blood text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               />
-              <button onClick={addPlayer} className="bg-clocktower-blood hover:bg-red-800 px-4 py-2 rounded transition-colors text-white">
+              <button 
+                onClick={addPlayer} 
+                disabled={players.length >= 15}
+                className={cn(
+                  "px-4 py-2 rounded transition-colors text-white",
+                  players.length >= 15 
+                    ? "bg-gray-800 text-gray-500 cursor-not-allowed opacity-50 border border-gray-800" 
+                    : "bg-clocktower-blood hover:bg-red-800 border border-clocktower-blood"
+                )}
+              >
                 <Plus size={20} />
               </button>
             </div>
@@ -606,24 +610,6 @@ export default function StandardSetup() {
                         </span>
                       </button>
 
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          togglePlayerDrunk(p.id);
-                        }}
-                        className={cn(
-                          "absolute border transition-all z-20 shadow-xs",
-                          grimoireConfig.drunkClass,
-                          p.isDrunk
-                            ? "bg-yellow-600 border-yellow-755 text-black font-black"
-                            : timeOfDay === 'day'
-                              ? "bg-gray-100 border-gray-300 text-gray-400 hover:text-gray-600"
-                              : "bg-gray-900/90 border-gray-800 text-gray-600 hover:text-gray-400"
-                        )}
-                      >
-                        DRK
-                      </button>
-
                       <div className={cn("absolute scale-0 group-hover:scale-100 bg-gray-900/95 border border-gray-800 p-2 rounded text-center shadow-xl transition-all z-50 pointer-events-none min-w-[100px]", grimoireConfig.tooltipClass)}>
                         <p className="font-bold text-xs text-white">{p.name}</p>
                         <p className={cn(
@@ -633,7 +619,7 @@ export default function StandardSetup() {
                           roleObj?.team === 'minion' && "text-clocktower-minion",
                           roleObj?.team === 'demon' && "text-clocktower-demon",
                         )}>{roleObj?.name}</p>
-                        <p className="text-[8px] text-gray-500 italic mt-0.5">{p.isDead ? 'Dead' : 'Alive'} {p.isDrunk ? '(Drunk)' : ''}</p>
+                        <p className="text-[8px] text-gray-500 italic mt-0.5">{p.isDead ? 'Dead' : 'Alive'}</p>
                       </div>
 
                     </div>

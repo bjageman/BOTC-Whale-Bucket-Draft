@@ -5,6 +5,12 @@
 :root {
   background-color: #1a1a1a;
   color: #f4e4bc;
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+:root.theme-day {
+  background-color: #f4e4bc;
+  color: #1a1a1a;
 }
 
 body {

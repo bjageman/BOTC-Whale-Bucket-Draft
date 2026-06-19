@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import type { CSSProperties } from 'react';
 import { Plus, Trash2, Search, RefreshCcw, AlertTriangle, Sparkles, Shuffle, CheckCircle } from 'lucide-react';
 import rolesData from './roles.json';
 import { clsx, type ClassValue } from 'clsx';
@@ -26,7 +27,8 @@ interface Player {
   roleId?: string;
   assignedFromPref?: boolean;
   isDead: boolean;
-  isDrunk: boolean;
+  isTheDrunk?: boolean;
+  isTheMarionette?: boolean;
 }
 
 type Phase = 'setup' | 'draft' | 'game';
@@ -64,19 +66,20 @@ function assignCharacters(players: Player[], allRoles: Role[]): AssignmentResult
     p.preferences.demon.includes(roleId)
   );
 
-  const modes: ('normal' | 'legion' | 'riot' | 'atheist')[] = ['normal'];
-  if (hasPref('legion')) modes.push('legion');
-  if (hasPref('riot')) modes.push('riot');
-  if (hasPref('atheist')) modes.push('atheist');
-
-  const mode = modes[Math.floor(Math.random() * modes.length)];
-
   const randomChoice = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
   const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
 
   const selectRoleForPlayer = (player: Player, team: Role['team'], usedRoleIds: Set<string>): { role: Role; fromPref: boolean } => {
     const prefs = player.preferences[team] || [];
-    const availablePrefs = prefs.filter(id => !usedRoleIds.has(id));
+    // Exclude special setup roles from normal random assignment
+    const availablePrefs = prefs.filter(id => 
+      !usedRoleIds.has(id) && 
+      id !== 'legion' && 
+      id !== 'riot' && 
+      id !== 'atheist' &&
+      id !== 'drunk' &&
+      id !== 'marionette'
+    );
     
     if (availablePrefs.length > 0) {
       const id = randomChoice(availablePrefs);
@@ -84,33 +87,67 @@ function assignCharacters(players: Player[], allRoles: Role[]): AssignmentResult
       if (role) return { role, fromPref: true };
     }
     
-    const teamRoles = allRoles.filter(r => r.team === team && !usedRoleIds.has(r.id));
+    const teamRoles = allRoles.filter(r => 
+      r.team === team && 
+      !usedRoleIds.has(r.id) &&
+      r.id !== 'legion' &&
+      r.id !== 'riot' &&
+      r.id !== 'atheist' &&
+      r.id !== 'drunk' &&
+      r.id !== 'marionette'
+    );
     if (teamRoles.length > 0) {
       const role = randomChoice(teamRoles);
       return { role, fromPref: false };
     }
     
-    const fallbackRoles = allRoles.filter(r => r.team === team);
+    const fallbackRoles = allRoles.filter(r => 
+      r.team === team &&
+      r.id !== 'legion' &&
+      r.id !== 'riot' &&
+      r.id !== 'atheist' &&
+      r.id !== 'drunk' &&
+      r.id !== 'marionette'
+    );
     return { role: randomChoice(fallbackRoles), fromPref: false };
   };
 
+  // Perform a single initial shuffle to select candidate roles and modes based on the selected demon candidate
+  const initialShuffledPlayers = shuffle(players);
+  const demonCandidate = initialShuffledPlayers[0];
+
+  const modes: ('normal' | 'legion' | 'riot' | 'atheist')[] = ['normal'];
+  
+  // Legion and Riot are only possible if the randomly selected demon candidate preferred them
+  if (demonCandidate.preferences.demon.includes('legion')) {
+    modes.push('legion');
+  }
+  if (demonCandidate.preferences.demon.includes('riot')) {
+    modes.push('riot');
+  }
+  // Atheist remains randomized globally based on Townsfolk preferences
+  if (hasPref('atheist')) {
+    modes.push('atheist');
+  }
+
+  const mode = modes[Math.floor(Math.random() * modes.length)];
+
   if (mode === 'legion') {
     const L = Math.round(N * 0.6);
-    const shuffledPlayers = shuffle(players);
     const usedRoleIds = new Set<string>();
     const assignment: AssignmentResult[] = [];
     
     const legionRole = allRoles.find(r => r.id === 'legion')!;
     for (let i = 0; i < L; i++) {
       assignment.push({
-        player: shuffledPlayers[i],
+        player: initialShuffledPlayers[i],
         role: legionRole,
-        fromPref: shuffledPlayers[i].preferences.demon.includes('legion')
+        fromPref: initialShuffledPlayers[i].preferences.demon.includes('legion')
       });
     }
     
     for (let i = L; i < N; i++) {
-      const p = shuffledPlayers[i];
+      const p = initialShuffledPlayers[i];
       const { role, fromPref } = selectRoleForPlayer(p, 'townsfolk', usedRoleIds);
       usedRoleIds.add(role.id);
       assignment.push({ player: p, role, fromPref });
@@ -121,21 +158,20 @@ function assignCharacters(players: Player[], allRoles: Role[]): AssignmentResult
 
   if (mode === 'riot') {
     const D = 1 + base.minion;
-    const shuffledPlayers = shuffle(players);
     const usedRoleIds = new Set<string>();
     const assignment: AssignmentResult[] = [];
     
     const riotRole = allRoles.find(r => r.id === 'riot')!;
     for (let i = 0; i < D; i++) {
       assignment.push({
-        player: shuffledPlayers[i],
+        player: initialShuffledPlayers[i],
         role: riotRole,
-        fromPref: shuffledPlayers[i].preferences.demon.includes('riot')
+        fromPref: initialShuffledPlayers[i].preferences.demon.includes('riot')
       });
     }
     
     for (let i = D; i < N; i++) {
-      const p = shuffledPlayers[i];
+      const p = initialShuffledPlayers[i];
       const { role, fromPref } = selectRoleForPlayer(p, 'townsfolk', usedRoleIds);
       usedRoleIds.add(role.id);
       assignment.push({ player: p, role, fromPref });
@@ -149,7 +185,6 @@ function assignCharacters(players: Player[], allRoles: Role[]): AssignmentResult
     const O = base.outsider + (includeBalloonist ? 1 : 0);
     const T = N - O;
     
-    const shuffledPlayers = shuffle(players);
     const usedRoleIds = new Set<string>();
     const assignment: AssignmentResult[] = [];
     
@@ -157,14 +192,14 @@ function assignCharacters(players: Player[], allRoles: Role[]): AssignmentResult
     usedRoleIds.add('atheist');
     
     assignment.push({
-      player: shuffledPlayers[0],
+      player: initialShuffledPlayers[0],
       role: atheistRole,
-      fromPref: shuffledPlayers[0].preferences.townsfolk.includes('atheist')
+      fromPref: initialShuffledPlayers[0].preferences.townsfolk.includes('atheist')
     });
     
     let assignedT = 1;
     for (let i = 1; i < N; i++) {
-      const p = shuffledPlayers[i];
+      const p = initialShuffledPlayers[i];
       if (assignedT < T) {
         let roleInfo;
         if (includeBalloonist && !usedRoleIds.has('balloonist') && (assignedT === T - 1 || Math.random() < 0.3)) {
@@ -188,7 +223,7 @@ function assignCharacters(players: Player[], allRoles: Role[]): AssignmentResult
 
   // Normal Mode
   for (let attempt = 0; attempt < 500; attempt++) {
-    const shuffledPlayers = shuffle(players);
+    const shuffledPlayers = attempt === 0 ? initialShuffledPlayers : shuffle(players);
     const usedRoleIds = new Set<string>();
     const assignment: AssignmentResult[] = [];
     
@@ -342,17 +377,21 @@ export default function WhaleBucket() {
   const [newPlayerName, setNewPlayerName] = useState('');
   const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>('night');
   const [dayNumber, setDayNumber] = useState<number>(1);
+  const [allowFallbacks, setAllowFallbacks] = useState<boolean>(true);
 
   // Preference modal states
   const [activePrefModal, setActivePrefModal] = useState<{ playerId: string; team: Role['team'] } | null>(null);
   const [prefSearchTerm, setPrefSearchTerm] = useState('');
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [isSearchingRole, setIsSearchingRole] = useState(false);
+  const [modalRoleSearch, setModalRoleSearch] = useState('');
 
   // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('whale-bucket-game');
     if (saved) {
       try {
-        const { players: p, phase: ph, timeOfDay: tod, dayNumber: dn } = JSON.parse(saved);
+        const { players: p, phase: ph, timeOfDay: tod, dayNumber: dn, allowFallbacks: af } = JSON.parse(saved);
         const validatedPlayers = (p || []).map((player: any) => ({
           ...player,
           preferences: player.preferences || { townsfolk: [], outsider: [], minion: [], demon: [] }
@@ -361,16 +400,27 @@ export default function WhaleBucket() {
         setPhase(ph || 'setup');
         setTimeOfDay(tod || 'night');
         setDayNumber(dn || 1);
+        setAllowFallbacks(af !== undefined ? af : true);
       } catch (e) {
         console.error(e);
       }
     }
   }, []);
 
-  // Save to localStorage
+  // Save to localStorage and update document theme
   useEffect(() => {
-    localStorage.setItem('whale-bucket-game', JSON.stringify({ players, phase, timeOfDay, dayNumber }));
-  }, [players, phase, timeOfDay, dayNumber]);
+    localStorage.setItem('whale-bucket-game', JSON.stringify({ players, phase, timeOfDay, dayNumber, allowFallbacks }));
+    
+    if (phase === 'game' && timeOfDay === 'day') {
+      document.documentElement.classList.add('theme-day');
+    } else {
+      document.documentElement.classList.remove('theme-day');
+    }
+    
+    return () => {
+      document.documentElement.classList.remove('theme-day');
+    };
+  }, [players, phase, timeOfDay, dayNumber, allowFallbacks]);
 
   const toggleTimeOfDay = () => {
     if (timeOfDay === 'night') {
@@ -382,6 +432,7 @@ export default function WhaleBucket() {
   };
 
   const addPlayer = () => {
+    if (players.length >= 15) return;
     const name = newPlayerName.trim() || `Player #${players.length + 1}`;
     const newPlayer: Player = {
       id: Math.random().toString(36).substr(2, 9),
@@ -393,7 +444,8 @@ export default function WhaleBucket() {
         demon: []
       },
       isDead: false,
-      isDrunk: false,
+      isTheDrunk: false,
+      isTheMarionette: false,
     };
     setPlayers([...players, newPlayer]);
     setNewPlayerName('');
@@ -493,9 +545,10 @@ export default function WhaleBucket() {
       const assigned = result.find(r => r.player.id === p.id);
       return {
         ...p,
-        roleId: assigned?.role.id,
+        roleId: (allowFallbacks || assigned?.fromPref) ? assigned?.role.id : undefined,
         assignedFromPref: assigned?.fromPref || false,
-        isDrunk: false,
+        isTheDrunk: false,
+        isTheMarionette: false,
       };
     });
     setPlayers(updatedPlayers);
@@ -521,8 +574,40 @@ export default function WhaleBucket() {
     setPlayers(players.map(p => p.id === id ? { ...p, isDead: !p.isDead } : p));
   };
 
-  const togglePlayerDrunk = (id: string) => {
-    setPlayers(players.map(p => p.id === id ? { ...p, isDrunk: !p.isDrunk } : p));
+
+
+  const togglePlayerTheDrunk = (id: string) => {
+    setPlayers(players.map(p => {
+      if (p.id === id) {
+        const nextVal = !p.isTheDrunk;
+        return {
+          ...p,
+          isTheDrunk: nextVal,
+          isTheMarionette: nextVal ? false : p.isTheMarionette
+        };
+      }
+      return p;
+    }));
+  };
+
+  const togglePlayerTheMarionette = (id: string) => {
+    setPlayers(players.map(p => {
+      if (p.id === id) {
+        const nextVal = !p.isTheMarionette;
+        return {
+          ...p,
+          isTheMarionette: nextVal,
+          isTheDrunk: nextVal ? false : p.isTheDrunk
+        };
+      }
+      return p;
+    }));
+  };
+
+  const closeDetailsModal = () => {
+    setSelectedPlayerId(null);
+    setIsSearchingRole(false);
+    setModalRoleSearch('');
   };
 
   const resetGame = () => {
@@ -545,13 +630,23 @@ export default function WhaleBucket() {
     
     const counts = players.reduce((acc, p) => {
       if (p.roleId) {
-        const role = (rolesData as Role[]).find(r => r.id === p.roleId);
-        if (role) acc[role.team]++;
+        if (p.isTheMarionette) {
+          acc.minion++;
+        } else if (p.isTheDrunk) {
+          acc.outsider++;
+        } else {
+          const role = (rolesData as Role[]).find(r => r.id === p.roleId);
+          if (role) acc[role.team]++;
+        }
       }
       return acc;
     }, { townsfolk: 0, outsider: 0, minion: 0, demon: 0 });
     
-    const assignedRoles = players.map(p => (rolesData as Role[]).find(r => r.id === p.roleId)).filter(Boolean) as Role[];
+    const assignedRoles = players.map(p => {
+      if (p.isTheMarionette) return (rolesData as Role[]).find(r => r.id === 'marionette');
+      if (p.isTheDrunk) return (rolesData as Role[]).find(r => r.id === 'drunk');
+      return (rolesData as Role[]).find(r => r.id === p.roleId);
+    }).filter(Boolean) as Role[];
     const hasLegion = assignedRoles.some(r => r.id === 'legion');
     const hasRiot = assignedRoles.some(r => r.id === 'riot');
     const hasAtheist = assignedRoles.some(r => r.id === 'atheist');
@@ -680,36 +775,45 @@ export default function WhaleBucket() {
     const count = players.length;
     if (count <= 6) {
       return {
-        boardClass: "max-w-[350px] rounded-[32px]",
-        radiusPercent: 34,
-        btnClass: "w-20 h-20",
-        nameClass: "text-xs font-bold font-sans tracking-tighter mt-2 truncate max-w-[70px] text-center leading-tight",
-        roleClass: "text-[9.5px] font-semibold truncate max-w-[70px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
+        boardClass: "w-[76vmin] h-[76vmin] max-w-[340px] max-h-[340px] rounded-[32px]",
+        radiusPercent: 33,
+        btnStyle: { width: '22cqw', height: '22cqw' } as CSSProperties,
+        dotStyle: { top: '7%', width: '1.8cqw', height: '1.8cqw' } as CSSProperties,
+        nameStyle: { fontSize: '3.3cqw', maxWidth: '19cqw', marginTop: '1.3cqw' } as CSSProperties,
+        roleStyle: { fontSize: '2.5cqw', maxWidth: '19cqw', marginTop: '0.1cqw' } as CSSProperties,
         charLimit: 16,
-        drunkClass: "-bottom-2 text-[8px] px-1.5 scale-95",
         tooltipClass: "top-18",
+        centerBtnStyle: { width: '24cqw', height: '24cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '3cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '2.4cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     } else if (count <= 10) {
       return {
-        boardClass: "max-w-[400px] rounded-[38px]",
-        radiusPercent: 36,
-        btnClass: "w-[72px] h-[72px]",
-        nameClass: "text-[11px] font-bold font-sans tracking-tighter mt-2 truncate max-w-[64px] text-center leading-tight",
-        roleClass: "text-[8.5px] font-semibold truncate max-w-[64px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
+        boardClass: "w-[78vmin] h-[78vmin] max-w-[390px] max-h-[390px] rounded-[38px]",
+        radiusPercent: 35,
+        btnStyle: { width: '18cqw', height: '18cqw' } as CSSProperties,
+        dotStyle: { top: '7%', width: '1.5cqw', height: '1.5cqw' } as CSSProperties,
+        nameStyle: { fontSize: '2.8cqw', maxWidth: '16cqw', marginTop: '1.1cqw' } as CSSProperties,
+        roleStyle: { fontSize: '2.1cqw', maxWidth: '16cqw', marginTop: '0.1cqw' } as CSSProperties,
         charLimit: 14,
-        drunkClass: "-bottom-1.5 text-[7.5px] px-1 scale-90",
         tooltipClass: "top-16",
+        centerBtnStyle: { width: '20cqw', height: '20cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '2.5cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '2.0cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     } else {
       return {
-        boardClass: "max-w-[450px] rounded-[48px]",
-        radiusPercent: 38,
-        btnClass: "w-16 h-16",
-        nameClass: "text-[10px] font-bold font-sans tracking-tighter mt-1.5 truncate max-w-[58px] text-center leading-tight",
-        roleClass: "text-[8px] font-semibold truncate max-w-[58px] leading-none text-gray-400 mt-0.5 px-0.5 text-center",
+        boardClass: "w-[80vmin] h-[80vmin] max-w-[440px] max-h-[440px] rounded-[48px]",
+        radiusPercent: 37,
+        btnStyle: { width: '14.5cqw', height: '14.5cqw' } as CSSProperties,
+        dotStyle: { top: '7%', width: '1.2cqw', height: '1.2cqw' } as CSSProperties,
+        nameStyle: { fontSize: '2.3cqw', maxWidth: '13cqw', marginTop: '0.9cqw' } as CSSProperties,
+        roleStyle: { fontSize: '1.8cqw', maxWidth: '13cqw', marginTop: '0.1cqw' } as CSSProperties,
         charLimit: 12,
-        drunkClass: "-bottom-1 text-[7px] px-1 scale-90",
         tooltipClass: "top-14",
+        centerBtnStyle: { width: '17cqw', height: '17cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '2.1cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '1.7cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     }
   }, [players.length]);
@@ -721,8 +825,8 @@ export default function WhaleBucket() {
         ? "max-w-xl md:max-w-4xl landscape:max-w-4xl" 
         : "max-w-xl",
       phase === 'game' && timeOfDay === 'day'
-        ? "bg-clocktower-parchment text-clocktower-night"
-        : "bg-clocktower-night text-clocktower-parchment"
+        ? "text-clocktower-night"
+        : "text-clocktower-parchment"
     )}>
       <header className={cn(
         "flex justify-between items-center mb-6 border-b pb-2",
@@ -766,12 +870,45 @@ export default function WhaleBucket() {
                 value={newPlayerName}
                 onChange={(e) => setNewPlayerName(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
-                placeholder="Enter player name in seating order..."
-                className="flex-1 bg-gray-900 border border-gray-800 rounded px-3 py-2 text-white focus:outline-none focus:border-clocktower-blood text-sm"
+                disabled={players.length >= 15}
+                placeholder={players.length >= 15 ? "Maximum players reached (15)" : "Enter player name in seating order..."}
+                className="flex-1 bg-gray-900 border border-gray-800 rounded px-3 py-2 text-white focus:outline-none focus:border-clocktower-blood text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               />
-              <button onClick={addPlayer} className="bg-clocktower-blood hover:bg-red-800 px-4 py-2 rounded transition-colors text-white">
+              <button 
+                onClick={addPlayer} 
+                disabled={players.length >= 15}
+                className={cn(
+                  "px-4 py-2 rounded transition-colors text-white",
+                  players.length >= 15 
+                    ? "bg-gray-800 text-gray-500 cursor-not-allowed opacity-50 border border-gray-800" 
+                    : "bg-clocktower-blood hover:bg-red-800 border border-clocktower-blood"
+                )}
+              >
                 <Plus size={20} />
               </button>
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-center justify-between bg-gray-900/60 p-3 rounded-lg border border-gray-800/80">
+                <div className="space-y-0.5">
+                  <span className="text-sm font-semibold text-gray-250">Allow Fallback Roles</span>
+                  <p className="text-[11px] text-gray-500">Unassigned players without preferred roles start blank for manual drafting.</p>
+                </div>
+                <button
+                  onClick={() => setAllowFallbacks(!allowFallbacks)}
+                  className={cn(
+                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-clocktower-blood focus:ring-offset-2 focus:ring-offset-gray-900",
+                    allowFallbacks ? "bg-clocktower-blood" : "bg-gray-800"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                      allowFallbacks ? "translate-x-5" : "translate-x-0"
+                    )}
+                  />
+                </button>
+              </div>
             </div>
             
             <div className="space-y-3">
@@ -887,6 +1024,8 @@ export default function WhaleBucket() {
             )}
           </section>
 
+
+
           <button
             disabled={players.length < 5}
             onClick={runAssignment}
@@ -895,9 +1034,7 @@ export default function WhaleBucket() {
             <Sparkles size={16} /> Randomly Assign Characters
           </button>
         </div>
-      )}
-
-      {phase === 'draft' && (
+      )}      {phase === 'draft' && (
         <div className="space-y-5">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-300">2. Character Draft Assignment</h2>
@@ -917,6 +1054,16 @@ export default function WhaleBucket() {
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-gray-200">{p.name}</span>
                     <div className="flex items-center gap-2">
+                      {p.isTheDrunk && (
+                        <span className="text-[8px] font-black text-black bg-yellow-600 border border-yellow-750 px-1 py-0.5 rounded uppercase">
+                          THE DRUNK
+                        </span>
+                      )}
+                      {p.isTheMarionette && (
+                        <span className="text-[8px] font-black text-white bg-clocktower-minion border border-clocktower-minion/30 px-1 py-0.5 rounded uppercase">
+                          THE MARIONETTE
+                        </span>
+                      )}
                       {p.assignedFromPref ? (
                         <span className="text-[8px] font-black text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1 rounded flex items-center gap-0.5">
                           ★ PREF
@@ -948,19 +1095,49 @@ export default function WhaleBucket() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between bg-gray-955/40 px-3 py-2 rounded border border-gray-850">
-                      <span className={cn(
-                        "font-semibold text-sm",
-                        roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk",
-                        roleObj?.team === 'outsider' && "text-clocktower-outsider",
-                        roleObj?.team === 'minion' && "text-clocktower-minion",
-                        roleObj?.team === 'demon' && "text-clocktower-demon",
-                      )}>
-                        {roleObj?.name}
-                      </span>
-                      <button onClick={() => updatePlayerRole(p.id, '')} className="text-gray-500 hover:text-gray-300 text-xs underline font-medium">
-                        Change
-                      </button>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between bg-gray-955/40 px-3 py-2 rounded border border-gray-850">
+                        <span className={cn(
+                          "font-semibold text-sm",
+                          roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk",
+                          roleObj?.team === 'outsider' && "text-clocktower-outsider",
+                          roleObj?.team === 'minion' && "text-clocktower-minion",
+                          roleObj?.team === 'demon' && "text-clocktower-demon",
+                        )}>
+                          {roleObj?.name}
+                        </span>
+                        <button onClick={() => setActiveDraftPlayerId(p.id)} className="text-gray-500 hover:text-gray-300 text-xs underline font-medium">
+                          Change
+                        </button>
+                      </div>
+
+                      {/* Secret Role Draft Toggles */}
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          type="button"
+                          onClick={() => togglePlayerTheDrunk(p.id)}
+                          className={cn(
+                            "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1",
+                            p.isTheDrunk
+                              ? "bg-yellow-600 border-yellow-755 text-black font-black"
+                              : "bg-gray-950 border-gray-855 text-gray-500 hover:text-gray-400"
+                          )}
+                        >
+                          🍺 The Drunk
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => togglePlayerTheMarionette(p.id)}
+                          className={cn(
+                            "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1",
+                            p.isTheMarionette
+                              ? "bg-clocktower-minion border-clocktower-minion/40 text-white font-black"
+                              : "bg-gray-950 border-gray-855 text-gray-500 hover:text-gray-400"
+                          )}
+                        >
+                          🎭 The Marionette
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1069,22 +1246,33 @@ export default function WhaleBucket() {
                 ? "bg-white/50 border-gray-300 shadow-gray-200/50"
                 : "bg-gray-950/40 border-gray-900/60 shadow-black/45",
               grimoireConfig.boardClass
-            )}>
+            )}
+            style={{ containerType: 'size' }}
+            >
               <button
                 onClick={toggleTimeOfDay}
+                style={grimoireConfig.centerBtnStyle}
                 className={cn(
-                  "absolute w-20 h-20 rounded-full border flex flex-col items-center justify-center transition-all cursor-pointer z-20 select-none shadow-md",
+                  "absolute rounded-full border flex flex-col items-center justify-center transition-all cursor-pointer z-20 select-none shadow-md",
                   timeOfDay === 'day'
                     ? "bg-yellow-50 border-yellow-300 text-yellow-800 hover:bg-yellow-100/70"
                     : "bg-clocktower-night/50 border-clocktower-blood/20 text-clocktower-parchment hover:bg-clocktower-blood/10"
                 )}
                 title="Click to toggle Day/Night"
               >
-                <span className={cn(
-                  "text-[10px] font-serif tracking-widest font-bold transition-colors",
-                  timeOfDay === 'day' ? "text-yellow-600" : "text-clocktower-blood/60"
-                )}>BOTC</span>
-                <span className="text-[9px] font-bold font-mono mt-0.5 uppercase tracking-wide">
+                <span 
+                  style={grimoireConfig.centerText1Style}
+                  className={cn(
+                    "font-serif tracking-widest font-bold transition-colors",
+                    timeOfDay === 'day' ? "text-yellow-600" : "text-clocktower-blood/60"
+                  )}
+                >
+                  BOTC
+                </span>
+                <span 
+                  style={grimoireConfig.centerText2Style}
+                  className="font-bold font-mono uppercase tracking-wide"
+                >
                   {timeOfDay} {dayNumber}
                 </span>
               </button>
@@ -1112,10 +1300,10 @@ export default function WhaleBucket() {
                   >
                     <div className="relative flex flex-col items-center">
                       <button
-                        onClick={() => togglePlayerDead(p.id)}
+                        onClick={() => setSelectedPlayerId(p.id)}
+                        style={grimoireConfig.btnStyle}
                         className={cn(
                           "rounded-full border-2 flex flex-col items-center justify-center transition-all shadow-md relative",
-                          grimoireConfig.btnClass,
                           timeOfDay === 'day'
                             ? p.isDead
                               ? "bg-gray-200 border-gray-300 text-gray-400 scale-95 opacity-50"
@@ -1125,52 +1313,53 @@ export default function WhaleBucket() {
                               : "bg-gray-900 border-gray-700 text-clocktower-parchment hover:border-gray-500"
                         )}
                       >
-                        <div className={cn(
-                          "absolute top-0.5 w-1.5 h-1.5 rounded-full shadow-xs",
-                          roleObj?.team === 'townsfolk' && "bg-clocktower-townsfolk",
-                          roleObj?.team === 'outsider' && "bg-clocktower-outsider",
-                          roleObj?.team === 'minion' && "bg-clocktower-minion",
-                          roleObj?.team === 'demon' && "bg-clocktower-demon",
-                        )} />
+                        <div 
+                          style={grimoireConfig.dotStyle}
+                          className={cn(
+                            "absolute rounded-full shadow-xs",
+                            roleObj?.team === 'townsfolk' && "bg-clocktower-townsfolk",
+                            roleObj?.team === 'outsider' && "bg-clocktower-outsider",
+                            roleObj?.team === 'minion' && "bg-clocktower-minion",
+                            roleObj?.team === 'demon' && "bg-clocktower-demon",
+                          )} 
+                        />
 
-                        <span className={cn(
-                          grimoireConfig.nameClass,
-                          p.isDead && "line-through",
-                          timeOfDay === 'day'
-                            ? p.isDead ? "text-gray-400" : "text-clocktower-night font-bold"
-                            : p.isDead ? "text-gray-700" : "text-clocktower-parchment"
-                        )}>
+                        <span 
+                          style={grimoireConfig.nameStyle}
+                          className={cn(
+                            "font-bold font-sans tracking-tighter truncate text-center leading-tight",
+                            p.isDead && "line-through",
+                            timeOfDay === 'day'
+                              ? p.isDead ? "text-gray-400" : "text-clocktower-night font-bold"
+                              : p.isDead ? "text-gray-700" : "text-clocktower-parchment"
+                          )}
+                        >
                           {p.name.substring(0, grimoireConfig.charLimit)}
                         </span>
 
-                        <span className={cn(
-                          grimoireConfig.roleClass,
-                          roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk/85",
-                          roleObj?.team === 'outsider' && "text-clocktower-outsider/85",
-                          roleObj?.team === 'minion' && "text-clocktower-minion/85",
-                          roleObj?.team === 'demon' && "text-clocktower-demon/85",
-                          p.isDead && "line-through opacity-50"
-                        )}>
+                        <span 
+                          style={grimoireConfig.roleStyle}
+                          className={cn(
+                            "font-semibold truncate leading-none text-gray-400 px-0.5 text-center",
+                            roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk/85",
+                            roleObj?.team === 'outsider' && "text-clocktower-outsider/85",
+                            roleObj?.team === 'minion' && "text-clocktower-minion/85",
+                            roleObj?.team === 'demon' && "text-clocktower-demon/85",
+                            p.isDead && "line-through opacity-50"
+                          )}
+                        >
                           {roleObj?.name.substring(0, grimoireConfig.charLimit)}
                         </span>
-                      </button>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          togglePlayerDrunk(p.id);
-                        }}
-                        className={cn(
-                          "absolute border transition-all z-20 shadow-xs",
-                          grimoireConfig.drunkClass,
-                          p.isDrunk 
-                            ? "bg-yellow-600 border-yellow-755 text-black font-black" 
-                            : timeOfDay === 'day'
-                              ? "bg-gray-100 border-gray-300 text-gray-400 hover:text-gray-600"
-                              : "bg-gray-900/90 border-gray-800 text-gray-600 hover:text-gray-400"
+                        {p.isTheDrunk && (
+                          <span className="absolute bottom-0 bg-yellow-600 text-black text-[7px] font-black px-1 rounded-sm border border-yellow-700 shadow-sm leading-tight translate-y-1/2 z-20">
+                            THE DRUNK
+                          </span>
                         )}
-                      >
-                        DRK
+                        {p.isTheMarionette && (
+                          <span className="absolute bottom-0 bg-clocktower-minion text-white text-[7px] font-black px-1 rounded-sm border border-clocktower-minion/40 shadow-sm leading-tight translate-y-1/2 z-20">
+                            THE MARIONETTE
+                          </span>
+                        )}
                       </button>
 
                       <div className={cn("absolute scale-0 group-hover:scale-100 bg-gray-900/95 border border-gray-800 p-2 rounded text-center shadow-xl transition-all z-50 pointer-events-none min-w-[100px]", grimoireConfig.tooltipClass)}>
@@ -1182,7 +1371,9 @@ export default function WhaleBucket() {
                           roleObj?.team === 'minion' && "text-clocktower-minion",
                           roleObj?.team === 'demon' && "text-clocktower-demon",
                         )}>{roleObj?.name}</p>
-                        <p className="text-[8px] text-gray-500 italic mt-0.5">{p.isDead ? 'Dead' : 'Alive'} {p.isDrunk ? '(Drunk)' : ''}</p>
+                        <p className="text-[8px] text-gray-500 italic mt-0.5">
+                          {p.isDead ? 'Dead' : 'Alive'} {p.isTheDrunk ? '(The Drunk)' : ''} {p.isTheMarionette ? '(The Marionette)' : ''}
+                        </p>
                       </div>
 
                     </div>
@@ -1222,12 +1413,16 @@ export default function WhaleBucket() {
                         timeOfDay === 'day' && !p.isDead ? "text-clocktower-night" : "text-gray-200"
                       )}>{p.name}</span>
                       <span className={cn(
-                        "font-semibold text-[10px]",
+                        "font-semibold text-[10px] flex items-center gap-1",
                         rObj?.team === 'townsfolk' && "text-clocktower-townsfolk",
                         rObj?.team === 'outsider' && "text-clocktower-outsider",
                         rObj?.team === 'minion' && "text-clocktower-minion",
                         rObj?.team === 'demon' && "text-clocktower-demon",
-                      )}>{rObj?.name.substring(0, 6)}..</span>
+                      )}>
+                        {rObj?.name.substring(0, 6)}..
+                        {p.isTheDrunk && <span className="text-[8px] bg-yellow-600 text-black px-0.5 rounded leading-none">DK</span>}
+                        {p.isTheMarionette && <span className="text-[8px] bg-clocktower-minion text-white px-0.5 rounded leading-none">MN</span>}
+                      </span>
                     </div>
                   );
                 })}
@@ -1361,60 +1556,346 @@ export default function WhaleBucket() {
       )}
 
       {/* ----------------- Manual Override / Search Select Modal ----------------- */}
-      {activeDraftPlayerId && (
-        <div className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[80vh] flex flex-col shadow-2xl">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold text-sm text-gray-300">
-                Change Role for {players.find(p => p.id === activeDraftPlayerId)?.name}
-              </h3>
-              <button onClick={() => { setActiveDraftPlayerId(null); setSearchTerm(''); }} className="text-xs text-gray-500 underline">
-                Close
-              </button>
-            </div>
-            
-            <div className="flex items-center bg-gray-950 border border-gray-855 rounded px-3 py-2 text-sm">
-              <Search size={14} className="text-gray-500 mr-2" />
-              <input
-                type="text"
-                autoFocus
-                placeholder="Search character name..."
-                className="bg-transparent flex-1 outline-none text-xs text-white"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            <div className="overflow-y-auto flex-1 border border-gray-800 rounded bg-gray-950/40 divide-y divide-gray-800/60 pr-1">
-              {filteredRoles.map(role => (
-                <button
-                  key={role.id}
-                  onClick={() => {
-                    updatePlayerRole(activeDraftPlayerId, role.id);
-                    setActiveDraftPlayerId(null);
-                    setSearchTerm('');
-                  }}
-                  className="w-full text-left px-3 py-2.5 hover:bg-gray-800 text-xs transition-colors flex justify-between items-center"
-                >
-                  <span className={cn(
-                    "font-semibold text-xs",
-                    role.team === 'townsfolk' && "text-clocktower-townsfolk",
-                    role.team === 'outsider' && "text-clocktower-outsider",
-                    role.team === 'minion' && "text-clocktower-minion",
-                    role.team === 'demon' && "text-clocktower-demon",
-                  )}>
-                    {role.name}
-                  </span>
-                  <span className="text-[10px] uppercase font-mono text-gray-650">{role.team[0]}</span>
+      {activeDraftPlayerId && (() => {
+        const draftPlayer = players.find(p => p.id === activeDraftPlayerId);
+        const preferredIds = draftPlayer ? [
+          ...(draftPlayer.preferences.townsfolk || []),
+          ...(draftPlayer.preferences.outsider || []),
+          ...(draftPlayer.preferences.minion || []),
+          ...(draftPlayer.preferences.demon || []),
+        ] : [];
+        const preferredRoles = filteredRoles.filter(r => preferredIds.includes(r.id));
+        const otherRoles = filteredRoles.filter(r => !preferredIds.includes(r.id));
+
+        return (
+          <div className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4 backdrop-blur-xs">
+            <div className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[80vh] flex flex-col shadow-2xl">
+              <div className="flex justify-between items-center">
+                <h3 className="font-bold text-sm text-gray-300">
+                  Change Role for {draftPlayer?.name}
+                </h3>
+                <button onClick={() => { setActiveDraftPlayerId(null); setSearchTerm(''); }} className="text-xs text-gray-500 underline">
+                  Close
                 </button>
-              ))}
-              {filteredRoles.length === 0 && (
-                <div className="p-3 text-xs text-gray-500 italic text-center">No matching roles found.</div>
-              )}
+              </div>
+              
+              <div className="flex items-center bg-gray-955 border border-gray-855 rounded px-3 py-2 text-sm">
+                <Search size={14} className="text-gray-500 mr-2" />
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="Search character name..."
+                  className="bg-transparent flex-1 outline-none text-xs text-white"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              
+              <div className="overflow-y-auto flex-1 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
+                {preferredRoles.map(role => (
+                  <button
+                    key={role.id}
+                    onClick={() => {
+                      updatePlayerRole(activeDraftPlayerId, role.id);
+                      setActiveDraftPlayerId(null);
+                      setSearchTerm('');
+                    }}
+                    className="w-full text-left px-3 py-2.5 bg-amber-500/5 hover:bg-amber-500/10 text-xs transition-colors flex justify-between items-center"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className={cn(
+                        "font-semibold text-xs",
+                        role.team === 'townsfolk' && "text-clocktower-townsfolk",
+                        role.team === 'outsider' && "text-clocktower-outsider",
+                        role.team === 'minion' && "text-clocktower-minion",
+                        role.team === 'demon' && "text-clocktower-demon",
+                      )}>
+                        {role.name}
+                      </span>
+                      <span className="text-[8px] bg-amber-500/25 text-amber-400 px-1 rounded-sm uppercase font-extrabold tracking-wider leading-none">
+                        ★ Pick
+                      </span>
+                    </div>
+                    <span className="text-[10px] uppercase font-mono text-gray-650">{role.team[0]}</span>
+                  </button>
+                ))}
+
+                {otherRoles.map(role => (
+                  <button
+                    key={role.id}
+                    onClick={() => {
+                      updatePlayerRole(activeDraftPlayerId, role.id);
+                      setActiveDraftPlayerId(null);
+                      setSearchTerm('');
+                    }}
+                    className="w-full text-left px-3 py-2.5 hover:bg-gray-800 text-xs transition-colors flex justify-between items-center"
+                  >
+                    <span className={cn(
+                      "font-semibold text-xs",
+                      role.team === 'townsfolk' && "text-clocktower-townsfolk",
+                      role.team === 'outsider' && "text-clocktower-outsider",
+                      role.team === 'minion' && "text-clocktower-minion",
+                      role.team === 'demon' && "text-clocktower-demon",
+                    )}>
+                      {role.name}
+                    </span>
+                    <span className="text-[10px] uppercase font-mono text-gray-650">{role.team[0]}</span>
+                  </button>
+                ))}
+
+                {filteredRoles.length === 0 && (
+                  <div className="p-3 text-xs text-gray-500 italic text-center">No matching roles found.</div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
+
+      {/* ----------------- Player Detail Modal ----------------- */}
+      {selectedPlayerId && (() => {
+        const p = players.find(x => x.id === selectedPlayerId);
+        if (!p) return null;
+        const roleObj = (rolesData as Role[]).find(r => r.id === p.roleId);
+        const filteredModalRoles = (rolesData as Role[]).filter(r =>
+          r.name.toLowerCase().includes(modalRoleSearch.toLowerCase())
+        );
+
+        return (
+          <div 
+            onClick={closeDetailsModal}
+            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className={cn(
+                "border w-full max-w-sm rounded-lg p-5 space-y-4 shadow-2xl transition-colors duration-300",
+                timeOfDay === 'day' 
+                  ? "bg-clocktower-parchment border-clocktower-blood/20 text-clocktower-night" 
+                  : "bg-gray-900 border-gray-800 text-clocktower-parchment"
+              )}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className={cn("font-bold text-xl", timeOfDay === 'day' ? "text-clocktower-night" : "text-white")}>
+                    Player Details
+                  </h3>
+                  <p className={cn("text-xs", timeOfDay === 'day' ? "text-gray-600" : "text-gray-400")}>
+                    Grimoire status and role info
+                  </p>
+                </div>
+                <button 
+                  type="button"
+                  onClick={closeDetailsModal} 
+                  className={cn(
+                    "text-sm font-semibold hover:underline",
+                    timeOfDay === 'day' ? "text-clocktower-blood" : "text-clocktower-townsfolk"
+                  )}
+                >
+                  Close
+                </button>
+              </div>
+
+              {/* Player Info Card */}
+              <div className={cn(
+                "p-4 rounded-lg border space-y-3",
+                timeOfDay === 'day' 
+                  ? "bg-white/60 border-gray-300" 
+                  : "bg-gray-950/40 border-gray-800"
+              )}>
+                <div>
+                  <label className="text-[10px] uppercase font-bold tracking-wider opacity-60 block mb-1">Player Name</label>
+                  <input
+                    type="text"
+                    value={p.name}
+                    onChange={(e) => updatePlayerName(p.id, e.target.value)}
+                    className={cn(
+                      "w-full font-semibold text-base px-2 py-1 rounded border focus:outline-none focus:border-clocktower-blood bg-transparent transition-colors",
+                      timeOfDay === 'day'
+                        ? "border-gray-300 text-clocktower-night focus:bg-white"
+                        : "border-gray-800 text-gray-200 focus:bg-gray-950"
+                    )}
+                  />
+                </div>
+
+                <div className="border-t pt-2.5 opacity-80" />
+
+                <div>
+                  <label className="text-[10px] uppercase font-bold tracking-wider opacity-60 block mb-1">Assigned Character</label>
+                  {isSearchingRole ? (
+                    <div className="space-y-2 pt-1 animate-fadeIn">
+                      <div className="flex items-center bg-gray-950 border border-gray-800 rounded px-2.5 py-1 text-sm">
+                        <Search size={12} className="text-gray-500 mr-2" />
+                        <input
+                          type="text"
+                          placeholder="Search character name..."
+                          className="bg-transparent flex-1 outline-none text-white text-xs placeholder-gray-600"
+                          value={modalRoleSearch}
+                          onChange={(e) => setModalRoleSearch(e.target.value)}
+                          autoFocus
+                        />
+                      </div>
+                      
+                      <div className="overflow-y-auto max-h-40 border border-gray-800 rounded bg-gray-950/40 divide-y divide-gray-800/60 pr-1">
+                        {p.roleId && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              updatePlayerRole(p.id, '');
+                              setIsSearchingRole(false);
+                              setModalRoleSearch('');
+                            }}
+                            className="w-full text-left px-2 py-1.5 hover:bg-red-950/20 text-xs text-red-400 font-semibold border-b border-gray-800/65"
+                          >
+                            × Clear Character
+                          </button>
+                        )}
+                        {filteredModalRoles.map(role => (
+                          <button
+                            key={role.id}
+                            type="button"
+                            onClick={() => {
+                              updatePlayerRole(p.id, role.id);
+                              setIsSearchingRole(false);
+                              setModalRoleSearch('');
+                            }}
+                            className="w-full text-left px-2 py-1.5 hover:bg-gray-800 text-xs transition-colors flex justify-between items-center"
+                          >
+                            <span className={cn(
+                              "font-semibold text-xs",
+                              role.team === 'townsfolk' && "text-clocktower-townsfolk",
+                              role.team === 'outsider' && "text-clocktower-outsider",
+                              role.team === 'minion' && "text-clocktower-minion",
+                              role.team === 'demon' && "text-clocktower-demon",
+                            )}>
+                              {role.name}
+                            </span>
+                            <span className="text-[9px] uppercase font-mono text-gray-500">{role.team[0]}</span>
+                          </button>
+                        ))}
+                        {filteredModalRoles.length === 0 && (
+                          <div className="p-2 text-xs text-gray-550 italic text-center">No matching roles found.</div>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsSearchingRole(false);
+                          setModalRoleSearch('');
+                        }}
+                        className={cn(
+                          "text-xs font-semibold hover:underline mt-1",
+                          timeOfDay === 'day' ? "text-clocktower-blood" : "text-clocktower-townsfolk"
+                        )}
+                      >
+                        ← Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    roleObj ? (
+                      <div className="flex items-center justify-between gap-2 mt-1">
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded border",
+                            roleObj.team === 'townsfolk' && "text-clocktower-townsfolk border-clocktower-townsfolk/40 bg-clocktower-townsfolk/5",
+                            roleObj.team === 'outsider' && "text-clocktower-outsider border-clocktower-outsider/40 bg-clocktower-outsider/5",
+                            roleObj.team === 'minion' && "text-clocktower-minion border-clocktower-minion/40 bg-clocktower-minion/5",
+                            roleObj.team === 'demon' && "text-clocktower-demon border-clocktower-demon/40 bg-clocktower-demon/5",
+                          )}>
+                            {roleObj.team}
+                          </span>
+                          <span className={cn(
+                            "font-bold text-base",
+                            roleObj.team === 'townsfolk' && "text-clocktower-townsfolk",
+                            roleObj.team === 'outsider' && "text-clocktower-outsider",
+                            roleObj.team === 'minion' && "text-clocktower-minion",
+                            roleObj.team === 'demon' && "text-clocktower-demon",
+                          )}>
+                            {roleObj.name}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsSearchingRole(true)}
+                          className={cn(
+                            "text-xs underline font-medium",
+                            timeOfDay === 'day' ? "text-clocktower-blood hover:text-red-800" : "text-clocktower-townsfolk hover:text-blue-400"
+                          )}
+                        >
+                          Change
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-2 mt-1">
+                        <p className="text-sm italic opacity-60">No character assigned</p>
+                        <button
+                          type="button"
+                          onClick={() => setIsSearchingRole(true)}
+                          className={cn(
+                            "text-xs underline font-medium",
+                            timeOfDay === 'day' ? "text-clocktower-blood hover:text-red-800" : "text-clocktower-townsfolk hover:text-blue-400"
+                          )}
+                        >
+                          Select
+                        </button>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+
+              {/* Status Controls */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-semibold text-sm">Life Status</span>
+                    <p className="text-xs opacity-60">Dead players can only vote once</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (p.isDead) togglePlayerDead(p.id);
+                      }}
+                      className={cn(
+                        "px-3 py-1.5 rounded text-xs font-bold border transition-all",
+                        !p.isDead 
+                          ? "bg-clocktower-outsider border-clocktower-outsider/40 text-white" 
+                          : timeOfDay === 'day' 
+                            ? "bg-white border-gray-300 text-gray-400 hover:text-gray-600" 
+                            : "bg-gray-950/40 border-gray-800 text-gray-500 hover:text-gray-300"
+                      )}
+                    >
+                      Alive
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!p.isDead) togglePlayerDead(p.id);
+                      }}
+                      className={cn(
+                        "px-3 py-1.5 rounded text-xs font-bold border transition-all",
+                        p.isDead 
+                          ? "bg-clocktower-blood border-clocktower-blood/40 text-white" 
+                          : timeOfDay === 'day' 
+                            ? "bg-white border-gray-300 text-gray-400 hover:text-gray-600" 
+                            : "bg-gray-950/40 border-gray-800 text-gray-500 hover:text-gray-300"
+                      )}
+                    >
+                      Dead
+                    </button>
+                  </div>
+                </div>
+
+
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
