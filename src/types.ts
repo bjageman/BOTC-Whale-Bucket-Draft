@@ -21,6 +21,7 @@ export interface Player {
   isDead: boolean;
   isTheDrunk?: boolean;
   isTheMarionette?: boolean;
+  isTheLunatic?: boolean;
 }
 
 export interface AssignmentResult {

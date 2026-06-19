@@ -210,13 +210,27 @@ export default function GrimoireBoard({
                   {roleObj?.name.substring(0, grimoireConfig.charLimit)}
                 </span>
                 {p.isTheDrunk && (
-                  <span className="absolute bottom-0 bg-yellow-600 text-black text-[7px] font-black px-1 rounded-sm border border-yellow-700 shadow-sm leading-tight translate-y-1/2 z-20">
+                  <span
+                    style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
+                    className="absolute bottom-0 bg-yellow-600 text-black font-black border-yellow-700 shadow-sm leading-none translate-y-1/2 z-20 whitespace-nowrap"
+                  >
                     THE DRUNK
                   </span>
                 )}
                 {p.isTheMarionette && (
-                  <span className="absolute bottom-0 bg-clocktower-minion text-white text-[7px] font-black px-1 rounded-sm border border-clocktower-minion/40 shadow-sm leading-tight translate-y-1/2 z-20">
+                  <span
+                    style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
+                    className="absolute bottom-0 bg-clocktower-minion text-white font-black border-clocktower-minion/40 shadow-sm leading-none translate-y-1/2 z-20 whitespace-nowrap"
+                  >
                     THE MARIONETTE
+                  </span>
+                )}
+                {p.isTheLunatic && (
+                  <span
+                    style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
+                    className="absolute bottom-0 bg-clocktower-outsider text-white font-black border-clocktower-outsider/40 shadow-sm leading-none translate-y-1/2 z-20 whitespace-nowrap"
+                  >
+                    THE LUNATIC
                   </span>
                 )}
               </button>
