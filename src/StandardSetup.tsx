@@ -581,7 +581,7 @@ export default function StandardSetup() {
             <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-demon" /> Demon</span>
           </div>
         </div>
-        <button onClick={resetGame} className={cn("p-2 transition-colors", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")} title="Reset game">
+        <button id="reset-game-button" onClick={resetGame} className={cn("p-2 transition-colors", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")} title="Reset game">
           <RefreshCcw size={20} />
         </button>
       </header>
@@ -611,6 +611,7 @@ export default function StandardSetup() {
               </div>
               <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 <input
+                  id="script-upload-input"
                   type="file"
                   ref={fileInputRef}
                   onChange={handleScriptUpload}
@@ -618,6 +619,7 @@ export default function StandardSetup() {
                   className="hidden"
                 />
                 <button
+                  id="script-upload-button"
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="bg-gray-800 hover:bg-gray-700 border border-gray-750 text-gray-300 px-3 py-1.5 rounded text-xs font-bold transition-all flex items-center gap-1.5"
@@ -626,6 +628,7 @@ export default function StandardSetup() {
                 </button>
                 {customScriptRoles && (
                   <button
+                    id="script-reset-button"
                     type="button"
                     onClick={clearCustomScript}
                     className="bg-transparent hover:bg-gray-800 border border-transparent text-gray-500 hover:text-gray-300 px-2.5 py-1.5 rounded text-xs font-semibold transition-all"
@@ -634,6 +637,7 @@ export default function StandardSetup() {
                   </button>
                 )}
                 <button
+                  id="random-assign-button"
                   type="button"
                   onClick={randomlyAssignRoles}
                   className="bg-clocktower-blood hover:bg-red-800 text-white px-3 py-1.5 rounded text-xs font-bold transition-all flex items-center gap-1.5 shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
@@ -651,6 +655,7 @@ export default function StandardSetup() {
 
             <div className="flex gap-2 mb-4">
               <input
+                id="new-player-input"
                 type="text"
                 value={newPlayerName}
                 onChange={(e) => setNewPlayerName(e.target.value)}
@@ -660,6 +665,7 @@ export default function StandardSetup() {
                 className="flex-1 bg-gray-900 border border-gray-800 rounded px-3 py-2 text-white focus:outline-none focus:border-clocktower-blood text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <button 
+                id="add-player-button"
                 onClick={addPlayer} 
                 disabled={players.length >= 15}
                 className={cn(
@@ -679,6 +685,7 @@ export default function StandardSetup() {
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-500 font-mono w-5">#{index + 1}</span>
                       <input
+                        id={`player-name-input-${p.id}`}
                         type="text"
                         value={p.name}
                         onChange={(e) => updatePlayerName(p.id, e.target.value)}
@@ -694,7 +701,7 @@ export default function StandardSetup() {
                           THE MARIONETTE
                         </span>
                       )}
-                      <button onClick={() => removePlayer(p.id)} className="text-gray-600 hover:text-red-500 p-1 transition-colors">
+                      <button id={`remove-player-${p.id}`} onClick={() => removePlayer(p.id)} className="text-gray-600 hover:text-red-500 p-1 transition-colors">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -723,6 +730,7 @@ export default function StandardSetup() {
                             </span>
                           </div>
                           <button
+                            id={`change-role-button-${p.id}`}
                             onClick={() => { setActivePlayerId(p.id); setSearchTerm(''); }}
                             className="text-gray-500 hover:text-gray-300 text-xs underline font-medium"
                           >
@@ -733,6 +741,7 @@ export default function StandardSetup() {
                         {/* Secret Role Draft Toggles */}
                         <div className="flex gap-2 justify-end">
                           <button
+                            id={`toggle-drunk-button-${p.id}`}
                             type="button"
                             onClick={() => togglePlayerTheDrunk(p.id)}
                             className={cn(
@@ -745,13 +754,14 @@ export default function StandardSetup() {
                             🍺 The Drunk
                           </button>
                           <button
+                            id={`toggle-marionette-button-${p.id}`}
                             type="button"
                             onClick={() => togglePlayerTheMarionette(p.id)}
                             className={cn(
                               "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1",
                               p.isTheMarionette
                                 ? "bg-clocktower-minion border-clocktower-minion/40 text-white font-black"
-                                : "bg-gray-950 border-gray-855 text-gray-500 hover:text-gray-400"
+                                : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
                             )}
                           >
                             🎭 The Marionette
@@ -760,6 +770,7 @@ export default function StandardSetup() {
                       </div>
                     ) : (
                       <div
+                        id={`select-role-placeholder-${p.id}`}
                         onClick={() => { setActivePlayerId(p.id); setSearchTerm(''); }}
                         className="flex items-center bg-gray-800/50 rounded px-3 py-1.5 border border-gray-700/60 cursor-pointer text-sm text-gray-400 hover:border-gray-600 transition-colors"
                       >
@@ -860,6 +871,7 @@ export default function StandardSetup() {
           )}
 
           <button
+            id="open-grimoire-button"
             disabled={!allAssigned}
             onClick={() => setPhase('game')}
             className="w-full bg-clocktower-blood hover:bg-red-800 text-white py-3 rounded-lg font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-black/40 flex items-center justify-center gap-2"
@@ -884,6 +896,7 @@ export default function StandardSetup() {
             style={{ containerType: 'size' }}
             >
               <button
+                id="grimoire-time-toggle-button"
                 onClick={toggleTimeOfDay}
                 style={grimoireConfig.centerBtnStyle}
                 className={cn(
@@ -933,6 +946,7 @@ export default function StandardSetup() {
                   >
                     <div className="relative flex flex-col items-center">
                       <button
+                        id={`grimoire-player-${p.id}`}
                         onClick={() => setSelectedPlayerId(p.id)}
                         style={grimoireConfig.btnStyle}
                         className={cn(
@@ -1085,14 +1099,15 @@ export default function StandardSetup() {
               <h3 className="font-bold text-sm text-gray-300">
                 Select Role for {players.find(p => p.id === activePlayerId)?.name}
               </h3>
-              <button onClick={() => { setActivePlayerId(null); setSearchTerm(''); }} className="text-xs text-gray-500 underline">
+              <button id="close-role-modal-button" onClick={() => { setActivePlayerId(null); setSearchTerm(''); }} className="text-xs text-gray-500 underline">
                 Close
               </button>
             </div>
 
-            <div className="flex items-center bg-gray-950 border border-gray-800 rounded px-3 py-2 text-sm">
+            <div className="flex items-center bg-gray-955 border border-gray-800 rounded px-3 py-2 text-sm">
               <Search size={14} className="text-gray-500 mr-2" />
               <input
+                id="role-search-input"
                 type="text"
                 autoFocus
                 placeholder="Search character name..."
@@ -1105,6 +1120,7 @@ export default function StandardSetup() {
             <div className="overflow-y-auto flex-1 border border-gray-800 rounded bg-gray-950/40 divide-y divide-gray-800/60 pr-1">
               {filteredRoles.map(role => (
                 <button
+                  id={`role-option-${role.id}`}
                   key={role.id}
                   onClick={() => {
                     updatePlayerRole(activePlayerId, role.id);
@@ -1161,6 +1177,7 @@ export default function StandardSetup() {
             >
               <div className="flex justify-between items-center">
                 <button
+                  id="detail-prev-player-button"
                   type="button"
                   onClick={() => setSelectedPlayerId(prevPlayer.id)}
                   title={prevPlayer.name}
@@ -1185,6 +1202,7 @@ export default function StandardSetup() {
 
                 <div className="flex items-center gap-2">
                   <button
+                    id="detail-next-player-button"
                     type="button"
                     onClick={() => setSelectedPlayerId(nextPlayer.id)}
                     title={nextPlayer.name}
@@ -1198,6 +1216,7 @@ export default function StandardSetup() {
                     <ChevronRight size={16} />
                   </button>
                   <button
+                    id="detail-close-button"
                     type="button"
                     onClick={closeDetailsModal}
                     className={cn(
@@ -1220,6 +1239,7 @@ export default function StandardSetup() {
                 <div>
                   <label className="text-[10px] uppercase font-bold tracking-wider opacity-60 block mb-1">Player Name</label>
                   <input
+                    id="detail-player-name-input"
                     type="text"
                     value={p.name}
                     onChange={(e) => updatePlayerName(p.id, e.target.value)}
@@ -1242,6 +1262,7 @@ export default function StandardSetup() {
                       <div className="flex items-center bg-gray-955 border border-gray-800 rounded px-2.5 py-1 text-sm">
                         <Search size={12} className="text-gray-500 mr-2" />
                         <input
+                          id="detail-role-search-input"
                           type="text"
                           placeholder="Search character name..."
                           className="bg-transparent flex-1 outline-none text-white text-xs placeholder-gray-650"
@@ -1254,6 +1275,7 @@ export default function StandardSetup() {
                       <div className="overflow-y-auto max-h-40 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
                         {p.roleId && (
                           <button
+                            id="detail-clear-role-button"
                             type="button"
                             onClick={() => {
                               updatePlayerRole(p.id, '');
@@ -1267,6 +1289,7 @@ export default function StandardSetup() {
                         )}
                         {filteredModalRoles.map(role => (
                           <button
+                            id={`detail-role-option-${role.id}`}
                             key={role.id}
                             type="button"
                             onClick={() => {
@@ -1294,6 +1317,7 @@ export default function StandardSetup() {
                       </div>
 
                       <button
+                        id="detail-cancel-role-search-button"
                         type="button"
                         onClick={() => {
                           setIsSearchingRole(false);
@@ -1331,6 +1355,7 @@ export default function StandardSetup() {
                           </span>
                         </div>
                         <button
+                          id="detail-change-role-button"
                           type="button"
                           onClick={() => setIsSearchingRole(true)}
                           className={cn(
@@ -1345,6 +1370,7 @@ export default function StandardSetup() {
                       <div className="flex items-center justify-between gap-2 mt-1">
                         <p className="text-sm italic opacity-60">No character assigned</p>
                         <button
+                          id="detail-select-role-button"
                           type="button"
                           onClick={() => setIsSearchingRole(true)}
                           className={cn(
@@ -1369,6 +1395,7 @@ export default function StandardSetup() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button
+                      id="detail-status-alive-button"
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1379,13 +1406,14 @@ export default function StandardSetup() {
                         !p.isDead 
                           ? "bg-clocktower-outsider border-clocktower-outsider/40 text-white" 
                           : timeOfDay === 'day' 
-                            ? "bg-white border-gray-300 text-gray-400 hover:text-gray-650" 
+                            ? "bg-white border-gray-300 text-gray-400 hover:text-gray-655" 
                             : "bg-gray-955/40 border-gray-800 text-gray-500 hover:text-gray-300"
                       )}
                     >
                       Alive
                     </button>
                     <button
+                      id="detail-status-dead-button"
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1396,7 +1424,7 @@ export default function StandardSetup() {
                         p.isDead 
                           ? "bg-clocktower-blood border-clocktower-blood/40 text-white" 
                           : timeOfDay === 'day' 
-                            ? "bg-white border-gray-300 text-gray-400 hover:text-gray-650" 
+                            ? "bg-white border-gray-300 text-gray-400 hover:text-gray-655" 
                             : "bg-gray-955/40 border-gray-800 text-gray-500 hover:text-gray-300"
                       )}
                     >
