@@ -165,7 +165,7 @@ export default function GrimoireBoard({
                       width: '100%',
                       height: '100%',
                       objectFit: 'contain',
-                      padding: '12%',
+                      padding: '4%',
                       opacity: p.isDead ? 0.08 : 0.18,
                       pointerEvents: 'none',
                     }}
