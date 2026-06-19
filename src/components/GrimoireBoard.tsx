@@ -143,8 +143,8 @@ export default function GrimoireBoard({
                       ? "bg-[#e4e4e7] border-[#d4d4d8] text-[#71717a] scale-95 opacity-60"
                       : "bg-[#ffffff] border-[#d4d4d8] text-[#1a1a1a] hover:border-[#a1a1aa] hover:bg-[#fafafa]"
                     : p.isDead
-                      ? "bg-[#0c0c0e] border-[#27272a] text-[#52525b] scale-95 opacity-60"
-                      : "bg-[#1e1e21] border-[#3f3f46] text-[#f4e4bc] hover:border-[#52525b]"
+                      ? "bg-[#222226] border-[#3f3f46] text-[#71717a] scale-95 opacity-60"
+                      : "bg-[#38383c] border-[#5a5a62] text-[#f4e4bc] hover:border-[#71717a]"
                 )}
               >
                 <div
@@ -186,7 +186,12 @@ export default function GrimoireBoard({
                 )}
 
                 <span
-                  style={grimoireConfig.nameStyle}
+                  style={{
+                    ...grimoireConfig.nameStyle,
+                    textShadow: timeOfDay === 'day'
+                      ? '0 1px 2px rgba(255,255,255,0.95), 0 0 3px rgba(255,255,255,0.9)'
+                      : '0 1px 2px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,0.9)'
+                  }}
                   className={cn(
                     "font-bold font-sans tracking-tighter truncate text-center leading-tight z-10 relative",
                     p.isDead && "line-through",
@@ -195,7 +200,7 @@ export default function GrimoireBoard({
                         ? "text-[#71717a]"
                         : "text-[#1a1a1a] font-bold"
                       : p.isDead
-                        ? "text-[#52525b]"
+                        ? "text-[#71717a]"
                         : "text-[#f4e4bc]"
                   )}
                 >
@@ -203,7 +208,12 @@ export default function GrimoireBoard({
                 </span>
 
                 <span
-                  style={grimoireConfig.roleStyle}
+                  style={{
+                    ...grimoireConfig.roleStyle,
+                    textShadow: timeOfDay === 'day'
+                      ? '0 1px 2px rgba(255,255,255,0.95), 0 0 3px rgba(255,255,255,0.9)'
+                      : '0 1px 2px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,0.9)'
+                  }}
                   className={cn(
                     "font-semibold truncate leading-none text-gray-400 px-0.5 text-center z-10 relative",
                     roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk/85",
