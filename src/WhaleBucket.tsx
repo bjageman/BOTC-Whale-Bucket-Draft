@@ -441,6 +441,37 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     const jinxWarnings: string[] = [];
     if (hasChoirboy && !hasKing) jinxWarnings.push("Choirboy in play, but no King assigned.");
     if (hasHuntsman && !hasDamsel) jinxWarnings.push("Huntsman in play, but no Damsel assigned.");
+
+    // Marionette check: each Marionette must neighbor at least one Demon
+    const basePlayersInOrder = players.filter(p => {
+      if (!p.roleId) return true;
+      const r = (rolesData as Role[]).find(role => role.id === p.roleId);
+      return r?.team !== 'traveler';
+    });
+    const marionettePlayers = basePlayersInOrder.filter(p => p.isTheMarionette);
+    const demonPlayers = basePlayersInOrder.filter(p => {
+      if (!p.roleId || p.isTheMarionette || p.isTheDrunk) return false;
+      const r = (rolesData as Role[]).find(role => role.id === p.roleId);
+      return r?.team === 'demon';
+    });
+
+    if (marionettePlayers.length > 0) {
+      if (demonPlayers.length === 0) {
+        jinxWarnings.push("A Marionette is in play, but there is no Demon assigned.");
+      } else {
+        const K = basePlayersInOrder.length;
+        for (const mp of marionettePlayers) {
+          const m_idx = basePlayersInOrder.findIndex(p => p.id === mp.id);
+          const isNeighboringDemon = demonPlayers.some(dp => {
+            const d_idx = basePlayersInOrder.findIndex(p => p.id === dp.id);
+            return (d_idx - 1 + K) % K === m_idx || (d_idx + 1) % K === m_idx;
+          });
+          if (!isNeighboringDemon) {
+            jinxWarnings.push(`Marionette (${mp.name}) must be sitting next to the Demon.`);
+          }
+        }
+      }
+    }
     
     const isValid = isDemonValid && isMinionValid && isOutsiderValid && isTownsfolkValid && jinxWarnings.length === 0;
     
@@ -1260,56 +1291,84 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
               </div>
               
               <div className="overflow-y-auto flex-1 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
-                {preferredRoles.map(role => (
-                  <button
-                    key={role.id}
-                    onClick={() => {
-                      updatePlayerRole(activeDraftPlayerId, role.id);
-                      setActiveDraftPlayerId(null);
-                      setSearchTerm('');
-                    }}
-                    className="w-full text-left px-3 py-2.5 bg-amber-500/5 hover:bg-amber-500/10 text-xs transition-colors flex justify-between items-center"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span className={cn(
-                        "font-semibold text-xs",
-                        role.team === 'townsfolk' && "text-clocktower-townsfolk",
-                        role.team === 'outsider' && "text-clocktower-outsider",
-                        role.team === 'minion' && "text-clocktower-minion",
-                        role.team === 'demon' && "text-clocktower-demon",
-                      )}>
-                        {role.name}
-                      </span>
-                      <span className="text-[8px] bg-amber-500/25 text-amber-400 px-1 rounded-sm uppercase font-extrabold tracking-wider leading-none">
-                        ★ Pick
-                      </span>
-                    </div>
-                    <span className="text-[10px] uppercase font-mono text-gray-650">{role.team[0]}</span>
-                  </button>
-                ))}
+                {preferredRoles.map(role => {
+                  const selectedByPlayer = players.find(pl => pl.roleId === role.id && pl.id !== activeDraftPlayerId);
+                  return (
+                    <button
+                      key={role.id}
+                      onClick={() => {
+                        updatePlayerRole(activeDraftPlayerId, role.id);
+                        setActiveDraftPlayerId(null);
+                        setSearchTerm('');
+                      }}
+                      className="w-full text-left px-3 py-2.5 bg-amber-500/5 hover:bg-amber-500/10 text-xs transition-colors flex justify-between items-center"
+                    >
+                      <div className="flex items-center min-w-0 flex-1 gap-1.5 mr-2">
+                        <span className={cn(
+                          "font-semibold text-xs truncate",
+                          role.team === 'townsfolk' && "text-clocktower-townsfolk",
+                          role.team === 'outsider' && "text-clocktower-outsider",
+                          role.team === 'minion' && "text-clocktower-minion",
+                          role.team === 'demon' && "text-clocktower-demon",
+                        )}>
+                          {role.name}
+                        </span>
+                        <span className="text-[8px] bg-amber-500/25 text-amber-400 px-1 rounded-sm uppercase font-extrabold tracking-wider leading-none shrink-0">
+                          ★ Pick
+                        </span>
+                        {selectedByPlayer && (
+                          <span className={cn(
+                            "text-[8px] px-1 py-0.5 rounded shrink-0 font-medium border",
+                            isLightModeActive 
+                              ? "bg-gray-100 border-gray-200 text-gray-600" 
+                              : "bg-gray-800/40 border-gray-700/30 text-gray-400"
+                          )}>
+                            Taken: {selectedByPlayer.name}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] uppercase font-mono text-gray-650">{role.team[0]}</span>
+                    </button>
+                  );
+                })}
 
-                {otherRoles.map(role => (
-                  <button
-                    key={role.id}
-                    onClick={() => {
-                      updatePlayerRole(activeDraftPlayerId, role.id);
-                      setActiveDraftPlayerId(null);
-                      setSearchTerm('');
-                    }}
-                    className="w-full text-left px-3 py-2.5 hover:bg-gray-800 text-xs transition-colors flex justify-between items-center"
-                  >
-                    <span className={cn(
-                      "font-semibold text-xs",
-                      role.team === 'townsfolk' && "text-clocktower-townsfolk",
-                      role.team === 'outsider' && "text-clocktower-outsider",
-                      role.team === 'minion' && "text-clocktower-minion",
-                      role.team === 'demon' && "text-clocktower-demon",
-                    )}>
-                      {role.name}
-                    </span>
-                    <span className="text-[10px] uppercase font-mono text-gray-650">{role.team[0]}</span>
-                  </button>
-                ))}
+                {otherRoles.map(role => {
+                  const selectedByPlayer = players.find(pl => pl.roleId === role.id && pl.id !== activeDraftPlayerId);
+                  return (
+                    <button
+                      key={role.id}
+                      onClick={() => {
+                        updatePlayerRole(activeDraftPlayerId, role.id);
+                        setActiveDraftPlayerId(null);
+                        setSearchTerm('');
+                      }}
+                      className="w-full text-left px-3 py-2.5 hover:bg-gray-800 text-xs transition-colors flex justify-between items-center"
+                    >
+                      <div className="flex items-center min-w-0 flex-1 gap-1.5 mr-2">
+                        <span className={cn(
+                          "font-semibold text-xs truncate",
+                          role.team === 'townsfolk' && "text-clocktower-townsfolk",
+                          role.team === 'outsider' && "text-clocktower-outsider",
+                          role.team === 'minion' && "text-clocktower-minion",
+                          role.team === 'demon' && "text-clocktower-demon",
+                        )}>
+                          {role.name}
+                        </span>
+                        {selectedByPlayer && (
+                          <span className={cn(
+                            "text-[8px] px-1 py-0.5 rounded shrink-0 font-medium border",
+                            isLightModeActive 
+                              ? "bg-gray-100 border-gray-200 text-gray-600" 
+                              : "bg-gray-800/40 border-gray-700/30 text-gray-400"
+                          )}>
+                            Taken: {selectedByPlayer.name}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] uppercase font-mono text-gray-650">{role.team[0]}</span>
+                    </button>
+                  );
+                })}
 
                 {filteredRoles.length === 0 && (
                   <div className="p-3 text-xs text-gray-500 italic text-center">No matching roles found.</div>
@@ -1340,7 +1399,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
             <div 
               onClick={(e) => e.stopPropagation()}
               className={cn(
-                "border w-full max-w-sm rounded-lg p-5 space-y-4 shadow-2xl transition-colors duration-300",
+                "border w-full max-w-sm md:max-w-xl min-h-[480px] md:min-h-0 rounded-lg p-5 md:p-6 space-y-4 flex flex-col justify-between shadow-2xl transition-colors duration-300",
                 isLightModeActive 
                   ? "bg-clocktower-parchment border-clocktower-blood/20 text-clocktower-night" 
                   : "bg-gray-900 border-gray-800 text-clocktower-parchment"
@@ -1438,7 +1497,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                         />
                       </div>
                       
-                      <div className="overflow-y-auto max-h-40 border border-gray-800 rounded bg-gray-950/40 divide-y divide-gray-800/60 pr-1">
+                      <div className="overflow-y-auto max-h-48 md:max-h-72 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
                         {p.roleId && (
                           <button
                             type="button"
@@ -1452,29 +1511,45 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                             × Clear Character
                           </button>
                         )}
-                        {filteredModalRoles.map(role => (
-                          <button
-                            key={role.id}
-                            type="button"
-                            onClick={() => {
-                              updatePlayerRole(p.id, role.id);
-                              setIsSearchingRole(false);
-                              setModalRoleSearch('');
-                            }}
-                            className="w-full text-left px-2 py-1.5 hover:bg-gray-800 text-xs transition-colors flex justify-between items-center"
-                          >
-                            <span className={cn(
-                              "font-semibold text-xs",
-                              role.team === 'townsfolk' && "text-clocktower-townsfolk",
-                              role.team === 'outsider' && "text-clocktower-outsider",
-                              role.team === 'minion' && "text-clocktower-minion",
-                              role.team === 'demon' && "text-clocktower-demon",
-                            )}>
-                              {role.name}
-                            </span>
-                            <span className="text-[9px] uppercase font-mono text-gray-500">{role.team[0]}</span>
-                          </button>
-                        ))}
+                        {filteredModalRoles.map(role => {
+                          const selectedByPlayer = players.find(pl => pl.roleId === role.id && pl.id !== p.id);
+                          return (
+                            <button
+                              key={role.id}
+                              type="button"
+                              onClick={() => {
+                                updatePlayerRole(p.id, role.id);
+                                setIsSearchingRole(false);
+                                setModalRoleSearch('');
+                              }}
+                              className="w-full text-left px-2 py-1.5 hover:bg-gray-800 text-xs transition-colors flex justify-between items-center"
+                            >
+                              <div className="flex items-center min-w-0 flex-1 gap-1.5 mr-2">
+                                <span className={cn(
+                                  "font-semibold text-xs truncate",
+                                  role.team === 'townsfolk' && "text-clocktower-townsfolk",
+                                  role.team === 'outsider' && "text-clocktower-outsider",
+                                  role.team === 'minion' && "text-clocktower-minion",
+                                  role.team === 'demon' && "text-clocktower-demon",
+                                  role.team === 'traveler' && "text-clocktower-traveler",
+                                )}>
+                                  {role.name}
+                                </span>
+                                {selectedByPlayer && (
+                                  <span className={cn(
+                                    "text-[8px] px-1 py-0.5 rounded shrink-0 font-medium border",
+                                    isLightModeActive 
+                                      ? "bg-gray-100 border-gray-200 text-gray-600" 
+                                      : "bg-gray-800/40 border-gray-700/30 text-gray-400"
+                                  )}>
+                                    Taken: {selectedByPlayer.name}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[9px] uppercase font-mono text-gray-500">{role.team[0]}</span>
+                            </button>
+                          );
+                        })}
                         {filteredModalRoles.length === 0 && (
                           <div className="p-2 text-xs text-gray-550 italic text-center">No matching roles found.</div>
                         )}

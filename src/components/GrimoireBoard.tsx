@@ -137,7 +137,7 @@ export default function GrimoireBoard({
                 onClick={() => onSelectPlayer(p.id)}
                 style={grimoireConfig.btnStyle}
                 className={cn(
-                  "rounded-full border-2 flex flex-col items-center justify-center transition-all shadow-md relative",
+                  "rounded-full border-2 flex flex-col items-center justify-center transition-all duration-200 shadow-md relative group-hover:scale-112 group-hover:shadow-lg",
                   timeOfDay === 'day'
                     ? p.isDead
                       ? "bg-[#e4e4e7] border-[#d4d4d8] text-[#71717a] scale-95 opacity-60"
@@ -201,31 +201,6 @@ export default function GrimoireBoard({
                   </span>
                 )}
               </button>
-
-              <div
-                className={cn(
-                  "absolute scale-0 group-hover:scale-100 bg-gray-900/95 border border-gray-800 p-2 rounded text-center shadow-xl transition-all z-50 pointer-events-none min-w-[100px]",
-                  grimoireConfig.tooltipClass
-                )}
-              >
-                <p className="font-bold text-xs text-white">{p.name}</p>
-                <p
-                  className={cn(
-                    "text-[10px] font-medium",
-                    roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk",
-                    roleObj?.team === 'outsider' && "text-clocktower-outsider",
-                    roleObj?.team === 'minion' && "text-clocktower-minion",
-                    roleObj?.team === 'demon' && "text-clocktower-demon",
-                    roleObj?.team === 'traveler' && "text-clocktower-traveler"
-                  )}
-                >
-                  {roleObj?.name || 'No Role Assigned'}
-                </p>
-                <p className="text-[8px] text-gray-500 italic mt-0.5">
-                  {p.isDead ? 'Dead' : 'Alive'} {p.isTheDrunk ? '(The Drunk)' : ''}{' '}
-                  {p.isTheMarionette ? '(The Marionette)' : ''}
-                </p>
-              </div>
             </div>
           </div>
         );

@@ -44,9 +44,20 @@ Use `gh pr create` targeting `main` (or `master` if `main` doesn't exist). Write
 - **Changes**: a markdown table or bullet list of the specific changes made
 - Any **notes** about tradeoffs, follow-up work, or things the reviewer should pay attention to
 
-## 6. Report back
+## 6. Wait for tests, merge, and switch back to main
 
-Tell the user the PR URL and a one-line summary of what was committed.
+1. Poll status checks using `gh pr view <pr-number> --json statusCheckRollup`.
+2. Wait until all status checks have completed successfully.
+3. Merge the pull request using `gh pr merge <pr-number> --squash --delete-branch --admin` (or normal merge if admin merge fails/not needed).
+4. Switch back to the base branch (e.g. `main`) and pull the merged changes:
+   ```bash
+   git checkout main
+   git pull
+   ```
+
+## 7. Report back
+
+Tell the user the PR URL, a summary of what was committed, and confirm that the PR was merged.
 
 ## Rules
 
