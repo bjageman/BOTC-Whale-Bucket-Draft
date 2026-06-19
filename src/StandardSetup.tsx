@@ -46,6 +46,17 @@ export default function StandardSetup() {
   const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>('night');
   const [dayNumber, setDayNumber] = useState<number>(1);
 
+  // Details modal states
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [isSearchingRole, setIsSearchingRole] = useState(false);
+  const [modalRoleSearch, setModalRoleSearch] = useState('');
+
+  const closeDetailsModal = () => {
+    setSelectedPlayerId(null);
+    setIsSearchingRole(false);
+    setModalRoleSearch('');
+  };
+
   // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('standard-botc-game');
@@ -567,7 +578,7 @@ export default function StandardSetup() {
                   >
                     <div className="relative flex flex-col items-center">
                       <button
-                        onClick={() => togglePlayerDead(p.id)}
+                        onClick={() => setSelectedPlayerId(p.id)}
                         className={cn(
                           "rounded-full border-2 flex flex-col items-center justify-center transition-all shadow-md relative",
                           grimoireConfig.btnClass,
@@ -741,6 +752,249 @@ export default function StandardSetup() {
           </div>
         </div>
       )}
+
+      {/* ----------------- Player Detail Modal ----------------- */}
+      {selectedPlayerId && (() => {
+        const p = players.find(x => x.id === selectedPlayerId);
+        if (!p) return null;
+        const roleObj = (rolesData as Role[]).find(r => r.id === p.roleId);
+        const filteredModalRoles = (rolesData as Role[]).filter(r =>
+          r.name.toLowerCase().includes(modalRoleSearch.toLowerCase())
+        );
+
+        return (
+          <div 
+            onClick={closeDetailsModal}
+            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className={cn(
+                "border w-full max-w-sm rounded-lg p-5 space-y-4 shadow-2xl transition-colors duration-300",
+                timeOfDay === 'day' 
+                  ? "bg-clocktower-parchment border-clocktower-blood/20 text-clocktower-night" 
+                  : "bg-gray-900 border-gray-800 text-clocktower-parchment"
+              )}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className={cn("font-bold text-xl", timeOfDay === 'day' ? "text-clocktower-night" : "text-white")}>
+                    Player Details
+                  </h3>
+                  <p className={cn("text-xs", timeOfDay === 'day' ? "text-gray-600" : "text-gray-400")}>
+                    Grimoire status and role info
+                  </p>
+                </div>
+                <button 
+                  type="button"
+                  onClick={closeDetailsModal} 
+                  className={cn(
+                    "text-sm font-semibold hover:underline",
+                    timeOfDay === 'day' ? "text-clocktower-blood" : "text-clocktower-townsfolk"
+                  )}
+                >
+                  Close
+                </button>
+              </div>
+
+              {/* Player Info Card */}
+              <div className={cn(
+                "p-4 rounded-lg border space-y-3",
+                timeOfDay === 'day' 
+                  ? "bg-white/60 border-gray-300" 
+                  : "bg-gray-950/40 border-gray-800"
+              )}>
+                <div>
+                  <label className="text-[10px] uppercase font-bold tracking-wider opacity-60 block mb-1">Player Name</label>
+                  <input
+                    type="text"
+                    value={p.name}
+                    onChange={(e) => updatePlayerName(p.id, e.target.value)}
+                    className={cn(
+                      "w-full font-semibold text-base px-2 py-1 rounded border focus:outline-none focus:border-clocktower-blood bg-transparent transition-colors",
+                      timeOfDay === 'day'
+                        ? "border-gray-300 text-clocktower-night focus:bg-white"
+                        : "border-gray-800 text-gray-200 focus:bg-gray-950"
+                    )}
+                  />
+                </div>
+
+                <div className="border-t pt-2.5 opacity-80" />
+
+                <div>
+                  <label className="text-[10px] uppercase font-bold tracking-wider opacity-60 block mb-1">Assigned Character</label>
+                  {isSearchingRole ? (
+                    <div className="space-y-2 pt-1 animate-fadeIn">
+                      <div className="flex items-center bg-gray-955 border border-gray-800 rounded px-2.5 py-1 text-sm">
+                        <Search size={12} className="text-gray-500 mr-2" />
+                        <input
+                          type="text"
+                          placeholder="Search character name..."
+                          className="bg-transparent flex-1 outline-none text-white text-xs placeholder-gray-650"
+                          value={modalRoleSearch}
+                          onChange={(e) => setModalRoleSearch(e.target.value)}
+                          autoFocus
+                        />
+                      </div>
+                      
+                      <div className="overflow-y-auto max-h-40 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
+                        {p.roleId && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              updatePlayerRole(p.id, '');
+                              setIsSearchingRole(false);
+                              setModalRoleSearch('');
+                            }}
+                            className="w-full text-left px-2 py-1.5 hover:bg-red-955/20 text-xs text-red-400 font-semibold border-b border-gray-800/65"
+                          >
+                            × Clear Character
+                          </button>
+                        )}
+                        {filteredModalRoles.map(role => (
+                          <button
+                            key={role.id}
+                            type="button"
+                            onClick={() => {
+                              updatePlayerRole(p.id, role.id);
+                              setIsSearchingRole(false);
+                              setModalRoleSearch('');
+                            }}
+                            className="w-full text-left px-2 py-1.5 hover:bg-gray-800 text-xs transition-colors flex justify-between items-center"
+                          >
+                            <span className={cn(
+                              "font-semibold text-xs",
+                              role.team === 'townsfolk' && "text-clocktower-townsfolk",
+                              role.team === 'outsider' && "text-clocktower-outsider",
+                              role.team === 'minion' && "text-clocktower-minion",
+                              role.team === 'demon' && "text-clocktower-demon",
+                            )}>
+                              {role.name}
+                            </span>
+                            <span className="text-[9px] uppercase font-mono text-gray-500">{role.team[0]}</span>
+                          </button>
+                        ))}
+                        {filteredModalRoles.length === 0 && (
+                          <div className="p-2 text-xs text-gray-550 italic text-center">No matching roles found.</div>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsSearchingRole(false);
+                          setModalRoleSearch('');
+                        }}
+                        className={cn(
+                          "text-xs font-semibold hover:underline mt-1",
+                          timeOfDay === 'day' ? "text-clocktower-blood" : "text-clocktower-townsfolk"
+                        )}
+                      >
+                        ← Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    roleObj ? (
+                      <div className="flex items-center justify-between gap-2 mt-1">
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded border",
+                            roleObj.team === 'townsfolk' && "text-clocktower-townsfolk border-clocktower-townsfolk/40 bg-clocktower-townsfolk/5",
+                            roleObj.team === 'outsider' && "text-clocktower-outsider border-clocktower-outsider/40 bg-clocktower-outsider/5",
+                            roleObj.team === 'minion' && "text-clocktower-minion border-clocktower-minion/40 bg-clocktower-minion/5",
+                            roleObj.team === 'demon' && "text-clocktower-demon border-clocktower-demon/40 bg-clocktower-demon/5",
+                          )}>
+                            {roleObj.team}
+                          </span>
+                          <span className={cn(
+                            "font-bold text-base",
+                            roleObj.team === 'townsfolk' && "text-clocktower-townsfolk",
+                            roleObj.team === 'outsider' && "text-clocktower-outsider",
+                            roleObj.team === 'minion' && "text-clocktower-minion",
+                            roleObj.team === 'demon' && "text-clocktower-demon",
+                          )}>
+                            {roleObj.name}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsSearchingRole(true)}
+                          className={cn(
+                            "text-xs underline font-medium",
+                            timeOfDay === 'day' ? "text-clocktower-blood hover:text-red-800" : "text-clocktower-townsfolk hover:text-blue-400"
+                          )}
+                        >
+                          Change
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-2 mt-1">
+                        <p className="text-sm italic opacity-60">No character assigned</p>
+                        <button
+                          type="button"
+                          onClick={() => setIsSearchingRole(true)}
+                          className={cn(
+                            "text-xs underline font-medium",
+                            timeOfDay === 'day' ? "text-clocktower-blood hover:text-red-800" : "text-clocktower-townsfolk hover:text-blue-400"
+                          )}
+                        >
+                          Select
+                        </button>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+
+              {/* Status Controls */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-semibold text-sm">Life Status</span>
+                    <p className="text-xs opacity-60">Dead players can only vote once</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (p.isDead) togglePlayerDead(p.id);
+                      }}
+                      className={cn(
+                        "px-3 py-1.5 rounded text-xs font-bold border transition-all",
+                        !p.isDead 
+                          ? "bg-clocktower-outsider border-clocktower-outsider/40 text-white" 
+                          : timeOfDay === 'day' 
+                            ? "bg-white border-gray-300 text-gray-400 hover:text-gray-650" 
+                            : "bg-gray-955/40 border-gray-800 text-gray-500 hover:text-gray-300"
+                      )}
+                    >
+                      Alive
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!p.isDead) togglePlayerDead(p.id);
+                      }}
+                      className={cn(
+                        "px-3 py-1.5 rounded text-xs font-bold border transition-all",
+                        p.isDead 
+                          ? "bg-clocktower-blood border-clocktower-blood/40 text-white" 
+                          : timeOfDay === 'day' 
+                            ? "bg-white border-gray-300 text-gray-400 hover:text-gray-650" 
+                            : "bg-gray-955/40 border-gray-800 text-gray-500 hover:text-gray-300"
+                      )}
+                    >
+                      Dead
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
