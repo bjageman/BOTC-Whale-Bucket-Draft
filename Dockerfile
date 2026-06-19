@@ -1,6 +1,7 @@
 # Build stage
 FROM node:20-alpine AS builder
 WORKDIR /app
+RUN apk add --no-cache curl unzip
 COPY package*.json ./
 RUN npm ci
 COPY . .
