@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Trash2, Search, RefreshCcw, AlertTriangle, Sparkles, Shuffle, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Search, RefreshCcw, AlertTriangle, Sparkles, Shuffle, CheckCircle, ChevronLeft, ChevronRight, Sun, Moon } from 'lucide-react';
 import rolesData from './roles.json';
 import { cn } from './utils/cn';
 import type { Role, Player as BasePlayer, PlayerPreferences } from './types';
@@ -13,7 +13,12 @@ export type Player = Omit<BasePlayer, 'preferences'> & {
 
 type Phase = 'setup' | 'draft' | 'game';
 
-export default function WhaleBucket() {
+interface SetupProps {
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+}
+
+export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [phase, setPhase] = useState<Phase>('setup');
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,16 +73,17 @@ export default function WhaleBucket() {
   useEffect(() => {
     localStorage.setItem('whale-bucket-game', JSON.stringify({ players, phase, timeOfDay, dayNumber, allowTravelers }));
     
-    if (phase === 'game' && timeOfDay === 'day') {
-      document.documentElement.classList.add('theme-day');
+    const isLightMode = theme === 'light';
+    if (isLightMode) {
+      document.documentElement.classList.add('theme-light');
     } else {
-      document.documentElement.classList.remove('theme-day');
+      document.documentElement.classList.remove('theme-light');
     }
     
     return () => {
-      document.documentElement.classList.remove('theme-day');
+      document.documentElement.classList.remove('theme-light');
     };
-  }, [players, phase, timeOfDay, dayNumber, allowTravelers]);
+  }, [players, phase, timeOfDay, dayNumber, allowTravelers, theme]);
 
   const toggleTimeOfDay = () => {
     if (timeOfDay === 'night') {
@@ -475,27 +481,43 @@ export default function WhaleBucket() {
 
 
 
+  const isLightModeActive = theme === 'light';
+
   return (
     <div className={cn(
       "min-h-screen p-4 font-sans mx-auto transition-colors duration-300",
       phase === 'game' 
         ? "max-w-xl md:max-w-6xl landscape:max-w-6xl" 
         : "max-w-xl md:max-w-4xl",
-      phase === 'game' && timeOfDay === 'day'
-        ? "text-clocktower-night"
-        : "text-clocktower-parchment"
+      isLightModeActive
+        ? "bg-clocktower-parchment text-clocktower-night"
+        : "bg-clocktower-night text-clocktower-parchment"
     )}>
       <header className={cn(
         "flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 border-b pb-2 gap-3 sm:gap-0",
-        phase === 'game' && timeOfDay === 'day' ? "border-clocktower-blood/20" : "border-clocktower-blood"
+        isLightModeActive ? "border-clocktower-blood/20" : "border-clocktower-blood"
       )}>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <div className="relative flex justify-center items-center w-full sm:w-auto sm:justify-start sm:gap-3">
-            <a href="#/" className={cn("absolute left-0 transition-colors text-sm sm:static", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-800" : "text-gray-500 hover:text-gray-300")}>← Home</a>
+            <a href="#/" className={cn("absolute left-0 transition-colors text-sm sm:static", isLightModeActive ? "text-gray-600 hover:text-gray-800" : "text-gray-500 hover:text-gray-300")}>← Home</a>
             <h1 className="text-2xl font-bold text-clocktower-blood tracking-wide text-center sm:text-left">Whale Bucket</h1>
-            <button id="reset-game-button" onClick={resetGame} className={cn("absolute right-0 p-2 transition-colors sm:hidden", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")} title="Reset game">
-              <RefreshCcw size={20} />
-            </button>
+            <div className="absolute right-0 flex items-center gap-1 sm:hidden">
+              <button
+                onClick={toggleTheme}
+                className={cn("p-2 transition-colors", isLightModeActive ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")}
+                title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              <button
+                id="reset-game-button"
+                onClick={resetGame}
+                className={cn("p-2 transition-colors", isLightModeActive ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")}
+                title="Reset game"
+              >
+                <RefreshCcw size={20} />
+              </button>
+            </div>
           </div>
           <div id="character-type-legend" className="flex justify-center sm:justify-start gap-2.5 text-[9px] font-bold tracking-wider text-gray-500 w-full sm:w-auto">
             <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-townsfolk" /> Townsfolk</span>
@@ -504,9 +526,23 @@ export default function WhaleBucket() {
             <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-demon" /> Demon</span>
           </div>
         </div>
-        <button id="reset-game-button-desktop" onClick={resetGame} className={cn("hidden sm:block p-2 transition-colors", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")} title="Reset game">
-          <RefreshCcw size={20} />
-        </button>
+        <div className="hidden sm:flex items-center gap-1.5">
+          <button
+            onClick={toggleTheme}
+            className={cn("p-2 transition-colors", isLightModeActive ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")}
+            title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+          <button
+            id="reset-game-button-desktop"
+            onClick={resetGame}
+            className={cn("p-2 transition-colors", isLightModeActive ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")}
+            title="Reset game"
+          >
+            <RefreshCcw size={20} />
+          </button>
+        </div>
       </header>      {phase === 'setup' && (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-[5fr_3fr] md:grid-rows-[auto_1fr] md:items-start animate-fadeIn">
           {/* Section A: Draft Options */}
@@ -963,7 +999,7 @@ export default function WhaleBucket() {
               onClick={() => setPhase('draft')}
               className={cn(
                 "w-full py-3 rounded-lg font-bold transition-all text-sm shadow-md",
-                timeOfDay === 'day'
+                isLightModeActive
                   ? "bg-white hover:bg-gray-50 text-clocktower-night border border-gray-300"
                   : "bg-gray-800 hover:bg-gray-700 text-gray-300"
               )}
@@ -973,13 +1009,13 @@ export default function WhaleBucket() {
 
             <div className={cn(
               "rounded-lg border p-3 space-y-1.5 transition-colors duration-300",
-              timeOfDay === 'day'
+              isLightModeActive
                 ? "bg-white/50 border-gray-300 text-clocktower-night"
                 : "bg-gray-900/40 border-gray-800/80"
             )}>
               <h4 className={cn(
                 "text-[10px] uppercase font-bold tracking-wider",
-                timeOfDay === 'day' ? "text-gray-600" : "text-gray-500"
+                isLightModeActive ? "text-gray-600" : "text-gray-500"
               )}>Grimoire Ledger Reference</h4>
               <div className="grid grid-cols-1 gap-1.5 text-xs">
                 {players.map((p, index) => {
@@ -988,15 +1024,15 @@ export default function WhaleBucket() {
                     <div key={p.id} onClick={() => setSelectedPlayerId(p.id)} className={cn(
                       "flex items-center gap-1.5 py-0.5 px-1.5 rounded border transition-colors min-w-0 cursor-pointer hover:ring-1 hover:ring-gray-500/50",
                       p.isDead && "opacity-45",
-                      timeOfDay === 'day'
+                      isLightModeActive
                         ? "bg-white/40 border-gray-200 hover:bg-white/70"
                         : "bg-gray-955/20 border-gray-900/40 hover:bg-gray-900/60"
                     )}>
-                      <span className={cn("text-[9px] font-mono w-4 shrink-0", timeOfDay === 'day' ? "text-gray-500" : "text-gray-600")}>{index + 1}</span>
+                      <span className={cn("text-[9px] font-mono w-4 shrink-0", isLightModeActive ? "text-gray-505" : "text-gray-600")}>{index + 1}</span>
                       <span className={cn(
                         "font-medium truncate flex-1 min-w-0",
                         p.isDead && "line-through text-gray-500",
-                        timeOfDay === 'day' && !p.isDead ? "text-clocktower-night" : "text-gray-200"
+                        isLightModeActive && !p.isDead ? "text-clocktower-night" : "text-gray-200"
                       )}>{p.name}</span>
                       <span className={cn(
                         "font-semibold text-[10px] flex items-center gap-1 shrink-0 max-w-[45%] min-w-0",
@@ -1019,13 +1055,13 @@ export default function WhaleBucket() {
             {/* Add Traveler Card (Late Arrival) */}
             <div className={cn(
               "rounded-lg border p-3.5 space-y-3 transition-colors duration-300",
-              timeOfDay === 'day'
+              isLightModeActive
                 ? "bg-white/50 border-gray-300 text-clocktower-night"
                 : "bg-gray-900/40 border-gray-800/80"
             )}>
               <h4 className={cn(
                 "text-[10px] uppercase font-bold tracking-wider",
-                timeOfDay === 'day' ? "text-gray-600" : "text-gray-500"
+                isLightModeActive ? "text-gray-600" : "text-gray-500"
               )}>Add Traveler (Late Arrival)</h4>
               
               <div className="flex flex-col gap-2">
@@ -1037,9 +1073,9 @@ export default function WhaleBucket() {
                   onChange={(e) => setNewTravelerName(e.target.value)}
                   className={cn(
                     "w-full rounded px-2.5 py-1.5 text-xs focus:outline-none border transition-colors",
-                    timeOfDay === 'day'
+                    isLightModeActive
                       ? "bg-white border-gray-300 text-clocktower-night focus:border-clocktower-blood"
-                      : "bg-gray-950 border-gray-800 text-gray-250 focus:border-clocktower-blood"
+                      : "bg-gray-905 border-gray-800 text-gray-250 focus:border-clocktower-blood"
                   )}
                 />
                 
@@ -1050,9 +1086,9 @@ export default function WhaleBucket() {
                     onChange={(e) => setNewTravelerRoleId(e.target.value)}
                     className={cn(
                       "flex-1 rounded px-2 py-1.5 text-xs focus:outline-none border transition-colors",
-                      timeOfDay === 'day'
+                      isLightModeActive
                         ? "bg-white border-gray-300 text-clocktower-night focus:border-clocktower-blood"
-                        : "bg-gray-950 border-gray-800 text-gray-200 focus:border-clocktower-blood"
+                        : "bg-gray-955 border-gray-800 text-gray-200 focus:border-clocktower-blood"
                     )}
                   >
                     {(rolesData as Role[]).filter(r => r.team === 'traveler').map(r => (
@@ -1305,7 +1341,7 @@ export default function WhaleBucket() {
               onClick={(e) => e.stopPropagation()}
               className={cn(
                 "border w-full max-w-sm rounded-lg p-5 space-y-4 shadow-2xl transition-colors duration-300",
-                timeOfDay === 'day' 
+                isLightModeActive 
                   ? "bg-clocktower-parchment border-clocktower-blood/20 text-clocktower-night" 
                   : "bg-gray-900 border-gray-800 text-clocktower-parchment"
               )}
@@ -1317,7 +1353,7 @@ export default function WhaleBucket() {
                   title={prevPlayer.name}
                   className={cn(
                     "p-1.5 rounded-lg border transition-colors",
-                    timeOfDay === 'day'
+                    isLightModeActive
                       ? "border-gray-300 text-gray-600 hover:bg-gray-100"
                       : "border-gray-700 text-gray-400 hover:bg-gray-800"
                   )}
@@ -1326,10 +1362,10 @@ export default function WhaleBucket() {
                 </button>
 
                 <div className="text-center">
-                  <h3 className={cn("font-bold text-xl", timeOfDay === 'day' ? "text-clocktower-night" : "text-white")}>
+                  <h3 className={cn("font-bold text-xl", isLightModeActive ? "text-clocktower-night" : "text-white")}>
                     Player Details
                   </h3>
-                  <p className={cn("text-xs", timeOfDay === 'day' ? "text-gray-600" : "text-gray-400")}>
+                  <p className={cn("text-xs", isLightModeActive ? "text-gray-600" : "text-gray-400")}>
                     {currentIndex + 1} of {players.length}
                   </p>
                 </div>
@@ -1341,7 +1377,7 @@ export default function WhaleBucket() {
                     title={nextPlayer.name}
                     className={cn(
                       "p-1.5 rounded-lg border transition-colors",
-                      timeOfDay === 'day'
+                      isLightModeActive
                         ? "border-gray-300 text-gray-600 hover:bg-gray-100"
                         : "border-gray-700 text-gray-400 hover:bg-gray-800"
                     )}
@@ -1353,7 +1389,7 @@ export default function WhaleBucket() {
                     onClick={closeDetailsModal}
                     className={cn(
                       "text-sm font-semibold hover:underline",
-                      timeOfDay === 'day' ? "text-clocktower-blood" : "text-clocktower-townsfolk"
+                      isLightModeActive ? "text-clocktower-blood" : "text-clocktower-townsfolk"
                     )}
                   >
                     Close
@@ -1364,9 +1400,9 @@ export default function WhaleBucket() {
               {/* Player Info Card */}
               <div className={cn(
                 "p-4 rounded-lg border space-y-3",
-                timeOfDay === 'day' 
+                isLightModeActive 
                   ? "bg-white/60 border-gray-300" 
-                  : "bg-gray-950/40 border-gray-800"
+                  : "bg-gray-955/40 border-gray-800"
               )}>
                 <div>
                   <label className="text-[10px] uppercase font-bold tracking-wider opacity-60 block mb-1">Player Name</label>
@@ -1377,7 +1413,7 @@ export default function WhaleBucket() {
                     onKeyDown={(e) => e.key === 'Enter' && closeDetailsModal()}
                     className={cn(
                       "w-full font-semibold text-base px-2 py-1 rounded border focus:outline-none focus:border-clocktower-blood bg-transparent transition-colors",
-                      timeOfDay === 'day'
+                      isLightModeActive
                         ? "border-gray-300 text-clocktower-night focus:bg-white"
                         : "border-gray-800 text-gray-200 focus:bg-gray-950"
                     )}
@@ -1452,7 +1488,7 @@ export default function WhaleBucket() {
                         }}
                         className={cn(
                           "text-xs font-semibold hover:underline mt-1",
-                          timeOfDay === 'day' ? "text-clocktower-blood" : "text-clocktower-townsfolk"
+                          isLightModeActive ? "text-clocktower-blood" : "text-clocktower-townsfolk"
                         )}
                       >
                         ← Cancel
@@ -1486,7 +1522,7 @@ export default function WhaleBucket() {
                           onClick={() => setIsSearchingRole(true)}
                           className={cn(
                             "text-xs underline font-medium",
-                            timeOfDay === 'day' ? "text-clocktower-blood hover:text-red-800" : "text-clocktower-townsfolk hover:text-blue-400"
+                            isLightModeActive ? "text-clocktower-blood hover:text-red-800" : "text-clocktower-townsfolk hover:text-blue-400"
                           )}
                         >
                           Change
@@ -1500,7 +1536,7 @@ export default function WhaleBucket() {
                           onClick={() => setIsSearchingRole(true)}
                           className={cn(
                             "text-xs underline font-medium",
-                            timeOfDay === 'day' ? "text-clocktower-blood hover:text-red-800" : "text-clocktower-townsfolk hover:text-blue-400"
+                            isLightModeActive ? "text-clocktower-blood hover:text-red-800" : "text-clocktower-townsfolk hover:text-blue-400"
                           )}
                         >
                           Select
@@ -1529,7 +1565,7 @@ export default function WhaleBucket() {
                         "px-3 py-1.5 rounded text-xs font-bold border transition-all",
                         !p.isDead 
                           ? "bg-clocktower-outsider border-clocktower-outsider/40 text-white" 
-                          : timeOfDay === 'day' 
+                          : isLightModeActive 
                             ? "bg-white border-gray-300 text-gray-400 hover:text-gray-600" 
                             : "bg-gray-950/40 border-gray-800 text-gray-500 hover:text-gray-300"
                       )}
@@ -1546,7 +1582,7 @@ export default function WhaleBucket() {
                         "px-3 py-1.5 rounded text-xs font-bold border transition-all",
                         p.isDead 
                           ? "bg-clocktower-blood border-clocktower-blood/40 text-white" 
-                          : timeOfDay === 'day' 
+                          : isLightModeActive 
                             ? "bg-white border-gray-300 text-gray-400 hover:text-gray-600" 
                             : "bg-gray-950/40 border-gray-800 text-gray-500 hover:text-gray-300"
                       )}

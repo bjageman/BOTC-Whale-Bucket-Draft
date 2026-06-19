@@ -14,6 +14,18 @@ function getRouteFromHash(): Route {
 
 export default function Router() {
   const [route, setRoute] = useState<Route>(getRouteFromHash);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('theme');
+    return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+  });
+
+  const toggleTheme = () => {
+    setTheme(prev => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('theme', next);
+      return next;
+    });
+  };
 
   useEffect(() => {
     const onHashChange = () => setRoute(getRouteFromHash());
@@ -23,10 +35,10 @@ export default function Router() {
 
   switch (route) {
     case 'whale-bucket':
-      return <WhaleBucket />;
+      return <WhaleBucket theme={theme} toggleTheme={toggleTheme} />;
     case 'standard':
-      return <StandardSetup />;
+      return <StandardSetup theme={theme} toggleTheme={toggleTheme} />;
     default:
-      return <HomePage />;
+      return <HomePage theme={theme} toggleTheme={toggleTheme} />;
   }
 }
