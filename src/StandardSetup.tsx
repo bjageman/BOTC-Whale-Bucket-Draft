@@ -256,6 +256,13 @@ export default function StandardSetup() {
     let selectedDemons = shuffle(dems).slice(0, base.demon);
     let selectedMinions = shuffle(mins).slice(0, base.minion);
 
+    const hasLilMonsta = selectedDemons.some(d => d.id === 'lilmonsta');
+    if (hasLilMonsta) {
+      // Lil' Monsta acts as the Demon but counts as a Minion in play, replacing the Demon player.
+      // So we filter Lil' Monsta out from normal Minions.
+      selectedMinions = shuffle(mins.filter(m => m.id !== 'lilmonsta')).slice(0, base.minion);
+    }
+
     let outsiderModifier = 0;
     if (selectedMinions.some(m => m.id === 'baron')) {
       outsiderModifier += 2;
@@ -370,6 +377,8 @@ export default function StandardSetup() {
           acc.minion++;
         } else if (p.isTheDrunk) {
           acc.outsider++;
+        } else if (p.roleId === 'lilmonsta') {
+          acc.minion++;
         } else {
           const role = (rolesData as Role[]).find(r => r.id === p.roleId);
           if (role) acc[role.team]++;
@@ -422,7 +431,8 @@ export default function StandardSetup() {
     } else {
       if (hasLilMonsta) {
         expectedMinion += 1;
-        modifications.push("Lil' Monsta (+1 Minion)");
+        expectedDemon -= 1;
+        modifications.push("Lil' Monsta (+1 Minion, -1 Demon)");
       }
       if (hasBaron) {
         expectedOutsider += 2;

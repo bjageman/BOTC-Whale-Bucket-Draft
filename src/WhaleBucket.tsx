@@ -634,6 +634,8 @@ export default function WhaleBucket() {
           acc.minion++;
         } else if (p.isTheDrunk) {
           acc.outsider++;
+        } else if (p.roleId === 'lilmonsta') {
+          acc.minion++;
         } else {
           const role = (rolesData as Role[]).find(r => r.id === p.roleId);
           if (role) acc[role.team]++;
@@ -686,7 +688,8 @@ export default function WhaleBucket() {
     } else {
       if (hasLilMonsta) {
         expectedMinion += 1;
-        modifications.push("Lil' Monsta (+1 Minion)");
+        expectedDemon -= 1;
+        modifications.push("Lil' Monsta (+1 Minion, -1 Demon)");
       }
       if (hasBaron) {
         expectedOutsider += 2;
