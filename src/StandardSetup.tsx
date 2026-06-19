@@ -571,9 +571,11 @@ export default function StandardSetup() {
         "flex justify-between items-center mb-6 border-b pb-2",
         phase === 'game' && timeOfDay === 'day' ? "border-clocktower-blood/20" : "border-clocktower-blood"
       )}>
-        <div className="flex items-center gap-3">
-          <a href="#/" className={cn("transition-colors text-sm", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-800" : "text-gray-500 hover:text-gray-300")}>← Home</a>
-          <h1 className="text-2xl font-bold text-clocktower-blood tracking-wide">Standard Setup</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3">
+            <a href="#/" className={cn("transition-colors text-sm", phase === 'game' && timeOfDay === 'day' ? "text-gray-600 hover:text-gray-800" : "text-gray-500 hover:text-gray-300")}>← Home</a>
+            <h1 className="text-2xl font-bold text-clocktower-blood tracking-wide">Standard Setup</h1>
+          </div>
           <div id="character-type-legend" className="flex gap-2.5 text-[9px] font-bold tracking-wider text-gray-500">
             <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-townsfolk" /> Townsfolk</span>
             <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-outsider" /> Outsider</span>
