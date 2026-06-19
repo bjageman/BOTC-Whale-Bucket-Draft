@@ -500,10 +500,10 @@ export default function StandardSetup() {
   }, [players]);
 
   const filteredRoles = useMemo(() => {
-    return (rolesData as Role[]).filter(r =>
+    return currentScriptRoles.filter(r =>
       r.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm]);
+  }, [searchTerm, currentScriptRoles]);
 
   const grimoireConfig = useMemo(() => {
     const count = players.length;
@@ -1138,7 +1138,7 @@ export default function StandardSetup() {
         const p = players.find(x => x.id === selectedPlayerId);
         if (!p) return null;
         const roleObj = (rolesData as Role[]).find(r => r.id === p.roleId);
-        const filteredModalRoles = (rolesData as Role[]).filter(r =>
+        const filteredModalRoles = currentScriptRoles.filter(r =>
           r.name.toLowerCase().includes(modalRoleSearch.toLowerCase())
         );
         const currentIndex = players.findIndex(x => x.id === selectedPlayerId);
