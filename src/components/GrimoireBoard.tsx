@@ -138,13 +138,9 @@ export default function GrimoireBoard({
                 style={grimoireConfig.btnStyle}
                 className={cn(
                   "rounded-full border-2 flex flex-col items-center justify-center transition-all duration-200 shadow-md relative group-hover:scale-112 group-hover:shadow-lg",
-                  timeOfDay === 'day'
-                    ? p.isDead
-                      ? "bg-[#e4e4e7] border-[#d4d4d8] text-[#71717a] scale-95 opacity-60"
-                      : "bg-[#ffffff] border-[#d4d4d8] text-[#1a1a1a] hover:border-[#a1a1aa] hover:bg-[#fafafa]"
-                    : p.isDead
-                      ? "bg-[#222226] border-[#3f3f46] text-[#71717a] scale-95 opacity-60"
-                      : "bg-[#38383c] border-[#5a5a62] text-[#f4e4bc] hover:border-[#71717a]"
+                  p.isDead
+                    ? "bg-[#e4e4e7] border-[#d4d4d8] text-[#71717a] scale-95 opacity-60"
+                    : "bg-[#ffffff] border-[#d4d4d8] text-[#1a1a1a] hover:border-[#a1a1aa] hover:bg-[#fafafa]"
                 )}
               >
                 <div
@@ -170,9 +166,7 @@ export default function GrimoireBoard({
                       height: '100%',
                       objectFit: 'contain',
                       padding: '12%',
-                      opacity: timeOfDay === 'day'
-                        ? (p.isDead ? 0.08 : 0.18)
-                        : (p.isDead ? 0.15 : 0.38),
+                      opacity: p.isDead ? 0.08 : 0.18,
                       pointerEvents: 'none',
                     }}
                     className={cn(
@@ -188,20 +182,11 @@ export default function GrimoireBoard({
                 <span
                   style={{
                     ...grimoireConfig.nameStyle,
-                    textShadow: timeOfDay === 'day'
-                      ? '0 1px 2px rgba(255,255,255,0.95), 0 0 3px rgba(255,255,255,0.9)'
-                      : '0 1px 2px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,0.9)'
+                    textShadow: '0 1px 2px rgba(255,255,255,0.95), 0 0 3px rgba(255,255,255,0.9)'
                   }}
                   className={cn(
                     "font-bold font-sans tracking-tighter truncate text-center leading-tight z-10 relative",
-                    p.isDead && "line-through",
-                    timeOfDay === 'day'
-                      ? p.isDead
-                        ? "text-[#71717a]"
-                        : "text-[#1a1a1a] font-bold"
-                      : p.isDead
-                        ? "text-[#71717a]"
-                        : "text-[#f4e4bc]"
+                    p.isDead ? "line-through text-[#71717a]" : "text-[#1a1a1a] font-bold"
                   )}
                 >
                   {p.name.substring(0, grimoireConfig.charLimit)}
@@ -210,9 +195,7 @@ export default function GrimoireBoard({
                 <span
                   style={{
                     ...grimoireConfig.roleStyle,
-                    textShadow: timeOfDay === 'day'
-                      ? '0 1px 2px rgba(255,255,255,0.95), 0 0 3px rgba(255,255,255,0.9)'
-                      : '0 1px 2px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,0.9)'
+                    textShadow: '0 1px 2px rgba(255,255,255,0.95), 0 0 3px rgba(255,255,255,0.9)'
                   }}
                   className={cn(
                     "font-semibold truncate leading-none text-gray-400 px-0.5 text-center z-10 relative",
