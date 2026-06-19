@@ -884,9 +884,9 @@ export default function StandardSetup() {
       {phase === 'game' && (
         <div className="space-y-6 animate-fadeIn md:grid md:grid-cols-[3fr_2fr] md:gap-8 md:space-y-0 md:items-start landscape:grid landscape:grid-cols-[3fr_2fr] landscape:gap-6 landscape:space-y-0 landscape:items-start">
           {/* Column 1: Board Visual & Header */}
-          <div className="space-y-4">
+          <div id="grimoire-board-container" className="space-y-4">
 
-            <div className={cn(
+            <div id="grimoire-circle-board" className={cn(
               "relative w-full border shadow-inner flex items-center justify-center overflow-visible my-4 mx-auto transition-colors duration-300",
               timeOfDay === 'day'
                 ? "bg-white/50 border-gray-300 shadow-gray-200/50"
@@ -1031,8 +1031,9 @@ export default function StandardSetup() {
           </div>
 
           {/* Column 2: Ledger & Controls */}
-          <div className="space-y-6 md:pt-10 landscape:pt-10">
+          <div id="grimoire-controls-container" className="space-y-6 md:pt-10 landscape:pt-10">
             <button
+              id="return-to-setup-button"
               onClick={() => setPhase('setup')}
               className={cn(
                 "w-full py-3 rounded-lg font-bold transition-all text-sm shadow-md",
@@ -1044,7 +1045,7 @@ export default function StandardSetup() {
               Return to Setup
             </button>
 
-            <div className={cn(
+            <div id="grimoire-ledger-container" className={cn(
               "rounded-lg border p-3 space-y-1.5 transition-colors duration-300",
               timeOfDay === 'day'
                 ? "bg-white/50 border-gray-300 text-clocktower-night"
@@ -1058,7 +1059,7 @@ export default function StandardSetup() {
                 {players.map((p, index) => {
                   const rObj = (rolesData as Role[]).find(r => r.id === p.roleId);
                   return (
-                    <div key={p.id} onClick={() => setSelectedPlayerId(p.id)} className={cn(
+                    <div id={`ledger-player-${p.id}`} key={p.id} onClick={() => setSelectedPlayerId(p.id)} className={cn(
                       "flex items-center gap-1.5 py-0.5 px-1.5 rounded border transition-colors min-w-0 cursor-pointer hover:ring-1 hover:ring-gray-500/50",
                       p.isDead && "opacity-45",
                       timeOfDay === 'day'
