@@ -76,8 +76,8 @@ export default function GrimoireBoard({
       className={cn(
         "relative border shadow-inner flex items-center justify-center overflow-visible my-4 mx-auto transition-colors duration-300",
         timeOfDay === 'day'
-          ? "bg-white/50 border-gray-300 shadow-gray-200/50"
-          : "bg-gray-950/40 border-gray-900/60 shadow-black/45",
+          ? "bg-[#f5f3eb] border-[#d4d4d8] shadow-gray-200/50"
+          : "bg-[#141416] border-[#27272a] shadow-black/45",
         grimoireConfig.boardClass
       )}
       style={{ containerType: 'size' }}
@@ -89,8 +89,8 @@ export default function GrimoireBoard({
         className={cn(
           "absolute rounded-full border flex flex-col items-center justify-center transition-all cursor-pointer z-20 select-none shadow-md",
           timeOfDay === 'day'
-            ? "bg-yellow-50 border-yellow-300 text-yellow-800 hover:bg-yellow-100/70"
-            : "bg-clocktower-night/50 border-clocktower-blood/20 text-clocktower-parchment hover:bg-clocktower-blood/10"
+            ? "bg-[#fefce8] border-[#fef08a] text-[#854d0e] hover:bg-[#fef9c3]"
+            : "bg-[#1a1a1a]/80 border-[#8b0000]/30 text-[#f4e4bc] hover:bg-[#27272a]"
         )}
         title="Click to toggle Day/Night"
       >
@@ -140,11 +140,11 @@ export default function GrimoireBoard({
                   "rounded-full border-2 flex flex-col items-center justify-center transition-all shadow-md relative",
                   timeOfDay === 'day'
                     ? p.isDead
-                      ? "bg-gray-200 border-gray-300 text-gray-400 scale-95 opacity-50"
-                      : "bg-white border-gray-300 text-clocktower-night hover:border-gray-400 hover:bg-gray-50"
+                      ? "bg-[#e4e4e7] border-[#d4d4d8] text-[#71717a] scale-95 opacity-60"
+                      : "bg-[#ffffff] border-[#d4d4d8] text-[#1a1a1a] hover:border-[#a1a1aa] hover:bg-[#fafafa]"
                     : p.isDead
-                      ? "bg-black border-gray-800 text-gray-655 scale-95 opacity-50"
-                      : "bg-gray-900 border-gray-700 text-clocktower-parchment hover:border-gray-500"
+                      ? "bg-[#0c0c0e] border-[#27272a] text-[#52525b] scale-95 opacity-60"
+                      : "bg-[#1e1e21] border-[#3f3f46] text-[#f4e4bc] hover:border-[#52525b]"
                 )}
               >
                 <div
@@ -166,11 +166,11 @@ export default function GrimoireBoard({
                     p.isDead && "line-through",
                     timeOfDay === 'day'
                       ? p.isDead
-                        ? "text-gray-400"
-                        : "text-clocktower-night font-bold"
+                        ? "text-[#71717a]"
+                        : "text-[#1a1a1a] font-bold"
                       : p.isDead
-                        ? "text-gray-700"
-                        : "text-clocktower-parchment"
+                        ? "text-[#52525b]"
+                        : "text-[#f4e4bc]"
                   )}
                 >
                   {p.name.substring(0, grimoireConfig.charLimit)}

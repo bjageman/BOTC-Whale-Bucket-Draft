@@ -1,8 +1,36 @@
-import { Sparkles, BookOpen } from 'lucide-react';
+import { useEffect } from 'react';
+import { Sparkles, BookOpen, Sun, Moon } from 'lucide-react';
 
-export default function HomePage() {
+interface HomeProps {
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+}
+
+export default function HomePage({ theme, toggleTheme }: HomeProps) {
+  useEffect(() => {
+    if (theme === 'light') {
+      document.documentElement.classList.add('theme-light');
+    } else {
+      document.documentElement.classList.remove('theme-light');
+    }
+    return () => {
+      document.documentElement.classList.remove('theme-light');
+    };
+  }, [theme]);
+
   return (
-    <div className="min-h-screen bg-clocktower-night text-clocktower-parchment flex items-center justify-center p-4 font-sans">
+    <div className="min-h-screen bg-clocktower-night text-clocktower-parchment flex items-center justify-center p-4 font-sans relative transition-colors duration-300">
+      {/* Theme Switcher Toggle */}
+      <div className="absolute top-4 right-4 z-10">
+        <button
+          onClick={toggleTheme}
+          className="p-2.5 rounded-full bg-gray-900/60 border border-gray-800 hover:bg-gray-800/80 transition-all text-clocktower-parchment hover:text-white flex items-center justify-center shadow-md shadow-black/20"
+          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+      </div>
+
       <div className="max-w-md w-full space-y-8 text-center">
         {/* Title */}
         <div className="space-y-2">

@@ -8,7 +8,7 @@
   transition: background-color 300ms ease, color 300ms ease;
 }
 
-:root.theme-day {
+:root.theme-light {
   background-color: #f4e4bc;
   color: #1a1a1a;
 }
@@ -16,4 +16,166 @@
 body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ==========================================================================
+   Parchment (Light Mode) Override Styling Rules
+   ========================================================================== */
+
+/* Overrides card and container backgrounds to a subtle soft white scroll look */
+:root.theme-light .bg-gray-900:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-900\/50:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-900\/60:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-955:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-950:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-950\/40:not(#grimoire-circle-board):not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-955\/40:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-800:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-850:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-800\/50:not(#grimoire-circle-board *) {
+  background-color: rgba(255, 255, 255, 0.45) !important;
+  color: #1a1a1a !important;
+}
+
+/* Overrides search inputs & form text boxes for readable parchment styles */
+:root.theme-light input[type="text"]:not(#grimoire-circle-board *),
+:root.theme-light input[type="search"]:not(#grimoire-circle-board *) {
+  background-color: rgba(255, 255, 255, 0.75) !important;
+  color: #1a1a1a !important;
+  border-color: rgba(139, 0, 0, 0.25) !important;
+}
+:root.theme-light input[type="text"]:not(#grimoire-circle-board *)::placeholder,
+:root.theme-light input[type="search"]:not(#grimoire-circle-board *)::placeholder {
+  color: #8c7b65 !important;
+}
+
+/* Warm crimson border color overrides */
+:root.theme-light .border-gray-800:not(#grimoire-circle-board *),
+:root.theme-light .border-gray-800\/50:not(#grimoire-circle-board *),
+:root.theme-light .border-gray-800\/60:not(#grimoire-circle-board *),
+:root.theme-light .border-gray-855:not(#grimoire-circle-board *),
+:root.theme-light .border-gray-700:not(#grimoire-circle-board *),
+:root.theme-light .border-gray-700\/60:not(#grimoire-circle-board *),
+:root.theme-light .border-gray-750:not(#grimoire-circle-board *),
+:root.theme-light .border-gray-850:not(#grimoire-circle-board *) {
+  border-color: rgba(139, 0, 0, 0.18) !important;
+}
+
+/* Text coloring overrides */
+:root.theme-light .text-gray-200:not(#grimoire-circle-board *),
+:root.theme-light .text-gray-300:not(#grimoire-circle-board *),
+:root.theme-light .text-gray-400:not(#grimoire-circle-board *),
+:root.theme-light h2:not(#grimoire-circle-board *),
+:root.theme-light h3:not(#grimoire-circle-board *),
+:root.theme-light span.text-gray-300:not(#grimoire-circle-board *) {
+  color: #1a1a1a !important;
+}
+
+:root.theme-light .text-gray-555:not(#grimoire-circle-board *),
+:root.theme-light .text-gray-505:not(#grimoire-circle-board *),
+:root.theme-light .text-gray-500:not(#grimoire-circle-board *),
+:root.theme-light .text-gray-405:not(#grimoire-circle-board *) {
+  color: #635746 !important;
+}
+
+:root.theme-light .text-gray-600:not(#grimoire-circle-board *) {
+  color: #4a3e2e !important;
+}
+
+/* Seating sequence numbers */
+:root.theme-light .text-gray-505.font-mono:not(#grimoire-circle-board *),
+:root.theme-light .text-gray-500.font-mono:not(#grimoire-circle-board *) {
+  color: #8b0000 !important;
+  font-weight: 700;
+}
+
+/* Script banner styling in light mode */
+:root.theme-light .bg-gray-955.border-gray-800.text-gray-405:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-950.border-gray-800.text-gray-405:not(#grimoire-circle-board *) {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(139, 0, 0, 0.25) !important;
+  color: #8b0000 !important;
+}
+
+/* Cards hover behaviors */
+:root.theme-light .hover\:bg-gray-900\/80:hover:not(#grimoire-circle-board *),
+:root.theme-light .hover\:bg-gray-900\/80:not(#grimoire-circle-board *):hover {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+}
+:root.theme-light .hover\:border-clocktower-townsfolk\/40:hover:not(#grimoire-circle-board *),
+:root.theme-light .hover\:border-clocktower-townsfolk\/40:not(#grimoire-circle-board *):hover {
+  border-color: rgba(37, 99, 235, 0.5) !important;
+}
+:root.theme-light .hover\:border-clocktower-blood\/60:hover:not(#grimoire-circle-board *),
+:root.theme-light .hover\:border-clocktower-blood\/60:not(#grimoire-circle-board *):hover {
+  border-color: rgba(139, 0, 0, 0.5) !important;
+}
+
+/* Action buttons resets */
+:root.theme-light .bg-transparent.hover\:bg-gray-800:not(#grimoire-circle-board *),
+:root.theme-light .bg-transparent.hover\:bg-gray-800:not(#grimoire-circle-board *):hover {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  color: #8b0000 !important;
+  border-color: rgba(139, 0, 0, 0.3) !important;
+}
+:root.theme-light .bg-transparent.hover\:bg-gray-800:not(#grimoire-circle-board *):hover {
+  background-color: rgba(139, 0, 0, 0.08) !important;
+}
+
+:root.theme-light .bg-gray-800.hover\:bg-gray-700.text-gray-300:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-800.hover\:bg-gray-700.text-gray-300:not(#grimoire-circle-board *):hover {
+  background-color: rgba(139, 0, 0, 0.05) !important;
+  border-color: rgba(139, 0, 0, 0.22) !important;
+  color: #8b0000 !important;
+}
+:root.theme-light .bg-gray-800.hover\:bg-gray-700.text-gray-300:not(#grimoire-circle-board *):hover {
+  background-color: rgba(139, 0, 0, 0.1) !important;
+}
+
+/* Preferences defaults tag */
+:root.theme-light .bg-gray-955:not(#grimoire-circle-board *) {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #5c5c5c !important;
+}
+:root.theme-light .bg-gray-955\/40:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-955\/30:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-955\/30:not(#grimoire-circle-board *):hover,
+:root.theme-light .bg-gray-955\/40:not(#grimoire-circle-board *):hover,
+:root.theme-light .bg-gray-950\/40:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-955\/40:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-950\/30:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-950\/30:not(#grimoire-circle-board *):hover {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  border-color: rgba(139, 0, 0, 0.12) !important;
+  color: #635746 !important;
+}
+
+/* Modal boxes inside grimoire */
+:root.theme-light .bg-gray-900.border.border-gray-800:not(#grimoire-circle-board *) {
+  background-color: #fdfaf2 !important;
+  border-color: #8b0000 !important;
+  box-shadow: 0 10px 25px -5px rgba(139, 0, 0, 0.18), 0 8px 10px -6px rgba(139, 0, 0, 0.18) !important;
+}
+
+/* Modal role selection item lists */
+:root.theme-light .bg-gray-955\/40:hover:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-955\/40:not(#grimoire-circle-board *):hover {
+  background-color: rgba(139, 0, 0, 0.05) !important;
+}
+
+/* Search selection tabs items */
+:root.theme-light .bg-gray-955\/30:hover:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-955\/30:not(#grimoire-circle-board *):hover,
+:root.theme-light .bg-gray-955\/30:hover:not(#grimoire-circle-board *):hover,
+:root.theme-light .bg-gray-950\/30:hover:not(#grimoire-circle-board *),
+:root.theme-light .bg-gray-950\/30:not(#grimoire-circle-board *):hover,
+:root.theme-light .bg-gray-950\/30:hover:not(#grimoire-circle-board *):hover {
+  background-color: rgba(255, 255, 255, 0.65) !important;
+}
+
+/* Unified layout grid borders */
+:root.theme-light .border-clocktower-blood:not(#grimoire-circle-board *),
+:root.theme-light .border-clocktower-blood:not(#grimoire-circle-board) {
+  border-color: #8b0000 !important;
 }
