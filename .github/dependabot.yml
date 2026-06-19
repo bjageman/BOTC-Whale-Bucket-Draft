@@ -11,3 +11,8 @@ updates:
         dependency-type: development
       production-dependencies:
         dependency-type: production
+    ignore:
+      # Tailwind v4 is a breaking change (new PostCSS plugin, new config format).
+      # Upgrade must be done manually as a dedicated migration.
+      - dependency-name: tailwindcss
+        update-types: ["version-update:semver-major"]
