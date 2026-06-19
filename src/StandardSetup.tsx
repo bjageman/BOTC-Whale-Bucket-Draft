@@ -916,6 +916,14 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between bg-gray-955/40 px-3 py-2 rounded border border-gray-855">
                             <div className="flex items-center gap-2">
+                              {roleObj && (
+                                <img
+                                  src={`/icons/${roleObj.id}.svg`}
+                                  alt={roleObj.name}
+                                  className="w-5 h-5 object-contain shrink-0"
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                              )}
                               <span className={cn(
                                 "text-[9px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded border",
                                 roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk border-clocktower-townsfolk/40 bg-clocktower-townsfolk/5",
@@ -1203,6 +1211,14 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
                         rObj?.team === 'demon' && "text-clocktower-demon",
                         rObj?.team === 'traveler' && "text-clocktower-traveler",
                       )}>
+                        {rObj && (
+                          <img
+                            src={`/icons/${rObj.id}.svg`}
+                            alt={rObj.name}
+                            className="w-3.5 h-3.5 object-contain shrink-0"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        )}
                         <span className="truncate">{rObj?.name ?? '—'}</span>
                         {p.isTheDrunk && <span className="text-[8px] bg-yellow-600 text-black px-0.5 rounded leading-none shrink-0">DK</span>}
                         {p.isTheMarionette && <span className="text-[8px] bg-clocktower-minion text-white px-0.5 rounded leading-none shrink-0">MN</span>}
@@ -1319,6 +1335,12 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
                     className="w-full text-left px-3 py-2.5 hover:bg-gray-800 text-xs transition-colors flex justify-between items-center"
                   >
                     <div className="flex items-center min-w-0 flex-1 gap-1.5 mr-2">
+                      <img
+                        src={`/icons/${role.id}.svg`}
+                        alt={role.name}
+                        className="w-4.5 h-4.5 object-contain shrink-0"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
                       <span className={cn(
                         "font-semibold text-xs truncate",
                         role.team === 'townsfolk' && "text-clocktower-townsfolk",
@@ -1504,6 +1526,12 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
                               className="w-full text-left px-2 py-1.5 hover:bg-gray-800 text-xs transition-colors flex justify-between items-center"
                             >
                               <div className="flex items-center min-w-0 flex-1 gap-1.5 mr-2">
+                                <img
+                                  src={`/icons/${role.id}.svg`}
+                                  alt={role.name}
+                                  className="w-4.5 h-4.5 object-contain shrink-0"
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
                                 <span className={cn(
                                   "font-semibold text-xs truncate",
                                   role.team === 'townsfolk' && "text-clocktower-townsfolk",

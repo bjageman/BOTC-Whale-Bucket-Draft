@@ -159,6 +159,21 @@ export default function GrimoireBoard({
                   )}
                 />
 
+                {roleObj && (
+                  <img
+                    src={`/icons/${roleObj.id}.svg`}
+                    alt={roleObj.name}
+                    style={{ width: '30%', height: '30%', objectFit: 'contain' }}
+                    className={cn(
+                      "mt-1.5 select-none pointer-events-none transition-all duration-200",
+                      p.isDead && "opacity-40 grayscale"
+                    )}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                )}
+
                 <span
                   style={grimoireConfig.nameStyle}
                   className={cn(

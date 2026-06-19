@@ -26,3 +26,7 @@ dist-ssr
 # Production / environment
 docker-compose.prod.yml
 .env
+
+# Blood on the Clocktower character icons
+public/icons/
+
