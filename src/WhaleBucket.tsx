@@ -1274,7 +1274,12 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                     id="game-add-traveler-button"
                     onClick={addTravelerGamePhase}
                     disabled={players.length >= 20}
-                    className="bg-clocktower-traveler hover:bg-purple-700 text-white px-3 py-1.5 rounded text-xs font-bold transition-all disabled:opacity-40"
+                    className={cn(
+                      "px-3 py-1.5 rounded text-xs font-bold transition-all disabled:opacity-40 text-white shadow-sm",
+                      isLightModeActive
+                        ? "bg-purple-600 hover:bg-purple-700 active:bg-purple-800"
+                        : "bg-clocktower-traveler hover:bg-purple-400 active:bg-purple-600"
+                    )}
                   >
                     Add
                   </button>

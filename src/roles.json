@@ -148,7 +148,6 @@
   {"id": "butcher", "name": "Butcher", "team": "traveler"},
   {"id": "deviant", "name": "Deviant", "team": "traveler"},
   {"id": "apprentice", "name": "Apprentice", "team": "traveler"},
-  {"id": "vandal", "name": "Vandal", "team": "traveler"},
   {"id": "judge", "name": "Judge", "team": "traveler"},
   {"id": "bishop", "name": "Bishop", "team": "traveler"}
 ]
