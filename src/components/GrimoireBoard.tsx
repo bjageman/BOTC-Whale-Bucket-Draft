@@ -138,13 +138,9 @@ export default function GrimoireBoard({
                 style={grimoireConfig.btnStyle}
                 className={cn(
                   "rounded-full border-2 flex flex-col items-center justify-center transition-all duration-200 shadow-md relative group-hover:scale-112 group-hover:shadow-lg",
-                  timeOfDay === 'day'
-                    ? p.isDead
-                      ? "bg-[#e4e4e7] border-[#d4d4d8] text-[#71717a] scale-95 opacity-60"
-                      : "bg-[#ffffff] border-[#d4d4d8] text-[#1a1a1a] hover:border-[#a1a1aa] hover:bg-[#fafafa]"
-                    : p.isDead
-                      ? "bg-[#0c0c0e] border-[#27272a] text-[#52525b] scale-95 opacity-60"
-                      : "bg-[#1e1e21] border-[#3f3f46] text-[#f4e4bc] hover:border-[#52525b]"
+                  p.isDead
+                    ? "bg-[#e4e4e7] border-[#d4d4d8] text-[#71717a] scale-95 opacity-60"
+                    : "bg-[#ffffff] border-[#d4d4d8] text-[#1a1a1a] hover:border-[#a1a1aa] hover:bg-[#fafafa]"
                 )}
               >
                 <div
@@ -159,27 +155,50 @@ export default function GrimoireBoard({
                   )}
                 />
 
+                {roleObj && (
+                  <img
+                    src={`/icons/${roleObj.id}.svg`}
+                    alt={roleObj.name}
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      padding: '4%',
+                      opacity: p.isDead ? 0.08 : 0.18,
+                      pointerEvents: 'none',
+                    }}
+                    className={cn(
+                      "select-none transition-all duration-200 z-0 group-hover:scale-105",
+                      p.isDead && "grayscale"
+                    )}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                )}
+
                 <span
-                  style={grimoireConfig.nameStyle}
+                  style={{
+                    ...grimoireConfig.nameStyle,
+                    textShadow: '0 1px 2px rgba(255,255,255,0.95), 0 0 3px rgba(255,255,255,0.9)'
+                  }}
                   className={cn(
-                    "font-bold font-sans tracking-tighter truncate text-center leading-tight",
-                    p.isDead && "line-through",
-                    timeOfDay === 'day'
-                      ? p.isDead
-                        ? "text-[#71717a]"
-                        : "text-[#1a1a1a] font-bold"
-                      : p.isDead
-                        ? "text-[#52525b]"
-                        : "text-[#f4e4bc]"
+                    "font-bold font-sans tracking-tighter truncate text-center leading-tight z-10 relative",
+                    p.isDead ? "line-through text-[#71717a]" : "text-[#1a1a1a] font-bold"
                   )}
                 >
                   {p.name.substring(0, grimoireConfig.charLimit)}
                 </span>
 
                 <span
-                  style={grimoireConfig.roleStyle}
+                  style={{
+                    ...grimoireConfig.roleStyle,
+                    textShadow: '0 1px 2px rgba(255,255,255,0.95), 0 0 3px rgba(255,255,255,0.9)'
+                  }}
                   className={cn(
-                    "font-semibold truncate leading-none text-gray-400 px-0.5 text-center",
+                    "font-semibold truncate leading-none text-gray-400 px-0.5 text-center z-10 relative",
                     roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk/85",
                     roleObj?.team === 'outsider' && "text-clocktower-outsider/85",
                     roleObj?.team === 'minion' && "text-clocktower-minion/85",
