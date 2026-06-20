@@ -19,6 +19,7 @@ export interface Player {
   roleId?: string;
   assignedFromPref?: boolean;
   isDead: boolean;
+  isEvil?: boolean;
   isTheDrunk?: boolean;
   isTheMarionette?: boolean;
   isTheLunatic?: boolean;

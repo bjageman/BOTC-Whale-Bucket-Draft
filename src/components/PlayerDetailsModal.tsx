@@ -9,6 +9,7 @@ interface Player {
   roleId?: string;
   isDead?: boolean;
   isDrunkOrPoisoned?: boolean;
+  isEvil?: boolean;
 }
 
 interface PlayerDetailsModalProps {
@@ -27,6 +28,7 @@ interface PlayerDetailsModalProps {
   onUpdateRole: (id: string, roleId: string) => void;
   onToggleDead: (id: string) => void;
   onToggleDrunkOrPoisoned: (id: string) => void;
+  onToggleEvil: (id: string) => void;
   onSetSearchingRole: (v: boolean) => void;
   onSetModalRoleSearch: (v: string) => void;
 }
@@ -47,10 +49,14 @@ export default function PlayerDetailsModal({
   onUpdateRole,
   onToggleDead,
   onToggleDrunkOrPoisoned,
+  onToggleEvil,
   onSetSearchingRole,
   onSetModalRoleSearch,
 }: PlayerDetailsModalProps) {
   const modalNameInputRef = useRef<HTMLInputElement | null>(null);
+
+  const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
+  const isEvil = p.isEvil !== undefined ? p.isEvil : defaultEvil;
 
 
   const teamFill = (team: Role['team']) => ({
@@ -310,6 +316,19 @@ export default function PlayerDetailsModal({
             {p.isDead ? 'Dead' : 'Alive'}
           </button>
           <button
+            id="detail-alignment-toggle-button"
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onToggleEvil(p.id); }}
+            className={cn(
+              'px-4 py-2 rounded text-xs font-bold border transition-all shadow-sm flex-1',
+              !isEvil
+                ? 'bg-clocktower-townsfolk border-clocktower-townsfolk/40 text-white hover:bg-blue-600'
+                : 'bg-clocktower-minion border-clocktower-minion/40 text-white hover:bg-red-500'
+            )}
+          >
+            {isEvil ? '👿 Evil' : '😇 Good'}
+          </button>
+          <button
             id="detail-drunk-poisoned-toggle-button"
             type="button"
             onClick={(e) => { e.stopPropagation(); onToggleDrunkOrPoisoned(p.id); }}
@@ -319,7 +338,7 @@ export default function PlayerDetailsModal({
                 ? 'bg-purple-600 border-purple-600/40 text-white hover:bg-purple-700'
                 : isLightModeActive
                   ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-600'
-                  : 'bg-gray-950/40 border-gray-800 text-gray-500 hover:text-gray-300'
+                  : 'bg-gray-950/40 border-gray-800 text-gray-550 hover:text-gray-300'
             )}
           >
             🤢 Drunk/Poisoned

@@ -54,6 +54,9 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     handleDragLeave,
     handleDrop,
     handleDragEnd,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
     movePlayer,
   } = usePlayerDragAndDrop(players, setPlayers);
 
@@ -252,6 +255,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           ...p,
           roleId: roleId || undefined,
           assignedFromPref: isPref,
+          isEvil: undefined,
         };
       }
       return p;
@@ -260,6 +264,18 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
 
   const togglePlayerDead = (id: string) => {
     setPlayers(players.map(p => p.id === id ? { ...p, isDead: !p.isDead } : p));
+  };
+
+  const togglePlayerEvil = (id: string) => {
+    setPlayers(players.map(p => {
+      if (p.id === id) {
+        const roleObj = (rolesData as Role[]).find(r => r.id === p.roleId);
+        const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
+        const currentEvil = p.isEvil !== undefined ? p.isEvil : defaultEvil;
+        return { ...p, isEvil: !currentEvil };
+      }
+      return p;
+    }));
   };
 
   const togglePlayerDrunkOrPoisoned = (id: string) => {
@@ -388,6 +404,9 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           handleDragLeave={handleDragLeave}
           handleDrop={handleDrop}
           handleDragEnd={handleDragEnd}
+          handleTouchStart={handleTouchStart}
+          handleTouchMove={handleTouchMove}
+          handleTouchEnd={handleTouchEnd}
           movePlayer={movePlayer}
           addPlayer={addPlayer}
           removePlayer={removePlayer}
@@ -432,6 +451,9 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           handleDragLeave={handleDragLeave}
           handleDrop={handleDrop}
           handleDragEnd={handleDragEnd}
+          handleTouchStart={handleTouchStart}
+          handleTouchMove={handleTouchMove}
+          handleTouchEnd={handleTouchEnd}
           setSelectedPlayerId={setSelectedPlayerId}
           toggleTimeOfDay={toggleTimeOfDay}
           addTravelerGamePhase={addTravelerGamePhase}
@@ -485,6 +507,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           onUpdateRole={updatePlayerRole}
           onToggleDead={togglePlayerDead}
           onToggleDrunkOrPoisoned={togglePlayerDrunkOrPoisoned}
+          onToggleEvil={togglePlayerEvil}
           onSetSearchingRole={setIsSearchingRole}
           onSetModalRoleSearch={setModalRoleSearch}
         />
