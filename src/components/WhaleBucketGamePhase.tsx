@@ -29,7 +29,6 @@ interface WhaleBucketGamePhaseProps {
   addTravelerGamePhase: () => void;
   setNewTravelerName: (name: string) => void;
   setNewTravelerRoleId: (roleId: string) => void;
-  setPhase: (p: 'setup' | 'draft' | 'game') => void;
 }
 
 export default function WhaleBucketGamePhase({
@@ -54,7 +53,6 @@ export default function WhaleBucketGamePhase({
   addTravelerGamePhase,
   setNewTravelerName,
   setNewTravelerRoleId,
-  setPhase,
 }: WhaleBucketGamePhaseProps) {
   const [isDragEnabled, setIsDragEnabled] = useState(false);
   return (
@@ -81,18 +79,7 @@ export default function WhaleBucketGamePhase({
 
       {/* Column 2: Ledger & Controls */}
       <div className="space-y-6 md:pt-10 landscape:pt-10">
-        <button
-          id="return-to-draft-button"
-          onClick={() => setPhase('draft')}
-          className={cn(
-            "w-full py-3 rounded-lg font-bold transition-all text-sm shadow-md",
-            isLightModeActive
-              ? "bg-white hover:bg-gray-50 text-clocktower-night border border-gray-300"
-              : "bg-gray-800 hover:bg-gray-700 text-gray-300"
-          )}
-        >
-          Return to Draft Screen
-        </button>
+
 
         <div className={cn(
           "rounded-lg border p-3 space-y-1.5 transition-colors duration-300",

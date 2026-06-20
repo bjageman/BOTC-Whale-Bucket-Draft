@@ -488,7 +488,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           addTravelerGamePhase={addTravelerGamePhase}
           setNewTravelerName={setNewTravelerName}
           setNewTravelerRoleId={setNewTravelerRoleId}
-          setPhase={setPhase}
           handleDragStart={handleDragStart}
           handleDragOver={handleDragOver}
           handleDragLeave={handleDragLeave}
