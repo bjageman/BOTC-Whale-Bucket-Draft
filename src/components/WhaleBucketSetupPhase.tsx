@@ -344,32 +344,32 @@ export default function WhaleBucketSetupPhase({
                 : "grid-cols-4 gap-2"
             )}>
               <div>
-                <div className="text-gray-555">TF</div>
+                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-500 font-sans">Townsfolk</div>
                 <div className={cn("font-bold text-xs mt-0.5", validationSummary.isTownsfolkValid ? "text-clocktower-townsfolk" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
                   {validationSummary.counts.townsfolk} / {validationSummary.expectedTownsfolkLabel}
                 </div>
               </div>
               <div>
-                <div className="text-gray-555">OUT</div>
+                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-500 font-sans">Outsider</div>
                 <div className={cn("font-bold text-xs mt-0.5", validationSummary.isOutsiderValid ? "text-clocktower-outsider" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
                   {validationSummary.counts.outsider} / {validationSummary.expectedOutsiderLabel}
                 </div>
               </div>
               <div>
-                <div className="text-gray-555">MIN</div>
+                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-500 font-sans">Minion</div>
                 <div className={cn("font-bold text-xs mt-0.5", validationSummary.isMinionValid ? "text-clocktower-minion" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
                   {validationSummary.counts.minion} / {validationSummary.expected.minion}
                 </div>
               </div>
               <div>
-                <div className="text-gray-555">DEM</div>
+                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-500 font-sans">Demon</div>
                 <div className={cn("font-bold text-xs mt-0.5", validationSummary.isDemonValid ? "text-clocktower-demon" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
                   {validationSummary.counts.demon} / {validationSummary.expected.demon}
                 </div>
               </div>
               {(validationSummary.expected.traveler > 0 || validationSummary.counts.traveler > 0) && (
                 <div>
-                  <div className="text-gray-555">TRV</div>
+                  <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-500 font-sans">Traveler</div>
                   <div className="font-bold text-xs mt-0.5 text-clocktower-traveler">
                     {validationSummary.counts.traveler} / {validationSummary.expected.traveler}
                   </div>

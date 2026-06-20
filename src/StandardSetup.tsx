@@ -391,38 +391,46 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         : "bg-clocktower-night text-clocktower-parchment"
     )}>
       <header className={cn(
-        "flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 border-b pb-2 gap-3 sm:gap-0",
+        "relative flex flex-col items-center justify-center mb-6 border-b pb-3 gap-2.5 w-full",
         isLightModeActive ? "border-clocktower-blood/20" : "border-clocktower-blood"
       )}>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
-          <div className="relative flex justify-center items-center w-full sm:w-auto sm:justify-start sm:gap-3">
-            <a href="#/" className={cn("absolute left-0 transition-colors text-sm sm:static", isLightModeActive ? "text-gray-600 hover:text-gray-800" : "text-gray-500 hover:text-gray-300")}>← Home</a>
-            <h1 className="text-2xl font-bold text-clocktower-blood tracking-wide text-center sm:text-left">Standard Setup</h1>
-            <div className="absolute right-0 flex items-center gap-1 sm:hidden">
-              <button
-                onClick={toggleTheme}
-                className={cn("p-2 transition-colors", isLightModeActive ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")}
-                title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              >
-                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
-            </div>
+        {/* Navigation & Controls Row */}
+        <div className="relative flex justify-center items-center w-full min-h-[36px]">
+          {phase === 'setup' ? (
+            <a
+              href="#/"
+              className={cn(
+                "absolute left-0 transition-colors text-lg font-bold px-2",
+                isLightModeActive ? "text-gray-600 hover:text-gray-800" : "text-gray-500 hover:text-gray-300"
+              )}
+            >
+              ←
+            </a>
+          ) : (
+            <button
+              onClick={() => setPhase('setup')}
+              className={cn(
+                "absolute left-0 transition-colors text-lg font-bold px-2",
+                isLightModeActive ? "text-gray-600 hover:text-gray-800" : "text-gray-500 hover:text-gray-300"
+              )}
+            >
+              ←
+            </button>
+          )}
+          
+          <h1 className="text-2xl font-bold text-clocktower-blood tracking-wide text-center">
+            Standard Grimoire
+          </h1>
+
+          <div className="absolute right-0 flex items-center gap-1">
+            <button
+              onClick={toggleTheme}
+              className={cn("p-2 transition-colors", isLightModeActive ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")}
+              title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
           </div>
-          <div id="character-type-legend" className="flex justify-center sm:justify-start gap-2.5 text-[9px] font-bold tracking-wider text-gray-500 w-full sm:w-auto">
-            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-townsfolk" /> Townsfolk</span>
-            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-outsider" /> Outsider</span>
-            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-minion" /> Minion</span>
-            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-clocktower-demon" /> Demon</span>
-          </div>
-        </div>
-        <div className="hidden sm:flex items-center gap-1.5">
-          <button
-            onClick={toggleTheme}
-            className={cn("p-2 transition-colors", isLightModeActive ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")}
-            title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
         </div>
       </header>
 

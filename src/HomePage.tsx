@@ -71,7 +71,7 @@ export default function HomePage({ theme, toggleTheme }: HomeProps) {
                   "text-lg font-bold transition-colors",
                   isLightModeActive ? "text-clocktower-night group-hover:text-clocktower-townsfolk" : "text-gray-200 group-hover:text-white"
                 )}>
-                  Standard Setup
+                  Standard Grimoire
                 </h2>
                 <p className={cn("text-sm mt-1 leading-relaxed", isLightModeActive ? "text-gray-600" : "text-gray-500")}>
                   Classic storyteller mode. Manually assign every role, track the grimoire, and manage the game.
@@ -107,7 +107,7 @@ export default function HomePage({ theme, toggleTheme }: HomeProps) {
                   "text-lg font-bold transition-colors",
                   isLightModeActive ? "text-clocktower-night group-hover:text-clocktower-blood" : "text-gray-200 group-hover:text-white"
                 )}>
-                  Whale Bucket
+                  Whale Bucket Grimoire
                 </h2>
                 <p className={cn("text-sm mt-1 leading-relaxed", isLightModeActive ? "text-gray-600" : "text-gray-500")}>
                   Players submit role preferences, then the grimoire is randomly assembled. Perfect for casual groups who want a surprise.

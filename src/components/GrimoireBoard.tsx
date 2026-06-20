@@ -20,6 +20,14 @@ export default function GrimoireBoard({
   onSelectPlayer,
   rolesData,
 }: GrimoireBoardProps) {
+  const teamFill = (team: Role['team']) => ({
+    townsfolk: 'fill-clocktower-townsfolk',
+    outsider: 'fill-clocktower-outsider',
+    minion: 'fill-clocktower-minion',
+    demon: 'fill-clocktower-demon',
+    traveler: 'fill-clocktower-traveler',
+  }[team] ?? 'fill-gray-500');
+
   const grimoireConfig = useMemo(() => {
     const count = players.length;
     if (count <= 6) {
@@ -122,6 +130,28 @@ export default function GrimoireBoard({
         const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
         const isEvil = p.isEvil !== undefined ? p.isEvil : defaultEvil;
 
+        // Calculate dynamic font size and split name by space to prevent overflow
+        const baseFontSizeVal = parseFloat(grimoireConfig.nameStyle.fontSize as string);
+        const baseFontSizeUnit = (grimoireConfig.nameStyle.fontSize as string).replace(/[0-9.]/g, '');
+        const nameLength = p.name.length;
+        const longestWordLength = Math.max(...p.name.split(' ').map(w => w.length));
+
+        let scaleFactor = 1.0;
+        
+        // Shrink based on the longest word
+        if (longestWordLength > 12) scaleFactor = 0.55;
+        else if (longestWordLength > 10) scaleFactor = 0.65;
+        else if (longestWordLength > 8) scaleFactor = 0.75;
+        else if (longestWordLength > 6) scaleFactor = 0.86;
+        
+        // Shrink based on total length
+        if (nameLength > 18) scaleFactor = Math.min(scaleFactor, 0.55);
+        else if (nameLength > 14) scaleFactor = Math.min(scaleFactor, 0.65);
+        else if (nameLength > 10) scaleFactor = Math.min(scaleFactor, 0.78);
+        else if (nameLength > 8) scaleFactor = Math.min(scaleFactor, 0.9);
+
+        const dynamicFontSize = `${baseFontSizeVal * scaleFactor}${baseFontSizeUnit}`;
+
         return (
           <div
             key={p.id}
@@ -139,85 +169,97 @@ export default function GrimoireBoard({
                 onClick={() => onSelectPlayer(p.id)}
                 style={grimoireConfig.btnStyle}
                 className={cn(
-                  "rounded-full border-2 flex flex-col items-center justify-center transition-all duration-200 shadow-md relative group-hover:scale-125 group-hover:shadow-lg",
-                  p.isDead
-                    ? "bg-[#e4e4e7] text-[#71717a] scale-95 opacity-60"
-                    : "bg-[#ffffff] text-[#1a1a1a] hover:bg-[#fafafa]",
-                  isEvil
-                    ? "border-clocktower-minion/80 hover:border-clocktower-minion"
-                    : "border-clocktower-townsfolk/80 hover:border-clocktower-townsfolk"
+                  "rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-md relative group-hover:scale-125 group-hover:shadow-lg select-none",
+                  p.isDead ? "scale-95 opacity-60" : "hover:bg-[#fafafa]"
                 )}
               >
-                <div
-                  style={grimoireConfig.dotStyle}
-                  className={cn(
-                    "absolute rounded-full shadow-xs",
-                    roleObj?.team === 'townsfolk' && "bg-clocktower-townsfolk",
-                    roleObj?.team === 'outsider' && "bg-clocktower-outsider",
-                    roleObj?.team === 'minion' && "bg-clocktower-minion",
-                    roleObj?.team === 'demon' && "bg-clocktower-demon",
-                    roleObj?.team === 'traveler' && "bg-clocktower-traveler"
-                  )}
-                />
-
-                {roleObj && (
-                  <img
-                    src={`/icons/${roleObj.id}.svg`}
-                    alt={roleObj.name}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain',
-                      padding: '4%',
-                      opacity: p.isDead ? 0.08 : 0.18,
-                      pointerEvents: 'none',
-                    }}
+                {/* SVG representing the token */}
+                <svg viewBox="0 0 200 200" className="w-full h-full absolute inset-0 z-0 select-none pointer-events-none">
+                  <defs>
+                    <path id={`topTextPath-${p.id}`} d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
+                    <path id={`bottomTextPath-${p.id}`} d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
+                  </defs>
+                  
+                  {/* Token background circle */}
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="90"
+                    fill={p.isDead ? "#e4e4e7" : "#ffffff"}
                     className={cn(
-                      "select-none transition-all duration-200 z-0 group-hover:scale-105",
-                      p.isDead && "grayscale"
+                      "stroke-[6px]",
+                      isEvil ? "stroke-clocktower-minion" : "stroke-clocktower-townsfolk"
                     )}
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
                   />
+                  
+                  {/* Inner ring */}
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="58"
+                    fill="none"
+                    stroke="#e4e4e7"
+                    strokeWidth="1"
+                    strokeDasharray="3 3"
+                  />
+                  
+                  {roleObj && (
+                    <>
+                      {/* Curved Character Name */}
+                      <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(roleObj.team))}>
+                        <textPath href={`#topTextPath-${p.id}`} startOffset="50%" textAnchor="middle">
+                          {roleObj.name}
+                        </textPath>
+                      </text>
+                      
+                      {/* Curved Character Type */}
+                      <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(roleObj.team))}>
+                        <textPath href={`#bottomTextPath-${p.id}`} startOffset="50%" textAnchor="middle">
+                          {roleObj.team}
+                        </textPath>
+                      </text>
+                    </>
+                  )}
+                </svg>
+
+                {/* Centered character icon */}
+                {roleObj && (
+                  <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none">
+                    <div className="w-[50%] h-[50%] flex items-center justify-center">
+                      <img
+                        src={`/icons/${roleObj.id}.svg`}
+                        alt={roleObj.name}
+                        className={cn(
+                          "w-full h-full object-contain transition-all duration-200 select-none",
+                          p.isDead ? "grayscale opacity-15" : "opacity-35"
+                        )}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    </div>
+                  </div>
                 )}
 
+                {/* Player Name Overlay */}
                 <span
                   style={{
                     ...grimoireConfig.nameStyle,
-                    textShadow: '0 1px 2px rgba(255,255,255,0.95), 0 0 3px rgba(255,255,255,0.9)'
+                    fontSize: dynamicFontSize,
+                    textShadow: p.isDead
+                      ? '0 1px 1px rgba(255,255,255,0.8), 0 0 2px rgba(255,255,255,0.7)'
+                      : '0 1.5px 3px rgba(255,255,255,1.0), 0 0 5px rgba(255,255,255,1.0), 0 0 8px rgba(255,255,255,0.9)'
                   }}
                   className={cn(
-                    "font-bold font-sans tracking-tighter truncate text-center leading-tight z-10 relative",
+                    "font-bold font-sans tracking-tighter text-center leading-[1.05] z-20 relative pointer-events-none select-none break-words whitespace-normal max-w-[82%] inline-block align-middle",
                     p.isDead ? "line-through text-[#71717a]" : "text-[#1a1a1a] font-bold"
                   )}
                 >
-                  {p.name.substring(0, grimoireConfig.charLimit)}
+                  {p.name}
                 </span>
 
-                <span
-                  style={{
-                    ...grimoireConfig.roleStyle,
-                    textShadow: '0 1px 2px rgba(255,255,255,0.95), 0 0 3px rgba(255,255,255,0.9)'
-                  }}
-                  className={cn(
-                    "font-semibold truncate leading-none text-gray-400 px-0.5 text-center z-10 relative",
-                    roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk/85",
-                    roleObj?.team === 'outsider' && "text-clocktower-outsider/85",
-                    roleObj?.team === 'minion' && "text-clocktower-minion/85",
-                    roleObj?.team === 'demon' && "text-clocktower-demon/85",
-                    roleObj?.team === 'traveler' && "text-clocktower-traveler/85",
-                    p.isDead && "line-through opacity-50"
-                  )}
-                >
-                  {roleObj?.name.substring(0, grimoireConfig.charLimit)}
-                </span>
                 {p.isTheDrunk && (
                   <span
                     style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
-                    className="absolute bottom-0 bg-yellow-600 text-black font-black border-yellow-700 shadow-sm leading-none translate-y-1/2 z-20 whitespace-nowrap"
+                    className="absolute bottom-0 bg-yellow-600 text-black font-black border-yellow-700 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
                   >
                     THE DRUNK
                   </span>
@@ -225,7 +267,7 @@ export default function GrimoireBoard({
                 {p.isTheMarionette && (
                   <span
                     style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
-                    className="absolute bottom-0 bg-clocktower-minion text-white font-black border-clocktower-minion/40 shadow-sm leading-none translate-y-1/2 z-20 whitespace-nowrap"
+                    className="absolute bottom-0 bg-clocktower-minion text-white font-black border-clocktower-minion/40 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
                   >
                     THE MARIONETTE
                   </span>
@@ -233,7 +275,7 @@ export default function GrimoireBoard({
                 {p.isTheLunatic && (
                   <span
                     style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
-                    className="absolute bottom-0 bg-clocktower-outsider text-white font-black border-clocktower-outsider/40 shadow-sm leading-none translate-y-1/2 z-20 whitespace-nowrap"
+                    className="absolute bottom-0 bg-clocktower-outsider text-white font-black border-clocktower-outsider/40 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
                   >
                     THE LUNATIC
                   </span>
@@ -241,7 +283,7 @@ export default function GrimoireBoard({
                 {p.isTheLilMonsta && (
                   <span
                     style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
-                    className="absolute bottom-0 bg-clocktower-demon text-white font-black border-clocktower-demon/40 shadow-sm leading-none translate-y-1/2 z-20 whitespace-nowrap"
+                    className="absolute bottom-0 bg-clocktower-demon text-white font-black border-clocktower-demon/40 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
                   >
                     LIL' MONSTA
                   </span>
