@@ -117,6 +117,12 @@ export function performStandardAssignment(
   }
 
   let targetOutsiders = Math.max(0, base.outsider + outsiderModifier);
+  const hasXaan = selectedMinions.some(m => m.id === 'xaan');
+  const bypassAdjustments = hasKazali || hasXaan;
+  if (bypassAdjustments) {
+    const maxOutsiders = baseCount - selectedDemons.length - selectedMinions.length;
+    targetOutsiders = Math.floor(Math.random() * (maxOutsiders + 1));
+  }
   let targetTownsfolk = baseCount - selectedDemons.length - selectedMinions.length - targetOutsiders;
   if (targetTownsfolk < 0) {
     targetTownsfolk = 0;
@@ -127,7 +133,7 @@ export function performStandardAssignment(
   let selectedTownsfolk = shuffle(tfs).slice(0, targetTownsfolk);
 
   // 1. Balloonist adjustment
-  if (selectedTownsfolk.some(t => t.id === 'balloonist') && Math.random() < 0.5 && outs.length > selectedOutsiders.length) {
+  if (!bypassAdjustments && selectedTownsfolk.some(t => t.id === 'balloonist') && Math.random() < 0.5 && outs.length > selectedOutsiders.length) {
     const remainingOuts = outs.filter(o => !selectedOutsiders.some(so => so.id === o.id));
     if (remainingOuts.length > 0) {
       const newOut = remainingOuts[Math.floor(Math.random() * remainingOuts.length)];
@@ -142,7 +148,7 @@ export function performStandardAssignment(
   }
 
   // 2. Hermit adjustment
-  if (selectedOutsiders.some(o => o.id === 'hermit') && Math.random() < 0.5) {
+  if (!bypassAdjustments && selectedOutsiders.some(o => o.id === 'hermit') && Math.random() < 0.5) {
     const otherOutsiders = selectedOutsiders.filter(o => o.id !== 'hermit');
     if (otherOutsiders.length > 0) {
       const outToRemove = otherOutsiders[Math.floor(Math.random() * otherOutsiders.length)];

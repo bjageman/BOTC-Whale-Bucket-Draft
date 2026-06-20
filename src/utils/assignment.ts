@@ -303,9 +303,11 @@ function assignBaseCharacters(
     }
     
     const remainingPlayers = shuffledPlayers.slice(1 + numMinions);
+    const hasXaan = assignment.some(a => a.role.id === 'xaan');
+    const targetOutsiders = (demonRole.id === 'kazali' || hasXaan) ? Math.floor(Math.random() * (remainingPlayers.length + 1)) : base.outsider;
     const tempAssignment: { player: Player; team: 'townsfolk' | 'outsider' }[] = [];
     for (let i = 0; i < remainingPlayers.length; i++) {
-      const team = (i < base.outsider) ? 'outsider' : 'townsfolk';
+      const team = (i < targetOutsiders) ? 'outsider' : 'townsfolk';
       tempAssignment.push({ player: remainingPlayers[i], team });
     }
     
@@ -335,10 +337,38 @@ function assignBaseCharacters(
       const hermMods = hasHermit ? [-1, 0] : [0];
       
       const possibleCounts = new Set<number>();
-      for (const gf of gfMods) {
-        for (const bal of balMods) {
-          for (const herm of hermMods) {
-            possibleCounts.add(Math.max(0, base.outsider + fixedDeltaOut + gf + bal + herm));
+      const hasKazali = demonRole.id === 'kazali';
+      const hasXaan = fullAssignment.some(a => a.role.id === 'xaan');
+      if (hasKazali || hasXaan) {
+        let expectedDemon = base.demon;
+        let expectedMinion = base.minion;
+        const hasLilMonsta = fullAssignment.some(a => a.role.id === 'lilmonsta');
+        const hasLordOfTyphon = fullAssignment.some(a => a.role.id === 'lordoftyphon');
+        const hasSummoner = fullAssignment.some(a => a.role.id === 'summoner');
+        if (hasLilMonsta) {
+          expectedMinion += 1;
+          expectedDemon -= 1;
+        }
+        if (hasLordOfTyphon) {
+          expectedMinion += 1;
+        }
+        if (hasSummoner) {
+          expectedDemon -= 1;
+        }
+        if (hasKazali) {
+          expectedMinion = 0;
+        }
+        expectedDemon = Math.max(0, expectedDemon);
+        const maxOutsiders = Math.max(0, N - expectedDemon - expectedMinion);
+        for (let i = 0; i <= maxOutsiders; i++) {
+          possibleCounts.add(i);
+        }
+      } else {
+        for (const gf of gfMods) {
+          for (const bal of balMods) {
+            for (const herm of hermMods) {
+              possibleCounts.add(Math.max(0, base.outsider + fixedDeltaOut + gf + bal + herm));
+            }
           }
         }
       }
