@@ -163,8 +163,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   const updatePlayerRole = (id: string, roleId: string) => {
     setPlayers(players.map(p => {
       if (p.id === id) {
-        const { isEvil, ...rest } = p;
-        return { ...rest, roleId: roleId || undefined };
+        return { ...p, roleId: roleId || undefined, isEvil: undefined };
       }
       return p;
     }));

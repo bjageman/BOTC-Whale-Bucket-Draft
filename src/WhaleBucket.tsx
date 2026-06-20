@@ -251,11 +251,11 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       if (p.id === id) {
         const role = (rolesData as Role[]).find(r => r.id === roleId);
         const isPref = role ? (p.preferences[role.team] || []).includes(roleId) : false;
-        const { isEvil, ...rest } = p;
         return {
-          ...rest,
+          ...p,
           roleId: roleId || undefined,
           assignedFromPref: isPref,
+          isEvil: undefined,
         };
       }
       return p;
