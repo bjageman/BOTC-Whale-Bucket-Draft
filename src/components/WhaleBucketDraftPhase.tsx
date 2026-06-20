@@ -43,6 +43,31 @@ export default function WhaleBucketDraftPhase({
         </button>
       </div>
 
+      {/* Top Action Buttons */}
+      <div className="flex gap-2">
+        <button
+          id="back-to-setup-button-top"
+          onClick={() => setPhase('setup')}
+          className="flex-1 bg-gray-800 hover:bg-gray-700 py-3 rounded-lg font-bold transition-colors"
+        >
+          Back to Setup
+        </button>
+        <button
+          id="open-grimoire-button-top"
+          disabled={players.some(p => !p.roleId)}
+          onClick={() => {
+            setPhase('game');
+            setTimeout(() => {
+              const grimoireElement = document.getElementById('grimoire-board-container');
+              grimoireElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+          }}
+          className="flex-[2] bg-clocktower-blood hover:bg-red-800 text-white py-3 rounded-lg font-bold transition-all disabled:opacity-40 shadow-lg shadow-black/40"
+        >
+          Open Grimoire
+        </button>
+      </div>
+
       {/* Validation Summary Card */}
       {validationSummary && (
         <div
