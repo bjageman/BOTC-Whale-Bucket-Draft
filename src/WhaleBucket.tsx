@@ -503,7 +503,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           addTravelerGamePhase={addTravelerGamePhase}
           setNewTravelerName={setNewTravelerName}
           setNewTravelerRoleId={setNewTravelerRoleId}
-          setPhase={setPhase}
         />
       )}
 

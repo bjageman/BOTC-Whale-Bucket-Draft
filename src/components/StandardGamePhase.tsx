@@ -23,7 +23,6 @@ interface Props {
   addTravelerGamePhase: () => void;
   setNewTravelerName: (v: string) => void;
   setNewTravelerRoleId: (v: string) => void;
-  setPhase: (p: 'setup' | 'game') => void;
   handleDragStart: (e: React.DragEvent, index: number) => void;
   handleDragOver: (e: React.DragEvent, index: number) => void;
   handleDragLeave: () => void;
@@ -39,7 +38,7 @@ export default function StandardGamePhase({
   players, timeOfDay, dayNumber, newTravelerName, newTravelerRoleId,
   isLightModeActive, selectionRoles, draggedIndex, dragOverIndex,
   setSelectedPlayerId, toggleTimeOfDay, addTravelerGamePhase,
-  setNewTravelerName, setNewTravelerRoleId, setPhase,
+  setNewTravelerName, setNewTravelerRoleId,
   handleDragStart, handleDragOver, handleDragLeave, handleDrop, handleDragEnd,
   handleTouchStart, handleTouchMove, handleTouchEnd,
   validationSummary,
@@ -69,18 +68,7 @@ export default function StandardGamePhase({
 
       {/* Column 2: Controls */}
       <div id="grimoire-controls-container" className="space-y-6 md:pt-10 landscape:pt-10">
-        <button
-          id="return-to-setup-button"
-          onClick={() => setPhase('setup')}
-          className={cn(
-            'w-full py-3 rounded-lg font-bold transition-all text-sm shadow-md',
-            isLightModeActive
-              ? 'bg-white hover:bg-gray-50 text-clocktower-night border border-gray-300'
-              : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-          )}
-        >
-          Return to Setup
-        </button>
+
 
         {/* Validation Summary */}
         {validationSummary && players.length >= 5 && (
