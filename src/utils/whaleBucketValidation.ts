@@ -65,6 +65,8 @@ export function getValidationSummary(players: Player[]): ValidationSummary | nul
   const hasHermit = assignedRoles.some(r => r.id === 'hermit');
   const hasSummoner = assignedRoles.some(r => r.id === 'summoner');
   const hasLordOfTyphon = assignedRoles.some(r => r.id === 'lordoftyphon');
+  const hasKazali = assignedRoles.some(r => r.id === 'kazali');
+  const hasXaan = assignedRoles.some(r => r.id === 'xaan');
   
   let expectedDemon = base.demon;
   let expectedMinion = base.minion;
@@ -120,6 +122,15 @@ export function getValidationSummary(players: Player[]): ValidationSummary | nul
     }
   }
   
+  if (hasKazali) {
+    expectedMinion = 0;
+    modifications.push("Kazali (0 Minions)");
+    modifications.push("Kazali (Any Outsider count)");
+  }
+  if (hasXaan) {
+    modifications.push("Xaan (Any Outsider count)");
+  }
+  
   expectedDemon = Math.max(0, expectedDemon);
 
   const gfMods = (hasGodfather && !hasLegion && !hasRiot) ? [-1, 1] : [0];
@@ -130,6 +141,11 @@ export function getValidationSummary(players: Player[]): ValidationSummary | nul
   const possibleOutsiderCounts = new Set<number>();
   if (hasLegion || hasRiot) {
     possibleOutsiderCounts.add(0);
+  } else if (hasKazali || hasXaan) {
+    const maxOutsiders = Math.max(0, baseCount - expectedDemon - expectedMinion);
+    for (let i = 0; i <= maxOutsiders; i++) {
+      possibleOutsiderCounts.add(i);
+    }
   } else {
     for (const gf of gfMods) {
       for (const bal of balMods) {
@@ -150,8 +166,8 @@ export function getValidationSummary(players: Player[]): ValidationSummary | nul
   const isDemonValid = counts.demon === expectedDemon;
   const isMinionValid = counts.minion === expectedMinion;
 
-  const expectedOutsiderLabel = validOutsiders.join(' or ');
-  const expectedTownsfolkLabel = uniqueTownsfolk.join(' or ');
+  const expectedOutsiderLabel = (hasKazali || hasXaan) ? 'any' : validOutsiders.join(' or ');
+  const expectedTownsfolkLabel = (hasKazali || hasXaan) ? 'any' : uniqueTownsfolk.join(' or ');
 
   // For backward compatibility / display fallback
   const expectedOutsider = base.outsider + fixedOutsiderDelta;

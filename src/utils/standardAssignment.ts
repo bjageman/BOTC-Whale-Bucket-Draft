@@ -91,7 +91,8 @@ export function performStandardAssignment(
   const chosenDemon = shuffle(nonLegionDemons)[0];
 
   const hasLordOfTyphon = chosenDemon && chosenDemon.id === 'lordoftyphon';
-  const targetMinionsCount = base.minion + (hasLordOfTyphon ? 1 : 0);
+  const hasKazali = chosenDemon && chosenDemon.id === 'kazali';
+  const targetMinionsCount = hasKazali ? 0 : (base.minion + (hasLordOfTyphon ? 1 : 0));
 
   let selectedMinions = shuffle(mins).slice(0, targetMinionsCount);
   const hasSummoner = selectedMinions.some(m => m.id === 'summoner');

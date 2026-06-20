@@ -281,7 +281,7 @@ function assignBaseCharacters(
     usedRoleIds.add(demonRole.id);
     assignment.push({ player: { ...demonPlayer, isEvil: undefined }, role: demonRole, fromPref: demonFromPref });
     
-    const numMinions = base.minion + (demonRole.id === 'lilmonsta' || demonRole.id === 'lordoftyphon' ? 1 : 0);
+    const numMinions = demonRole.id === 'kazali' ? 0 : (base.minion + (demonRole.id === 'lilmonsta' || demonRole.id === 'lordoftyphon' ? 1 : 0));
     for (let i = 1; i <= numMinions; i++) {
       const minionPlayer = shuffledPlayers[i];
       const { role: minionRole, fromPref: minionFromPref } = selectRoleForPlayer(minionPlayer, 'minion', usedRoleIds);
