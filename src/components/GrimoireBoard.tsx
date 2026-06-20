@@ -240,15 +240,11 @@ export default function GrimoireBoard({
                       : '0 1.5px 3px rgba(255,255,255,1.0), 0 0 5px rgba(255,255,255,1.0), 0 0 8px rgba(255,255,255,0.9)'
                   }}
                   className={cn(
-                    "font-bold font-sans tracking-tighter text-center leading-[1.05] z-20 relative pointer-events-none select-none flex flex-col items-center max-w-[85%] truncate",
+                    "font-bold font-sans tracking-tighter text-center leading-[1.05] z-20 relative pointer-events-none select-none break-words whitespace-normal max-w-[82%] inline-block align-middle",
                     p.isDead ? "line-through text-[#71717a]" : "text-[#1a1a1a] font-bold"
                   )}
                 >
-                  {nameWords.map((word, wIdx) => (
-                    <span key={wIdx} className="truncate max-w-full">
-                      {word}
-                    </span>
-                  ))}
+                  {p.name.substring(0, grimoireConfig.charLimit)}
                 </span>
 
                 {p.isTheDrunk && (
