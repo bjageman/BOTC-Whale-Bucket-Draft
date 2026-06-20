@@ -253,7 +253,7 @@ export default function GrimoireBoard({
                     p.isDead ? "line-through text-[#71717a]" : "text-[#1a1a1a] font-bold"
                   )}
                 >
-                  {p.name.substring(0, grimoireConfig.charLimit)}
+                  {p.name}
                 </span>
 
                 {p.isTheDrunk && (
