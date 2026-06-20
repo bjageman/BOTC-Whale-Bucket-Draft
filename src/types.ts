@@ -23,6 +23,7 @@ export interface Player {
   isTheDrunk?: boolean;
   isTheMarionette?: boolean;
   isTheLunatic?: boolean;
+  isTheLilMonsta?: boolean;
   isDrunkOrPoisoned?: boolean;
 }
 

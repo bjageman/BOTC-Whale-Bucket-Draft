@@ -10,6 +10,7 @@ interface Player {
   isDead?: boolean;
   isDrunkOrPoisoned?: boolean;
   isEvil?: boolean;
+  isTheLilMonsta?: boolean;
 }
 
 interface PlayerDetailsModalProps {
@@ -29,8 +30,10 @@ interface PlayerDetailsModalProps {
   onToggleDead: (id: string) => void;
   onToggleDrunkOrPoisoned: (id: string) => void;
   onToggleEvil: (id: string) => void;
+  onToggleLilMonsta?: (id: string) => void;
   onSetSearchingRole: (v: boolean) => void;
   onSetModalRoleSearch: (v: string) => void;
+  isLilMonstaGame?: boolean;
 }
 
 export default function PlayerDetailsModal({
@@ -50,8 +53,10 @@ export default function PlayerDetailsModal({
   onToggleDead,
   onToggleDrunkOrPoisoned,
   onToggleEvil,
+  onToggleLilMonsta,
   onSetSearchingRole,
   onSetModalRoleSearch,
+  isLilMonstaGame = false,
 }: PlayerDetailsModalProps) {
   const modalNameInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -344,6 +349,26 @@ export default function PlayerDetailsModal({
             🤢 Drunk/Poisoned
           </button>
         </div>
+
+        {isLilMonstaGame && (
+          <div className="flex items-center gap-2">
+            <button
+              id="detail-lilmonsta-toggle-button"
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onToggleLilMonsta?.(p.id); }}
+              className={cn(
+                'px-4 py-2 rounded text-xs font-bold border transition-all shadow-sm flex-1 flex items-center justify-center gap-1',
+                p.isTheLilMonsta
+                  ? 'bg-clocktower-demon border-clocktower-demon/40 text-white font-black hover:bg-red-800'
+                  : isLightModeActive
+                    ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-600'
+                    : 'bg-gray-950/40 border-gray-800 text-gray-550 hover:text-gray-300'
+              )}
+            >
+              😈 Lil' Monsta
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -402,12 +427,14 @@ function RoleList({ hasRole, roles, players, currentPlayerId, isLightModeActive,
             )}
           >
             <div className="flex items-center min-w-0 flex-1 gap-2 mr-2">
-              <img
-                src={`/icons/${role.id}.svg`}
-                alt={role.name}
-                className="w-5 h-5 object-contain shrink-0"
-                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-              />
+              <span className="w-5.5 h-5.5 bg-white rounded-full flex items-center justify-center shrink-0">
+                <img
+                  src={`/icons/${role.id}.svg`}
+                  alt={role.name}
+                  className="w-4 h-4 object-contain"
+                  onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                />
+              </span>
               <span className={cn('font-semibold text-xs truncate', teamColor(role.team))}>{role.name}</span>
               {takenBy && (
                 <span className={cn(

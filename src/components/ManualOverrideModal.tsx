@@ -76,12 +76,14 @@ export default function ManualOverrideModal({
                 className="w-full text-left px-3 py-2.5 bg-amber-500/5 hover:bg-amber-500/10 text-xs transition-colors flex justify-between items-center"
               >
                 <div className="flex items-center min-w-0 flex-1 gap-1.5 mr-2">
-                  <img
-                    src={`/icons/${role.id}.svg`}
-                    alt={role.name}
-                    className="w-5 h-5 object-contain shrink-0"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                  />
+                  <span className="w-5 h-5 bg-white rounded-full flex items-center justify-center shrink-0">
+                    <img
+                      src={`/icons/${role.id}.svg`}
+                      alt={role.name}
+                      className="w-3.5 h-3.5 object-contain"
+                      onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                    />
+                  </span>
                   <span className={cn(
                     "font-semibold text-xs truncate",
                     role.team === 'townsfolk' && "text-clocktower-townsfolk",
@@ -123,12 +125,14 @@ export default function ManualOverrideModal({
                 className="w-full text-left px-3 py-2.5 hover:bg-gray-800 text-xs transition-colors flex justify-between items-center"
               >
                 <div className="flex items-center min-w-0 flex-1 gap-1.5 mr-2">
-                  <img
-                    src={`/icons/${role.id}.svg`}
-                    alt={role.name}
-                    className="w-5 h-5 object-contain shrink-0"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                  />
+                  <span className="w-5 h-5 bg-white rounded-full flex items-center justify-center shrink-0">
+                    <img
+                      src={`/icons/${role.id}.svg`}
+                      alt={role.name}
+                      className="w-3.5 h-3.5 object-contain"
+                      onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                    />
+                  </span>
                   <span className={cn(
                     "font-semibold text-xs truncate",
                     role.team === 'townsfolk' && "text-clocktower-townsfolk",

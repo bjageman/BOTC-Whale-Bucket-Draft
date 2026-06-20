@@ -24,8 +24,80 @@ export function performStandardAssignment(
 
   const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
 
-  const selectedDemons = shuffle(dems).slice(0, base.demon);
-  let selectedMinions = shuffle(mins).slice(0, base.minion);
+  const tempDemons = shuffle(dems);
+  const chosenDemonAtTop = tempDemons[0];
+  const legionRole = dems.find(d => d.id === 'legion');
+  const hasLegion = !!(legionRole && chosenDemonAtTop && chosenDemonAtTop.id === 'legion');
+
+  if (hasLegion && legionRole) {
+    const L = Math.round(baseCount * 0.6);
+    const legionDemons = Array(L).fill(legionRole);
+
+    const targetTownsfolk = baseCount - L;
+    const legionTownsfolk = shuffle(tfs).slice(0, targetTownsfolk);
+
+    const finalRolesList = shuffle([
+      ...legionDemons,
+      ...legionTownsfolk
+    ]);
+
+    while (finalRolesList.length < baseCount) {
+      const unusedTfs = tfs.filter(t => !finalRolesList.some(fr => fr.id === t.id));
+      if (unusedTfs.length > 0) {
+        finalRolesList.push(unusedTfs[0]);
+      } else {
+        finalRolesList.push(tfs[0] || dems[0]);
+      }
+    }
+
+    const shuffledPlayers = shuffle(players);
+    const travelerPlayers = shuffledPlayers.slice(0, travelerCount);
+    const basePlayers = shuffledPlayers.slice(travelerCount);
+
+    const assignedRoles = shuffle(finalRolesList);
+
+    return players.map(p => {
+      const isTraveler = travelerPlayers.some(tp => tp.id === p.id);
+      if (isTraveler) {
+        const matched = selectionRoles.find(r => r.team === 'traveler') || { id: 'beggar' };
+        return {
+          ...p,
+          roleId: matched.id,
+          isTheDrunk: false,
+          isTheMarionette: false,
+          isTheLunatic: false,
+          isTheLilMonsta: false,
+        };
+      }
+
+      const bpIdx = basePlayers.findIndex(bp => bp.id === p.id);
+      const role = assignedRoles[bpIdx];
+      const roleId = role?.id;
+
+      return {
+        ...p,
+        roleId,
+        isTheDrunk: false,
+        isTheMarionette: false,
+        isTheLunatic: false,
+        isTheLilMonsta: false,
+        isEvil: roleId === 'legion' ? true : undefined,
+      };
+    });
+  }
+
+  // Normal / non-Legion setup
+  const nonLegionDemons = dems.filter(d => d.id !== 'legion');
+  const chosenDemon = shuffle(nonLegionDemons)[0];
+
+  const hasLordOfTyphon = chosenDemon && chosenDemon.id === 'lordoftyphon';
+  const targetMinionsCount = base.minion + (hasLordOfTyphon ? 1 : 0);
+
+  let selectedMinions = shuffle(mins).slice(0, targetMinionsCount);
+  const hasSummoner = selectedMinions.some(m => m.id === 'summoner');
+
+  const targetDemonsCount = hasSummoner ? Math.max(0, base.demon - 1) : base.demon;
+  const selectedDemons = chosenDemon && targetDemonsCount > 0 ? [chosenDemon] : [];
 
   const hasLilMonsta = selectedDemons.some(d => d.id === 'lilmonsta');
   if (hasLilMonsta) {
@@ -44,25 +116,42 @@ export function performStandardAssignment(
   }
 
   let targetOutsiders = Math.max(0, base.outsider + outsiderModifier);
-  let targetTownsfolk = baseCount - base.demon - base.minion - targetOutsiders;
+  let targetTownsfolk = baseCount - selectedDemons.length - selectedMinions.length - targetOutsiders;
   if (targetTownsfolk < 0) {
     targetTownsfolk = 0;
-    targetOutsiders = baseCount - base.demon - base.minion;
+    targetOutsiders = baseCount - selectedDemons.length - selectedMinions.length;
   }
 
-  const selectedOutsiders = shuffle(outs).slice(0, targetOutsiders);
+  let selectedOutsiders = shuffle(outs).slice(0, targetOutsiders);
   let selectedTownsfolk = shuffle(tfs).slice(0, targetTownsfolk);
 
-  if (selectedTownsfolk.some(t => t.id === 'balloonist') && outs.length > selectedOutsiders.length) {
+  // 1. Balloonist adjustment
+  if (selectedTownsfolk.some(t => t.id === 'balloonist') && Math.random() < 0.5 && outs.length > selectedOutsiders.length) {
     const remainingOuts = outs.filter(o => !selectedOutsiders.some(so => so.id === o.id));
     if (remainingOuts.length > 0) {
-      selectedOutsiders.push(remainingOuts[Math.floor(Math.random() * remainingOuts.length)]);
+      const newOut = remainingOuts[Math.floor(Math.random() * remainingOuts.length)];
+      selectedOutsiders.push(newOut);
       const balloonistIdx = selectedTownsfolk.findIndex(t => t.id === 'balloonist');
       const nonBalloonistTfs = selectedTownsfolk.filter((_, idx) => idx !== balloonistIdx);
       if (nonBalloonistTfs.length > 0) {
         const removedTf = nonBalloonistTfs[Math.floor(Math.random() * nonBalloonistTfs.length)];
         selectedTownsfolk = selectedTownsfolk.filter(t => t.id !== removedTf.id);
       }
+    }
+  }
+
+  // 2. Hermit adjustment
+  if (selectedOutsiders.some(o => o.id === 'hermit') && Math.random() < 0.5) {
+    const otherOutsiders = selectedOutsiders.filter(o => o.id !== 'hermit');
+    if (otherOutsiders.length > 0) {
+      const outToRemove = otherOutsiders[Math.floor(Math.random() * otherOutsiders.length)];
+      selectedOutsiders = selectedOutsiders.filter(o => o.id !== outToRemove.id);
+    } else {
+      selectedOutsiders = selectedOutsiders.filter(o => o.id !== 'hermit');
+    }
+    const remainingTfs = tfs.filter(t => !selectedTownsfolk.some(st => st.id === t.id));
+    if (remainingTfs.length > 0) {
+      selectedTownsfolk.push(remainingTfs[Math.floor(Math.random() * remainingTfs.length)]);
     }
   }
 
@@ -133,6 +222,7 @@ export function performStandardAssignment(
         isTheDrunk: false,
         isTheMarionette: false,
         isTheLunatic: false,
+        isTheLilMonsta: false,
       };
     }
 
@@ -142,6 +232,7 @@ export function performStandardAssignment(
     let isTheDrunk = false;
     let isTheMarionette = false;
     let isTheLunatic = false;
+    let isTheLilMonsta = false;
 
     if (roleId === 'drunk') {
       isTheDrunk = true;
@@ -157,6 +248,11 @@ export function performStandardAssignment(
       isTheLunatic = true;
       const matchedDemon = dems[Math.floor(Math.random() * dems.length)] || dems[0];
       roleId = matchedDemon.id;
+    } else if (roleId === 'lilmonsta') {
+      isTheLilMonsta = true;
+      const unmatchedMinions = mins.filter(m => !roleIdsInPlay.includes(m.id));
+      const matchedMinion = unmatchedMinions[Math.floor(Math.random() * unmatchedMinions.length)] || mins[0];
+      roleId = matchedMinion.id;
     }
 
     return {
@@ -165,6 +261,8 @@ export function performStandardAssignment(
       isTheDrunk,
       isTheMarionette,
       isTheLunatic,
+      isTheLilMonsta,
+      isEvil: roleId === 'legion' ? true : undefined,
     };
   });
 }

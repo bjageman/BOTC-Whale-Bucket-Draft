@@ -26,6 +26,7 @@ interface SetupProps {
 
 export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   const [players, setPlayers] = useState<Player[]>([]);
+  const [isLilMonstaGame, setIsLilMonstaGame] = useState(false);
   const [phase, setPhase] = useState<Phase>('setup');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeDraftPlayerId, setActiveDraftPlayerId] = useState<string | null>(null);
@@ -65,7 +66,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     const saved = localStorage.getItem('whale-bucket-game');
     if (saved) {
       try {
-        const { players: p, phase: ph, timeOfDay: tod, dayNumber: dn, allowTravelers: at } = JSON.parse(saved);
+        const { players: p, phase: ph, timeOfDay: tod, dayNumber: dn, allowTravelers: at, isLilMonstaGame: lmg } = JSON.parse(saved);
         type SavedPlayer = Omit<Player, 'preferences'> & { preferences?: Partial<Player['preferences']> };
         const validatedPlayers = (p || []).map((player: SavedPlayer) => ({
           ...player,
@@ -83,6 +84,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         setTimeOfDay(tod || 'night');
         setDayNumber(dn || 1);
         if (at !== undefined) setAllowTravelers(!!at);
+        if (lmg !== undefined) setIsLilMonstaGame(lmg);
 
       } catch (e) {
         console.error(e);
@@ -92,7 +94,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
 
   // Save to localStorage and update document theme
   useEffect(() => {
-    localStorage.setItem('whale-bucket-game', JSON.stringify({ players, phase, timeOfDay, dayNumber, allowTravelers }));
+    localStorage.setItem('whale-bucket-game', JSON.stringify({ players, phase, timeOfDay, dayNumber, allowTravelers, isLilMonstaGame }));
     
     const isLightMode = theme === 'light';
     if (isLightMode) {
@@ -104,7 +106,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     return () => {
       document.documentElement.classList.remove('theme-light');
     };
-  }, [players, phase, timeOfDay, dayNumber, allowTravelers, theme]);
+  }, [players, phase, timeOfDay, dayNumber, allowTravelers, theme, isLilMonstaGame]);
 
   const toggleTimeOfDay = () => {
     if (timeOfDay === 'night') {
@@ -123,6 +125,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     isDead: false,
     isTheDrunk: false,
     isTheMarionette: false,
+    isTheLilMonsta: false,
   });
 
   const addPlayer = () => {
@@ -225,12 +228,18 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       const assigned = result.find(r => r.player.id === p.id);
       let roleId = assigned?.fromPref ? assigned?.role.id : undefined;
       let isTheLunatic = false;
+      let isTheLilMonsta = false;
 
       if (assigned && assigned.role.id === 'lunatic') {
         isTheLunatic = true;
         const demons = (rolesData as Role[]).filter(r => r.team === 'demon');
         const chosenDemon = demons[Math.floor(Math.random() * demons.length)] || { id: 'imp' };
         roleId = chosenDemon.id;
+      } else if (assigned && assigned.role.id === 'lilmonsta') {
+        isTheLilMonsta = true;
+        const minions = (rolesData as Role[]).filter(r => r.team === 'minion');
+        const chosenMinion = minions[Math.floor(Math.random() * minions.length)] || { id: 'poisoner' };
+        roleId = chosenMinion.id;
       }
 
       return {
@@ -240,9 +249,12 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         isTheDrunk: false,
         isTheMarionette: false,
         isTheLunatic,
+        isTheLilMonsta,
+        isEvil: assigned?.player.isEvil,
       };
     });
     setPlayers(updatedPlayers);
+    setIsLilMonstaGame(updatedPlayers.some(p => p.isTheLilMonsta));
     setPhase('draft');
   };
 
@@ -256,6 +268,10 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           roleId: roleId || undefined,
           assignedFromPref: isPref,
           isEvil: undefined,
+          isTheDrunk: false,
+          isTheMarionette: false,
+          isTheLunatic: false,
+          isTheLilMonsta: false,
         };
       }
       return p;
@@ -283,15 +299,41 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   };
 
   const togglePlayerTheDrunk = (id: string) => {
-    setPlayers(players.map(p => p.id === id ? { ...p, isTheDrunk: !p.isTheDrunk, isTheMarionette: false } : p));
+    setPlayers(players.map(p => p.id === id ? { ...p, isTheDrunk: !p.isTheDrunk, isTheMarionette: false, isTheLilMonsta: false } : p));
   };
 
   const togglePlayerTheMarionette = (id: string) => {
-    setPlayers(players.map(p => p.id === id ? { ...p, isTheMarionette: !p.isTheMarionette, isTheDrunk: false } : p));
+    setPlayers(players.map(p => p.id === id ? { ...p, isTheMarionette: !p.isTheMarionette, isTheDrunk: false, isTheLilMonsta: false } : p));
   };
 
   const togglePlayerTheLunatic = (id: string) => {
-    setPlayers(players.map(p => p.id === id ? { ...p, isTheLunatic: !p.isTheLunatic, isTheDrunk: false, isTheMarionette: false } : p));
+    setPlayers(players.map(p => p.id === id ? { ...p, isTheLunatic: !p.isTheLunatic, isTheDrunk: false, isTheMarionette: false, isTheLilMonsta: false } : p));
+  };
+
+  const togglePlayerTheLilMonsta = (id: string) => {
+    const isTurningOn = !players.find(x => x.id === id)?.isTheLilMonsta;
+    if (isTurningOn) {
+      setIsLilMonstaGame(true);
+    }
+    setPlayers(players.map(p => {
+      if (p.id === id) {
+        const nextVal = !p.isTheLilMonsta;
+        return {
+          ...p,
+          isTheLilMonsta: nextVal,
+          isTheDrunk: false,
+          isTheMarionette: false,
+          isTheLunatic: false
+        };
+      }
+      if (isTurningOn) {
+        return {
+          ...p,
+          isTheLilMonsta: false,
+        };
+      }
+      return p;
+    }));
   };
 
   const closeDetailsModal = () => {
@@ -308,6 +350,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       setSearchTerm('');
       setTimeOfDay('night');
       setDayNumber(1);
+      setIsLilMonstaGame(false);
       localStorage.removeItem('whale-bucket-game');
     }
   };
@@ -433,6 +476,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           togglePlayerTheDrunk={togglePlayerTheDrunk}
           togglePlayerTheMarionette={togglePlayerTheMarionette}
           togglePlayerTheLunatic={togglePlayerTheLunatic}
+          togglePlayerTheLilMonsta={togglePlayerTheLilMonsta}
         />
       )}
 
@@ -508,6 +552,8 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           onToggleDead={togglePlayerDead}
           onToggleDrunkOrPoisoned={togglePlayerDrunkOrPoisoned}
           onToggleEvil={togglePlayerEvil}
+          onToggleLilMonsta={togglePlayerTheLilMonsta}
+          isLilMonstaGame={isLilMonstaGame}
           onSetSearchingRole={setIsSearchingRole}
           onSetModalRoleSearch={setModalRoleSearch}
         />

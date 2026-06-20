@@ -238,6 +238,14 @@ export default function GrimoireBoard({
                     THE LUNATIC
                   </span>
                 )}
+                {p.isTheLilMonsta && (
+                  <span
+                    style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
+                    className="absolute bottom-0 bg-clocktower-demon text-white font-black border-clocktower-demon/40 shadow-sm leading-none translate-y-1/2 z-20 whitespace-nowrap"
+                  >
+                    LIL' MONSTA
+                  </span>
+                )}
                 {p.isDrunkOrPoisoned && (
                   <div
                     style={{

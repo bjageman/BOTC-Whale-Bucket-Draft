@@ -5,18 +5,7 @@ import type { Player, Role } from '../types';
 import rolesData from '../roles.json';
 import GrimoireBoard from './GrimoireBoard';
 
-interface ValidationSummary {
-  isValid: boolean;
-  modifications: string[];
-  counts: { townsfolk: number; outsider: number; minion: number; demon: number; traveler: number };
-  expected: { townsfolk: number; outsider: number; minion: number; demon: number; traveler: number };
-  isTownsfolkValid: boolean;
-  isOutsiderValid: boolean;
-  isMinionValid: boolean;
-  isDemonValid: boolean;
-  hasGodfather: boolean;
-  jinxWarnings: string[];
-}
+import type { ValidationSummary } from '../utils/whaleBucketValidation';
 
 interface Props {
   players: Player[];
@@ -135,15 +124,15 @@ export default function StandardGamePhase({
                 : "grid-cols-4 gap-2"
             )}>
               <div>
-                <div className="text-gray-550">TF</div>
+                <div className="text-gray-555">TF</div>
                 <div className={cn("font-bold text-xs mt-0.5", validationSummary.isTownsfolkValid ? "text-clocktower-townsfolk" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
-                  {validationSummary.counts.townsfolk} / {validationSummary.expected.townsfolk}
+                  {validationSummary.counts.townsfolk} / {validationSummary.expectedTownsfolkLabel}
                 </div>
               </div>
               <div>
                 <div className="text-gray-555">OUT</div>
                 <div className={cn("font-bold text-xs mt-0.5", validationSummary.isOutsiderValid ? "text-clocktower-outsider" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
-                  {validationSummary.counts.outsider} / {validationSummary.hasGodfather ? `${validationSummary.expected.outsider - 1} or ${validationSummary.expected.outsider + 1}` : validationSummary.expected.outsider}
+                  {validationSummary.counts.outsider} / {validationSummary.expectedOutsiderLabel}
                 </div>
               </div>
               <div>
@@ -261,13 +250,16 @@ export default function StandardGamePhase({
                     rObj?.team === 'traveler' && 'text-clocktower-traveler',
                   )}>
                     {rObj && (
-                      <img src={`/icons/${rObj.id}.svg`} alt={rObj.name} className="w-3.5 h-3.5 object-contain shrink-0"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      <span className="w-4.5 h-4.5 bg-white rounded-full flex items-center justify-center shrink-0">
+                        <img src={`/icons/${rObj.id}.svg`} alt={rObj.name} className="w-3.5 h-3.5 object-contain"
+                          onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
+                      </span>
                     )}
                     <span className="truncate">{rObj?.name ?? '—'}</span>
                     {p.isTheDrunk && <span className="text-[8px] bg-yellow-600 text-black px-0.5 rounded leading-none shrink-0">DK</span>}
                     {p.isTheMarionette && <span className="text-[8px] bg-clocktower-minion text-white px-0.5 rounded leading-none shrink-0">MN</span>}
                     {p.isTheLunatic && <span className="text-[8px] bg-clocktower-outsider text-white px-0.5 rounded leading-none shrink-0">LN</span>}
+                    {p.isTheLilMonsta && <span className="text-[8px] bg-clocktower-demon text-white px-0.5 rounded leading-none shrink-0">LM</span>}
                   </span>
                 </div>
               );

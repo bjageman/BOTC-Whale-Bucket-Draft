@@ -4,18 +4,7 @@ import type { Player } from '../WhaleBucket';
 import type { Role } from '../types';
 import rolesData from '../roles.json';
 
-interface ValidationSummary {
-  isValid: boolean;
-  modifications: string[];
-  counts: { townsfolk: number; outsider: number; minion: number; demon: number; traveler: number };
-  expected: { townsfolk: number; outsider: number; minion: number; demon: number; traveler: number };
-  isTownsfolkValid: boolean;
-  isOutsiderValid: boolean;
-  isMinionValid: boolean;
-  isDemonValid: boolean;
-  hasGodfather: boolean;
-  jinxWarnings: string[];
-}
+import type { ValidationSummary } from '../utils/whaleBucketValidation';
 
 interface WhaleBucketDraftPhaseProps {
   players: Player[];
@@ -27,6 +16,7 @@ interface WhaleBucketDraftPhaseProps {
   togglePlayerTheDrunk: (id: string) => void;
   togglePlayerTheMarionette: (id: string) => void;
   togglePlayerTheLunatic: (id: string) => void;
+  togglePlayerTheLilMonsta: (id: string) => void;
 }
 
 export default function WhaleBucketDraftPhase({
@@ -39,6 +29,7 @@ export default function WhaleBucketDraftPhase({
   togglePlayerTheDrunk,
   togglePlayerTheMarionette,
   togglePlayerTheLunatic,
+  togglePlayerTheLilMonsta,
 }: WhaleBucketDraftPhaseProps) {
   return (
     <div className="space-y-5">
@@ -73,6 +64,9 @@ export default function WhaleBucketDraftPhase({
           const isDemon = roleObj?.team === 'demon';
           const canBeLunatic = p.isTheLunatic || isDemon;
 
+          const isMinion = roleObj?.team === 'minion';
+          const canBeLilMonsta = p.isTheLilMonsta || isMinion;
+
           const isDrunkSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheDrunk);
           const isMarionetteSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheMarionette);
           const isLunaticSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheLunatic);
@@ -94,6 +88,11 @@ export default function WhaleBucketDraftPhase({
                   {p.isTheLunatic && (
                     <span className="text-[8px] font-black text-white bg-clocktower-outsider border border-clocktower-outsider/30 px-1 py-0.5 rounded uppercase">
                       THE LUNATIC
+                    </span>
+                  )}
+                  {p.isTheLilMonsta && (
+                    <span className="text-[8px] font-black text-white bg-clocktower-demon border border-clocktower-demon/30 px-1 py-0.5 rounded uppercase">
+                      LIL' MONSTA
                     </span>
                   )}
                   {p.assignedFromPref ? (
@@ -128,15 +127,20 @@ export default function WhaleBucketDraftPhase({
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between bg-gray-955/40 px-3 py-2 rounded border border-gray-850">
+                  <div
+                    onClick={() => setActiveDraftPlayerId(p.id)}
+                    className="flex items-center justify-between bg-gray-955/40 px-3 py-2 rounded border border-gray-850 cursor-pointer hover:bg-gray-900/40 hover:border-gray-800 transition-all"
+                  >
                     <div className="flex items-center gap-2">
                       {roleObj && (
-                        <img
-                          src={`/icons/${roleObj.id}.svg`}
-                          alt={roleObj.name}
-                          className="w-5 h-5 object-contain shrink-0"
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                        />
+                        <span className="w-5.5 h-5.5 bg-white rounded-full flex items-center justify-center shrink-0">
+                          <img
+                            src={`/icons/${roleObj.id}.svg`}
+                            alt={roleObj.name}
+                            className="w-4 h-4 object-contain"
+                            onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                          />
+                        </span>
                       )}
                       <span className={cn(
                         "font-semibold text-sm",
@@ -153,7 +157,7 @@ export default function WhaleBucketDraftPhase({
                     </button>
                   </div>
                   {/* Secret Role Draft Toggles */}
-                  {(canBeDrunk || canBeMarionette || canBeLunatic) && (
+                  {(canBeDrunk || canBeMarionette || canBeLunatic || canBeLilMonsta) && (
                     <div className="flex flex-wrap gap-2 justify-end">
                       {canBeDrunk && (
                         <button
@@ -198,6 +202,20 @@ export default function WhaleBucketDraftPhase({
                           )}
                         >
                           👹 The Lunatic
+                        </button>
+                      )}
+                      {canBeLilMonsta && (
+                        <button
+                          type="button"
+                          onClick={() => togglePlayerTheLilMonsta(p.id)}
+                          className={cn(
+                            "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1",
+                            p.isTheLilMonsta
+                              ? "bg-clocktower-demon border-clocktower-demon/40 text-white font-black"
+                              : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
+                          )}
+                        >
+                          😈 Lil' Monsta
                         </button>
                       )}
                     </div>
@@ -262,13 +280,13 @@ export default function WhaleBucketDraftPhase({
             <div>
               <div className="text-gray-500">TF</div>
               <div className={cn("font-bold text-xs mt-0.5", validationSummary.isTownsfolkValid ? "text-clocktower-townsfolk" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
-                {validationSummary.counts.townsfolk} / {validationSummary.expected.townsfolk}
+                {validationSummary.counts.townsfolk} / {validationSummary.expectedTownsfolkLabel}
               </div>
             </div>
             <div>
               <div className="text-gray-500">OUT</div>
               <div className={cn("font-bold text-xs mt-0.5", validationSummary.isOutsiderValid ? "text-clocktower-outsider" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
-                {validationSummary.counts.outsider} / {validationSummary.hasGodfather ? `${validationSummary.expected.outsider - 1} or ${validationSummary.expected.outsider + 1}` : validationSummary.expected.outsider}
+                {validationSummary.counts.outsider} / {validationSummary.expectedOutsiderLabel}
               </div>
             </div>
             <div>

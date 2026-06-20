@@ -14,6 +14,8 @@ export interface ValidationSummary {
   isTownsfolkValid: boolean;
   jinxWarnings: string[];
   isValid: boolean;
+  expectedOutsiderLabel: string;
+  expectedTownsfolkLabel: string;
 }
 
 export function getValidationSummary(players: Player[]): ValidationSummary | null {
@@ -59,11 +61,13 @@ export function getValidationSummary(players: Player[]): ValidationSummary | nul
   const hasGodfather = assignedRoles.some(r => r.id === 'godfather');
   const hasFangGu = assignedRoles.some(r => r.id === 'fanggu');
   const hasBalloonist = assignedRoles.some(r => r.id === 'balloonist');
-  const hasLilMonsta = assignedRoles.some(r => r.id === 'lilmonsta');
+  const hasLilMonsta = assignedRoles.some(r => r.id === 'lilmonsta') || players.some(p => p.isTheLilMonsta);
+  const hasHermit = assignedRoles.some(r => r.id === 'hermit');
+  const hasSummoner = assignedRoles.some(r => r.id === 'summoner');
+  const hasLordOfTyphon = assignedRoles.some(r => r.id === 'lordoftyphon');
   
   let expectedDemon = base.demon;
   let expectedMinion = base.minion;
-  let expectedOutsider = base.outsider;
   
   const modifications: string[] = [];
   
@@ -71,59 +75,87 @@ export function getValidationSummary(players: Player[]): ValidationSummary | nul
     const L = Math.round(baseCount * 0.6);
     expectedDemon = L;
     expectedMinion = 0;
-    expectedOutsider = 0;
     modifications.push(`Legion active (${L} Demons, 0 Minions/Outsiders)`);
   } else if (hasRiot) {
     const D = 1 + base.minion;
     expectedDemon = D;
     expectedMinion = 0;
-    expectedOutsider = 0;
     modifications.push(`Riot active (${D} Demons, 0 Minions/Outsiders)`);
   } else if (hasAtheist) {
     expectedDemon = 0;
     expectedMinion = 0;
-    const delta = (hasBaron ? 2 : 0) + (hasFangGu ? 1 : 0) + (hasBalloonist ? 1 : 0);
-    expectedOutsider = base.outsider + delta;
     modifications.push("Atheist (No Evil players)");
     if (hasBaron) modifications.push("Baron (+2 Outsiders)");
     if (hasFangGu) modifications.push("Fang Gu (+1 Outsider)");
-    if (hasBalloonist) modifications.push("Balloonist (+1 Outsider)");
+    if (hasBalloonist) modifications.push("Balloonist (0 or +1 Outsider)");
+    if (hasHermit) modifications.push("Hermit (0 or -1 Outsider)");
   } else {
     if (hasLilMonsta) {
       expectedMinion += 1;
       expectedDemon -= 1;
       modifications.push("Lil' Monsta (+1 Minion, -1 Demon)");
     }
+    if (hasLordOfTyphon) {
+      expectedMinion += 1;
+      modifications.push("Lord of Typhon (+1 Minion)");
+    }
+    if (hasSummoner) {
+      expectedDemon -= 1;
+      modifications.push("Summoner (-1 Demon)");
+    }
     if (hasBaron) {
-      expectedOutsider += 2;
       modifications.push("Baron (+2 Outsiders)");
     }
     if (hasFangGu) {
-      expectedOutsider += 1;
       modifications.push("Fang Gu (+1 Outsider)");
     }
     if (hasBalloonist) {
-      expectedOutsider += 1;
-      modifications.push("Balloonist (+1 Outsider)");
+      modifications.push("Balloonist (0 or +1 Outsider)");
+    }
+    if (hasHermit) {
+      modifications.push("Hermit (0 or -1 Outsider)");
     }
     if (hasGodfather) {
       modifications.push("Godfather (+1 or -1 Outsider)");
     }
   }
   
-  const expectedTownsfolk = baseCount - expectedDemon - expectedMinion - expectedOutsider;
-  
-  const isOutsiderValid = (hasGodfather && !hasLegion && !hasRiot)
-    ? (counts.outsider === expectedOutsider + 1 || counts.outsider === expectedOutsider - 1)
-    : counts.outsider === expectedOutsider;
-  
-  const isTownsfolkValid = (hasGodfather && !hasLegion && !hasRiot)
-    ? (counts.townsfolk === baseCount - expectedDemon - expectedMinion - (expectedOutsider + 1) ||
-       counts.townsfolk === baseCount - expectedDemon - expectedMinion - (expectedOutsider - 1))
-    : counts.townsfolk === expectedTownsfolk;
-  
+  expectedDemon = Math.max(0, expectedDemon);
+
+  const gfMods = (hasGodfather && !hasLegion && !hasRiot) ? [-1, 1] : [0];
+  const balMods = (hasBalloonist && !hasLegion && !hasRiot) ? [0, 1] : [0];
+  const hermMods = (hasHermit && !hasLegion && !hasRiot) ? [-1, 0] : [0];
+  const fixedOutsiderDelta = (hasLegion || hasRiot) ? 0 : ((hasBaron ? 2 : 0) + (hasFangGu ? 1 : 0));
+
+  const possibleOutsiderCounts = new Set<number>();
+  if (hasLegion || hasRiot) {
+    possibleOutsiderCounts.add(0);
+  } else {
+    for (const gf of gfMods) {
+      for (const bal of balMods) {
+        for (const herm of hermMods) {
+          const total = base.outsider + fixedOutsiderDelta + gf + bal + herm;
+          possibleOutsiderCounts.add(Math.max(0, total));
+        }
+      }
+    }
+  }
+
+  const validOutsiders = Array.from(possibleOutsiderCounts).sort((a, b) => a - b);
+  const validTownsfolk = validOutsiders.map(out => Math.max(0, baseCount - expectedDemon - expectedMinion - out));
+  const uniqueTownsfolk = Array.from(new Set(validTownsfolk)).sort((a, b) => a - b);
+
+  const isOutsiderValid = validOutsiders.includes(counts.outsider);
+  const isTownsfolkValid = isOutsiderValid && counts.townsfolk === baseCount - expectedDemon - expectedMinion - counts.outsider;
   const isDemonValid = counts.demon === expectedDemon;
   const isMinionValid = counts.minion === expectedMinion;
+
+  const expectedOutsiderLabel = validOutsiders.join(' or ');
+  const expectedTownsfolkLabel = uniqueTownsfolk.join(' or ');
+
+  // For backward compatibility / display fallback
+  const expectedOutsider = base.outsider + fixedOutsiderDelta;
+  const expectedTownsfolk = baseCount - expectedDemon - expectedMinion - expectedOutsider;
   
   // Jinx checks
   const hasChoirboy = assignedRoles.some(r => r.id === 'choirboy');
@@ -185,6 +217,8 @@ export function getValidationSummary(players: Player[]): ValidationSummary | nul
     isOutsiderValid,
     isTownsfolkValid,
     jinxWarnings,
-    isValid
+    isValid,
+    expectedOutsiderLabel,
+    expectedTownsfolkLabel
   };
 }

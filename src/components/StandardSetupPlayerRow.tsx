@@ -27,6 +27,7 @@ interface StandardSetupPlayerRowProps {
   togglePlayerTheDrunk: (id: string) => void;
   togglePlayerTheMarionette: (id: string) => void;
   togglePlayerTheLunatic: (id: string) => void;
+  togglePlayerTheLilMonsta: (id: string) => void;
 }
 
 export default function StandardSetupPlayerRow({
@@ -52,6 +53,7 @@ export default function StandardSetupPlayerRow({
   togglePlayerTheDrunk,
   togglePlayerTheMarionette,
   togglePlayerTheLunatic,
+  togglePlayerTheLilMonsta,
 }: StandardSetupPlayerRowProps) {
   const roleObj = (rolesData as Role[]).find(r => r.id === p.roleId);
   
@@ -76,6 +78,10 @@ export default function StandardSetupPlayerRow({
   const hasLunaticInScript = !customScriptRoles || customScriptRoles.some(r => r.id === 'lunatic');
   const isDemon = roleObj?.team === 'demon';
   const canBeLunatic = p.isTheLunatic || (isDemon && hasLunaticInScript);
+
+  const isMinion = roleObj?.team === 'minion';
+  const hasLilMonstaInScript = !customScriptRoles || customScriptRoles.some(r => r.id === 'lilmonsta');
+  const canBeLilMonsta = p.isTheLilMonsta || (isMinion && hasLilMonstaInScript);
 
   const isDrunkSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheDrunk);
   const isMarionetteSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheMarionette);
@@ -126,8 +132,13 @@ export default function StandardSetupPlayerRow({
           </span>
         )}
         {p.isTheLunatic && (
-          <span className="text-[8px] font-black text-white bg-clocktower-outsider border border-clocktower-outsider/30 px-1 py-0.5 rounded uppercase leading-none">
+          <span className="text-[8px] font-black text-white bg-clocktower-outsider border border-clocktower-outsider/30 px-1 py-0.5 rounded uppercase">
             THE LUNATIC
+          </span>
+        )}
+        {p.isTheLilMonsta && (
+          <span className="text-[8px] font-black text-white bg-clocktower-demon border border-clocktower-demon/30 px-1 py-0.5 rounded uppercase">
+            LIL' MONSTA
           </span>
         )}
         <div className="flex gap-0.5 items-center bg-gray-955/45 px-1 py-0.5 rounded border border-gray-850">
@@ -157,15 +168,20 @@ export default function StandardSetupPlayerRow({
 
       {p.roleId ? (
         <div className="space-y-2">
-          <div className="flex items-center justify-between bg-gray-955/40 px-3 py-2 rounded border border-gray-855">
+          <div
+            onClick={() => { setActivePlayerId(p.id); setSearchTerm(''); }}
+            className="flex items-center justify-between bg-gray-955/40 px-3 py-2 rounded border border-gray-855 cursor-pointer hover:bg-gray-900/40 hover:border-gray-800 transition-all"
+          >
             <div className="flex items-center gap-2">
               {roleObj && (
-                <img
-                  src={`/icons/${roleObj.id}.svg`}
-                  alt={roleObj.name}
-                  className="w-5 h-5 object-contain shrink-0"
-                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                />
+                <span className="w-5.5 h-5.5 bg-white rounded-full flex items-center justify-center shrink-0">
+                  <img
+                    src={`/icons/${roleObj.id}.svg`}
+                    alt={roleObj.name}
+                    className="w-4 h-4 object-contain"
+                    onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                  />
+                </span>
               )}
               <span className={cn(
                 "text-[9px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded border",
@@ -198,7 +214,7 @@ export default function StandardSetupPlayerRow({
           </div>
 
           {/* Secret Role Draft Toggles */}
-          {(canBeDrunk || canBeMarionette || canBeLunatic) && (
+          {(canBeDrunk || canBeMarionette || canBeLunatic || canBeLilMonsta) && (
             <div className="flex flex-wrap gap-2 justify-end">
               {canBeDrunk && (
                 <button
@@ -246,6 +262,21 @@ export default function StandardSetupPlayerRow({
                   )}
                 >
                   👹 The Lunatic
+                </button>
+              )}
+              {canBeLilMonsta && (
+                <button
+                  id={`toggle-lilmonsta-button-${p.id}`}
+                  type="button"
+                  onClick={() => togglePlayerTheLilMonsta(p.id)}
+                  className={cn(
+                    "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1",
+                    p.isTheLilMonsta
+                      ? "bg-clocktower-demon border-clocktower-demon/40 text-white font-black"
+                      : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
+                  )}
+                >
+                  😈 Lil' Monsta
                 </button>
               )}
             </div>

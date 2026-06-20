@@ -76,12 +76,14 @@ export default function PreferenceSelectionModal({
                 )}
               >
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <img
-                    src={`/icons/${role.id}.svg`}
-                    alt={role.name}
-                    className="w-5 h-5 object-contain shrink-0"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                  />
+                  <span className="w-5 h-5 bg-white rounded-full flex items-center justify-center shrink-0">
+                    <img
+                      src={`/icons/${role.id}.svg`}
+                      alt={role.name}
+                      className="w-3.5 h-3.5 object-contain"
+                      onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                    />
+                  </span>
                   <span className={cn(
                     "font-semibold text-xs truncate",
                     role.team === 'townsfolk' && "text-clocktower-townsfolk",

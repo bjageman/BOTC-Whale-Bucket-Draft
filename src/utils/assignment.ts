@@ -147,18 +147,34 @@ function assignBaseCharacters(
   const initialShuffledPlayers = shuffle(players);
   const demonCandidate = initialShuffledPlayers[0];
 
-  const modes: ('normal' | 'legion' | 'riot' | 'atheist')[] = ['normal'];
-  if (demonCandidate.preferences?.demon.includes('legion')) {
-    modes.push('legion');
-  }
-  if (demonCandidate.preferences?.demon.includes('riot')) {
-    modes.push('riot');
-  }
-  if (hasPref('atheist')) {
-    modes.push('atheist');
+  const scriptDemons = allRoles.filter(r => r.team === 'demon');
+  const scriptTownsfolk = allRoles.filter(r => r.team === 'townsfolk');
+
+  // Decide if Atheist is active (if atheist is in script and either preferred or randomly chosen)
+  const hasAtheist = scriptTownsfolk.some(t => t.id === 'atheist');
+  const preferAtheist = hasPref('atheist');
+  const isAtheistActive = hasAtheist && (preferAtheist ? Math.random() < 0.5 : Math.random() < 1 / Math.max(1, scriptTownsfolk.length));
+
+  let chosenDemon: Role | null = null;
+  if (!isAtheistActive && scriptDemons.length > 0) {
+    const demonPrefs = demonCandidate.preferences?.demon || [];
+    const availablePrefs = demonPrefs.filter(id => scriptDemons.some(d => d.id === id));
+    if (availablePrefs.length > 0) {
+      const id = randomChoice(availablePrefs);
+      chosenDemon = scriptDemons.find(d => d.id === id) || null;
+    } else {
+      chosenDemon = randomChoice(scriptDemons);
+    }
   }
 
-  const mode = modes[Math.floor(Math.random() * modes.length)];
+  let mode: 'normal' | 'legion' | 'riot' | 'atheist' = 'normal';
+  if (isAtheistActive) {
+    mode = 'atheist';
+  } else if (chosenDemon?.id === 'legion') {
+    mode = 'legion';
+  } else if (chosenDemon?.id === 'riot') {
+    mode = 'riot';
+  }
 
   if (mode === 'legion') {
     const L = Math.round(N * 0.6);
@@ -167,7 +183,7 @@ function assignBaseCharacters(
     const legionRole = allRoles.find(r => r.id === 'legion')!;
     for (let i = 0; i < L; i++) {
       assignment.push({
-        player: initialShuffledPlayers[i],
+        player: { ...initialShuffledPlayers[i], isEvil: true },
         role: legionRole,
         fromPref: !!initialShuffledPlayers[i].preferences?.demon.includes('legion')
       });
@@ -176,7 +192,11 @@ function assignBaseCharacters(
       const p = initialShuffledPlayers[i];
       const { role, fromPref } = selectRoleForPlayer(p, 'townsfolk', usedRoleIds);
       usedRoleIds.add(role.id);
-      assignment.push({ player: p, role, fromPref });
+      assignment.push({
+        player: { ...p, isEvil: undefined },
+        role,
+        fromPref
+      });
     }
     return assignment;
   }
@@ -188,7 +208,7 @@ function assignBaseCharacters(
     const riotRole = allRoles.find(r => r.id === 'riot')!;
     for (let i = 0; i < D; i++) {
       assignment.push({
-        player: initialShuffledPlayers[i],
+        player: { ...initialShuffledPlayers[i], isEvil: true },
         role: riotRole,
         fromPref: !!initialShuffledPlayers[i].preferences?.demon.includes('riot')
       });
@@ -197,7 +217,11 @@ function assignBaseCharacters(
       const p = initialShuffledPlayers[i];
       const { role, fromPref } = selectRoleForPlayer(p, 'townsfolk', usedRoleIds);
       usedRoleIds.add(role.id);
-      assignment.push({ player: p, role, fromPref });
+      assignment.push({
+        player: { ...p, isEvil: undefined },
+        role,
+        fromPref
+      });
     }
     return assignment;
   }
@@ -211,7 +235,7 @@ function assignBaseCharacters(
     const atheistRole = allRoles.find(r => r.id === 'atheist')!;
     usedRoleIds.add('atheist');
     assignment.push({
-      player: initialShuffledPlayers[0],
+      player: { ...initialShuffledPlayers[0], isEvil: undefined },
       role: atheistRole,
       fromPref: !!initialShuffledPlayers[0].preferences?.townsfolk.includes('atheist')
     });
@@ -227,12 +251,20 @@ function assignBaseCharacters(
           roleInfo = selectRoleForPlayer(p, 'townsfolk', usedRoleIds);
         }
         usedRoleIds.add(roleInfo.role.id);
-        assignment.push({ player: p, role: roleInfo.role, fromPref: roleInfo.fromPref });
+        assignment.push({
+          player: { ...p, isEvil: undefined },
+          role: roleInfo.role,
+          fromPref: roleInfo.fromPref
+        });
         assignedT++;
       } else {
         const { role, fromPref } = selectRoleForPlayer(p, 'outsider', usedRoleIds);
         usedRoleIds.add(role.id);
-        assignment.push({ player: p, role, fromPref });
+        assignment.push({
+          player: { ...p, isEvil: undefined },
+          role,
+          fromPref
+        });
       }
     }
     return assignment;
@@ -247,14 +279,27 @@ function assignBaseCharacters(
     const demonPlayer = shuffledPlayers[0];
     const { role: demonRole, fromPref: demonFromPref } = selectRoleForPlayer(demonPlayer, 'demon', usedRoleIds);
     usedRoleIds.add(demonRole.id);
-    assignment.push({ player: demonPlayer, role: demonRole, fromPref: demonFromPref });
+    assignment.push({ player: { ...demonPlayer, isEvil: undefined }, role: demonRole, fromPref: demonFromPref });
     
-    const numMinions = base.minion + (demonRole.id === 'lilmonsta' ? 1 : 0);
+    const numMinions = base.minion + (demonRole.id === 'lilmonsta' || demonRole.id === 'lordoftyphon' ? 1 : 0);
     for (let i = 1; i <= numMinions; i++) {
       const minionPlayer = shuffledPlayers[i];
       const { role: minionRole, fromPref: minionFromPref } = selectRoleForPlayer(minionPlayer, 'minion', usedRoleIds);
       usedRoleIds.add(minionRole.id);
-      assignment.push({ player: minionPlayer, role: minionRole, fromPref: minionFromPref });
+      assignment.push({ player: { ...minionPlayer, isEvil: undefined }, role: minionRole, fromPref: minionFromPref });
+    }
+
+    const hasSummoner = assignment.some(a => a.role.id === 'summoner');
+    if (hasSummoner) {
+      const demonAss = assignment.find(a => a.role.team === 'demon');
+      if (demonAss) {
+        usedRoleIds.delete(demonAss.role.id);
+        const { role: tfRole, fromPref: tfFromPref } = selectRoleForPlayer(demonPlayer, 'townsfolk', usedRoleIds);
+        demonAss.role = tfRole;
+        demonAss.fromPref = tfFromPref;
+        demonAss.player = { ...demonPlayer, isEvil: undefined };
+        usedRoleIds.add(tfRole.id);
+      }
     }
     
     const remainingPlayers = shuffledPlayers.slice(1 + numMinions);
@@ -269,7 +314,7 @@ function assignBaseCharacters(
     for (const temp of tempAssignment) {
       const { role, fromPref } = selectRoleForPlayer(temp.player, temp.team, tempUsedRoleIds);
       tempUsedRoleIds.add(role.id);
-      goodAssignments.push({ player: temp.player, role, fromPref });
+      goodAssignments.push({ player: { ...temp.player, isEvil: undefined }, role, fromPref });
     }
     
     const fullAssignment = [...assignment, ...goodAssignments];
@@ -280,21 +325,34 @@ function assignBaseCharacters(
       const hasFangGu = fullAssignment.some(a => a.role.id === 'fanggu');
       const hasBalloonist = fullAssignment.some(a => a.role.id === 'balloonist');
       const hasGodfather = fullAssignment.some(a => a.role.id === 'godfather');
+      const hasHermit = fullAssignment.some(a => a.role.id === 'hermit');
       
-      const deltaOut = (hasBaron ? 2 : 0) + (hasFangGu ? 1 : 0) + (hasBalloonist ? 1 : 0);
+      const fixedDeltaOut = (hasBaron ? 2 : 0) + (hasFangGu ? 1 : 0);
       const currentOutsiders = fullAssignment.filter(a => a.role.team === 'outsider');
       
-      const targetOutMin = base.outsider + deltaOut - (hasGodfather ? 1 : 0);
-      const targetOutMax = base.outsider + deltaOut + (hasGodfather ? 1 : 0);
+      const gfMods = hasGodfather ? [-1, 1] : [0];
+      const balMods = hasBalloonist ? [0, 1] : [0];
+      const hermMods = hasHermit ? [-1, 0] : [0];
       
-      let chosenTargetOut = base.outsider + deltaOut;
-      if (hasGodfather) {
-        if (currentOutsiders.length === targetOutMin) {
-          chosenTargetOut = targetOutMin;
-        } else if (currentOutsiders.length === targetOutMax) {
-          chosenTargetOut = targetOutMax;
+      const possibleCounts = new Set<number>();
+      for (const gf of gfMods) {
+        for (const bal of balMods) {
+          for (const herm of hermMods) {
+            possibleCounts.add(Math.max(0, base.outsider + fixedDeltaOut + gf + bal + herm));
+          }
+        }
+      }
+      
+      const validOutsiderCounts = Array.from(possibleCounts);
+      
+      let chosenTargetOut = base.outsider + fixedDeltaOut;
+      if (validOutsiderCounts.length > 0) {
+        if (validOutsiderCounts.includes(currentOutsiders.length)) {
+          chosenTargetOut = currentOutsiders.length;
         } else {
-          chosenTargetOut = Math.random() < 0.5 ? targetOutMin : targetOutMax;
+          chosenTargetOut = validOutsiderCounts.reduce((prev, curr) => 
+            Math.abs(curr - currentOutsiders.length) < Math.abs(prev - currentOutsiders.length) ? curr : prev
+          );
         }
       }
       

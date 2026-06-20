@@ -6,18 +6,7 @@ import rolesData from '../roles.json';
 import { getDistribution } from '../constants';
 import StandardSetupPlayerRow from './StandardSetupPlayerRow';
 
-interface ValidationSummary {
-  isValid: boolean;
-  modifications: string[];
-  counts: { townsfolk: number; outsider: number; minion: number; demon: number; traveler: number };
-  expected: { townsfolk: number; outsider: number; minion: number; demon: number; traveler: number };
-  isTownsfolkValid: boolean;
-  isOutsiderValid: boolean;
-  isMinionValid: boolean;
-  isDemonValid: boolean;
-  hasGodfather: boolean;
-  jinxWarnings: string[];
-}
+import type { ValidationSummary } from '../utils/whaleBucketValidation';
 
 interface StandardSetupPhaseProps {
   players: Player[];
@@ -37,6 +26,7 @@ interface StandardSetupPhaseProps {
   togglePlayerTheDrunk: (id: string) => void;
   togglePlayerTheMarionette: (id: string) => void;
   togglePlayerTheLunatic: (id: string) => void;
+  togglePlayerTheLilMonsta: (id: string) => void;
   validationSummary: ValidationSummary | null;
   isLightModeActive: boolean;
   allAssigned: boolean;
@@ -72,6 +62,7 @@ export default function StandardSetupPhase({
   togglePlayerTheDrunk,
   togglePlayerTheMarionette,
   togglePlayerTheLunatic,
+  togglePlayerTheLilMonsta,
   validationSummary,
   isLightModeActive,
   allAssigned,
@@ -215,6 +206,7 @@ export default function StandardSetupPhase({
                 togglePlayerTheDrunk={togglePlayerTheDrunk}
                 togglePlayerTheMarionette={togglePlayerTheMarionette}
                 togglePlayerTheLunatic={togglePlayerTheLunatic}
+                togglePlayerTheLilMonsta={togglePlayerTheLilMonsta}
               />
             ))}
           </div>
@@ -274,15 +266,15 @@ export default function StandardSetupPhase({
                 : "grid-cols-4 gap-2"
             )}>
               <div>
-                <div className="text-gray-550">TF</div>
+                <div className="text-gray-555">TF</div>
                 <div className={cn("font-bold text-xs mt-0.5", validationSummary.isTownsfolkValid ? "text-clocktower-townsfolk" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
-                  {validationSummary.counts.townsfolk} / {validationSummary.expected.townsfolk}
+                  {validationSummary.counts.townsfolk} / {validationSummary.expectedTownsfolkLabel}
                 </div>
               </div>
               <div>
                 <div className="text-gray-555">OUT</div>
                 <div className={cn("font-bold text-xs mt-0.5", validationSummary.isOutsiderValid ? "text-clocktower-outsider" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
-                  {validationSummary.counts.outsider} / {validationSummary.hasGodfather ? `${validationSummary.expected.outsider - 1} or ${validationSummary.expected.outsider + 1}` : validationSummary.expected.outsider}
+                  {validationSummary.counts.outsider} / {validationSummary.expectedOutsiderLabel}
                 </div>
               </div>
               <div>

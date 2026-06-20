@@ -164,17 +164,20 @@ export default function WhaleBucketGamePhase({
                     rObj?.team === 'traveler' && "text-clocktower-traveler",
                   )}>
                     {rObj && (
-                      <img
-                        src={`/icons/${rObj.id}.svg`}
-                        alt={rObj.name}
-                        className="w-3.5 h-3.5 object-contain shrink-0"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      />
+                      <span className="w-4.5 h-4.5 bg-white rounded-full flex items-center justify-center shrink-0">
+                        <img
+                          src={`/icons/${rObj.id}.svg`}
+                          alt={rObj.name}
+                          className="w-3.5 h-3.5 object-contain"
+                          onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                        />
+                      </span>
                     )}
                     <span className="truncate">{rObj?.name ?? '—'}</span>
                     {p.isTheDrunk && <span className="text-[8px] bg-yellow-600 text-black px-0.5 rounded leading-none shrink-0">DK</span>}
                     {p.isTheMarionette && <span className="text-[8px] bg-clocktower-minion text-white px-0.5 rounded leading-none shrink-0">MN</span>}
                     {p.isTheLunatic && <span className="text-[8px] bg-clocktower-outsider text-white px-0.5 rounded leading-none shrink-0">LN</span>}
+                    {p.isTheLilMonsta && <span className="text-[8px] bg-clocktower-demon text-white px-0.5 rounded leading-none shrink-0">LM</span>}
                   </span>
                 </div>
               );

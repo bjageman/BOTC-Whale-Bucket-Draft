@@ -20,6 +20,7 @@ interface SetupProps {
 
 export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   const [players, setPlayers] = useState<Player[]>([]);
+  const [isLilMonstaGame, setIsLilMonstaGame] = useState(false);
   const [phase, setPhase] = useState<Phase>('setup');
   const [newPlayerName, setNewPlayerName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,7 +68,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     const saved = localStorage.getItem('standard-botc-game');
     if (saved) {
       try {
-        const { players: p, phase: ph, timeOfDay: tod, dayNumber: dn, customScriptRoles: csr, scriptName: sn } = JSON.parse(saved);
+        const { players: p, phase: ph, timeOfDay: tod, dayNumber: dn, customScriptRoles: csr, scriptName: sn, isLilMonstaGame: lmg } = JSON.parse(saved);
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setPlayers(p || []);
         setPhase(ph || 'setup');
@@ -75,6 +76,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         setDayNumber(dn || 1);
         if (csr) setCustomScriptRoles(csr);
         if (sn) setScriptName(sn);
+        if (lmg !== undefined) setIsLilMonstaGame(lmg);
       } catch (e) {
         console.error(e);
       }
@@ -89,7 +91,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       timeOfDay, 
       dayNumber,
       customScriptRoles,
-      scriptName
+      scriptName,
+      isLilMonstaGame
     }));
     
     const isLightMode = theme === 'light';
@@ -102,7 +105,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     return () => {
       document.documentElement.classList.remove('theme-light');
     };
-  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, theme]);
+  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, theme, isLilMonstaGame]);
 
   const toggleTimeOfDay = () => {
     if (timeOfDay === 'night') {
@@ -122,6 +125,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       isDead: false,
       isTheDrunk: false,
       isTheMarionette: false,
+      isTheLilMonsta: false,
     };
     setPlayers([...players, newPlayer]);
     setNewPlayerName('');
@@ -147,6 +151,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       isDead: false,
       isTheDrunk: false,
       isTheMarionette: false,
+      isTheLilMonsta: false,
     };
     setPlayers([...players, newPlayer]);
     setNewTravelerName('');
@@ -163,7 +168,15 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   const updatePlayerRole = (id: string, roleId: string) => {
     setPlayers(players.map(p => {
       if (p.id === id) {
-        return { ...p, roleId: roleId || undefined, isEvil: undefined };
+        return {
+          ...p,
+          roleId: roleId || undefined,
+          isEvil: undefined,
+          isTheDrunk: false,
+          isTheMarionette: false,
+          isTheLunatic: false,
+          isTheLilMonsta: false,
+        };
       }
       return p;
     }));
@@ -196,7 +209,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         return {
           ...p,
           isTheDrunk: nextVal,
-          isTheMarionette: nextVal ? false : p.isTheMarionette
+          isTheMarionette: nextVal ? false : p.isTheMarionette,
+          isTheLilMonsta: nextVal ? false : p.isTheLilMonsta,
         };
       }
       return p;
@@ -210,7 +224,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         return {
           ...p,
           isTheMarionette: nextVal,
-          isTheDrunk: nextVal ? false : p.isTheDrunk
+          isTheDrunk: nextVal ? false : p.isTheDrunk,
+          isTheLilMonsta: nextVal ? false : p.isTheLilMonsta,
         };
       }
       return p;
@@ -225,7 +240,34 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           ...p,
           isTheLunatic: nextVal,
           isTheDrunk: nextVal ? false : p.isTheDrunk,
-          isTheMarionette: nextVal ? false : p.isTheMarionette
+          isTheMarionette: nextVal ? false : p.isTheMarionette,
+          isTheLilMonsta: nextVal ? false : p.isTheLilMonsta,
+        };
+      }
+      return p;
+    }));
+  };
+
+  const togglePlayerTheLilMonsta = (id: string) => {
+    const isTurningOn = !players.find(x => x.id === id)?.isTheLilMonsta;
+    if (isTurningOn) {
+      setIsLilMonstaGame(true);
+    }
+    setPlayers(players.map(p => {
+      if (p.id === id) {
+        const nextVal = !p.isTheLilMonsta;
+        return {
+          ...p,
+          isTheLilMonsta: nextVal,
+          isTheDrunk: nextVal ? false : p.isTheDrunk,
+          isTheMarionette: nextVal ? false : p.isTheMarionette,
+          isTheLunatic: nextVal ? false : p.isTheLunatic,
+        };
+      }
+      if (isTurningOn) {
+        return {
+          ...p,
+          isTheLilMonsta: false,
         };
       }
       return p;
@@ -318,6 +360,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       return;
     }
     setPlayers(assignedPlayers);
+    setIsLilMonstaGame(assignedPlayers.some(p => p.isTheLilMonsta));
   };
 
   const validationSummary = useMemo(() => {
@@ -402,6 +445,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           togglePlayerTheDrunk={togglePlayerTheDrunk}
           togglePlayerTheMarionette={togglePlayerTheMarionette}
           togglePlayerTheLunatic={togglePlayerTheLunatic}
+          togglePlayerTheLilMonsta={togglePlayerTheLilMonsta}
           validationSummary={validationSummary}
           isLightModeActive={isLightModeActive}
           allAssigned={allAssigned}
@@ -482,6 +526,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           onToggleDead={togglePlayerDead}
           onToggleDrunkOrPoisoned={togglePlayerDrunkOrPoisoned}
           onToggleEvil={togglePlayerEvil}
+          onToggleLilMonsta={togglePlayerTheLilMonsta}
+          isLilMonstaGame={isLilMonstaGame}
           onSetSearchingRole={setIsSearchingRole}
           onSetModalRoleSearch={setModalRoleSearch}
         />
