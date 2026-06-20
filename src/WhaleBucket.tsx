@@ -373,10 +373,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
 
   return (
     <div className={cn(
-      "min-h-screen p-4 font-sans mx-auto transition-colors duration-300",
-      phase === 'game' 
-        ? "max-w-xl md:max-w-6xl landscape:max-w-6xl" 
-        : "max-w-xl md:max-w-4xl",
+      "min-h-screen p-4 font-sans mx-auto transition-colors duration-300 max-w-xl md:max-w-5xl landscape:max-w-5xl",
       isLightModeActive
         ? "bg-clocktower-parchment text-clocktower-night"
         : "bg-clocktower-night text-clocktower-parchment"
