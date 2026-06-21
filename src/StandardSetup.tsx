@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Sun, Moon, ArrowLeft, RefreshCcw } from 'lucide-react';
 import rolesData from './roles.json';
+import officialRoles from './official_roles.json';
 import { cn } from './utils/cn';
 import type { Player, Role } from './types';
 
@@ -331,7 +332,21 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
             }
             return null;
           })
-          .filter((item: { id: string } | null): item is { id: string } => !!item && item.id !== '_meta')
+          .filter((item: { id: string } | null): item is { id: string } => {
+            if (!item || item.id === '_meta') return false;
+            
+            const officialMatch = (officialRoles as any[]).find(r => r.id.toLowerCase() === item.id.toLowerCase());
+            if (officialMatch && (officialMatch.team === 'fabled' || officialMatch.team === 'loric')) {
+              return false;
+            }
+
+            const itemObj = item as Record<string, unknown>;
+            if (typeof itemObj.team === 'string' && (itemObj.team.toLowerCase() === 'fabled' || itemObj.team.toLowerCase() === 'loric')) {
+              return false;
+            }
+
+            return true;
+          })
           .map((item: { id: string }) => {
             const matched = (rolesData as Role[]).find(r => r.id.toLowerCase() === item.id.toLowerCase());
             if (matched) return matched;
