@@ -1,6 +1,6 @@
-# 📖 BotC Grimoire
+# 📖 BOTC Grimoire
 
-A lightweight storyteller and setup companion web application for **Blood on the Clocktower** (BotC) storytellers. It offers two distinct modes: standard manual grimoire tracking and the custom **"Whale Bucket"** preference draft mode.
+A lightweight storyteller and setup companion web application for **Blood on the Clocktower** (BOTC) storytellers. It offers two distinct modes: standard manual grimoire tracking and the custom **"Whale Bucket"** preference draft mode.
 
 ## Core Features
 
@@ -24,7 +24,7 @@ All state is persisted to `localStorage`, so refreshing the page won't lose your
 
 ## Included Roles
 
-The app ships with the full catalogue of official BotC roles across all standard editions:
+The app ships with the full catalogue of official BOTC roles across all standard editions:
 
 | Team | Count |
 |------|-------|
