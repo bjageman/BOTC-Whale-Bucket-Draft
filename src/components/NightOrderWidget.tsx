@@ -146,14 +146,23 @@ export default function NightOrderWidget({
   const wakeItems = items.filter(item => item.type === 'character' || item.id === 'minioninfo' || item.id === 'demoninfo');
   const allResolved = wakeItems.length > 0 && wakeItems.every(item => checkedItems[item.id]);
 
-  const getTeamBgClass = (team?: string) => {
-    switch (team) {
-      case 'townsfolk': return 'bg-clocktower-townsfolk/10 text-clocktower-townsfolk border-clocktower-townsfolk/30';
-      case 'outsider': return 'bg-clocktower-outsider/10 text-clocktower-outsider border-clocktower-outsider/30';
-      case 'minion': return 'bg-clocktower-minion/10 text-clocktower-minion border-clocktower-minion/30';
-      case 'demon': return 'bg-[#7f1d1d]/15 text-[#f87171] border-[#7f1d1d]/40';
-      case 'traveler': return 'bg-clocktower-traveler/10 text-clocktower-traveler border-clocktower-traveler/30';
-      default: return 'bg-gray-500/10 text-gray-400 border-gray-500/30';
+  const getCharacterColorClass = (item: NightOrderItem, isLight: boolean) => {
+    if (item.type === 'info') {
+      return isLight ? 'text-gray-600' : 'text-gray-400';
+    }
+    switch (item.team) {
+      case 'townsfolk':
+        return isLight ? 'text-blue-700' : 'text-blue-400';
+      case 'outsider':
+        return isLight ? 'text-emerald-700' : 'text-emerald-400';
+      case 'minion':
+        return isLight ? 'text-red-600' : 'text-rose-400';
+      case 'demon':
+        return isLight ? 'text-red-800' : 'text-red-400';
+      case 'traveler':
+        return isLight ? 'text-purple-700' : 'text-purple-400';
+      default:
+        return isLight ? 'text-gray-900' : 'text-[#f4e4bc]';
     }
   };
 
@@ -278,57 +287,54 @@ export default function NightOrderWidget({
 
                 {/* Role and Player info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    {/* Role name */}
-                    <span
-                      className={cn(
-                        "font-bold font-serif text-sm",
-                        isInfo ? "text-gray-600 dark:text-gray-400" : "text-gray-900 dark:text-[#f4e4bc]",
-                        isChecked && "line-through text-gray-400 dark:text-gray-500"
-                      )}
-                    >
-                      {item.name}
-                    </span>
-
-                    {/* Team Badge for Characters */}
-                    {!isInfo && (
-                      <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider", getTeamBgClass(item.team))}>
-                        {item.team}
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span
+                        className={cn(
+                          "font-bold font-serif text-sm",
+                          getCharacterColorClass(item, isLightModeActive),
+                          isChecked && "line-through text-gray-500"
+                        )}
+                      >
+                        {item.name}
                       </span>
-                    )}
+
+                      {/* Status Badges */}
+                      {isDead && (
+                        <span className="text-[9px] bg-gray-600/20 text-gray-400 border border-gray-600/30 px-1 rounded font-bold uppercase tracking-wide">
+                          Dead
+                        </span>
+                      )}
+
+                      {item.player?.isTheDrunk && (
+                        <span className="text-[9px] bg-amber-500/10 text-amber-500 border border-amber-500/30 px-1 rounded font-bold uppercase tracking-wide">
+                          Drunk
+                        </span>
+                      )}
+                      {item.player?.isTheMarionette && (
+                        <span className="text-[9px] bg-amber-500/10 text-amber-500 border border-amber-500/30 px-1 rounded font-bold uppercase tracking-wide">
+                          Marionette
+                        </span>
+                      )}
+                      {item.player?.isTheLunatic && (
+                        <span className="text-[9px] bg-amber-500/10 text-amber-500 border border-amber-500/30 px-1 rounded font-bold uppercase tracking-wide">
+                          Lunatic
+                        </span>
+                      )}
+                      {item.player?.isDrunkOrPoisoned && (
+                        <span className="text-[9px] bg-purple-500/10 text-purple-400 border border-purple-500/30 px-1 rounded font-bold uppercase tracking-wide">
+                          Poisoned
+                        </span>
+                      )}
+                    </div>
 
                     {/* Player name */}
                     {item.player && (
-                      <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                        — {item.player.name}
-                      </span>
-                    )}
-
-                    {/* Status Badges */}
-                    {isDead && (
-                      <span className="text-[9px] bg-gray-600/20 text-gray-400 border border-gray-600/30 px-1 rounded font-bold uppercase tracking-wide">
-                        Dead
-                      </span>
-                    )}
-
-                    {item.player?.isTheDrunk && (
-                      <span className="text-[9px] bg-amber-500/10 text-amber-500 border border-amber-500/30 px-1 rounded font-bold uppercase tracking-wide">
-                        Drunk
-                      </span>
-                    )}
-                    {item.player?.isTheMarionette && (
-                      <span className="text-[9px] bg-amber-500/10 text-amber-500 border border-amber-500/30 px-1 rounded font-bold uppercase tracking-wide">
-                        Marionette
-                      </span>
-                    )}
-                    {item.player?.isTheLunatic && (
-                      <span className="text-[9px] bg-amber-500/10 text-amber-500 border border-amber-500/30 px-1 rounded font-bold uppercase tracking-wide">
-                        Lunatic
-                      </span>
-                    )}
-                    {item.player?.isDrunkOrPoisoned && (
-                      <span className="text-[9px] bg-purple-500/10 text-purple-400 border border-purple-500/30 px-1 rounded font-bold uppercase tracking-wide">
-                        Poisoned
+                      <span className={cn(
+                        "text-xs font-medium ml-auto",
+                        isLightModeActive ? "text-gray-600" : "text-gray-400"
+                      )}>
+                        {item.player.name}
                       </span>
                     )}
                   </div>
@@ -337,8 +343,10 @@ export default function NightOrderWidget({
                   {item.description && (
                     <p
                       className={cn(
-                        "text-xs mt-1 leading-relaxed text-gray-600 dark:text-gray-300",
-                        isChecked && "text-gray-400 dark:text-gray-500"
+                        "text-xs mt-1 leading-relaxed",
+                        isChecked
+                          ? "text-gray-500"
+                          : (isLightModeActive ? "text-gray-600" : "text-gray-300")
                       )}
                     >
                       {item.description.replace(/:reminder:/g, '').trim()}
