@@ -40,7 +40,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   const [newTravelerRoleId, setNewTravelerRoleId] = useState('beggar');
 
   // Exclusion states
-  const [excludedRoleIds, setExcludedRoleIds] = useState<string[]>([]);
+  const [excludedRoleIds, setExcludedRoleIds] = useState<string[]>(['drunk', 'marionette', 'lunatic']);
 
   // Preference modal states
   const [activePrefModal, setActivePrefModal] = useState<{ playerId: string; team: Role['team'] } | null>(null);
