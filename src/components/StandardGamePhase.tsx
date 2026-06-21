@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { GripVertical, CheckCircle, AlertTriangle } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player, Role } from '../types';
 import rolesData from '../roles.json';
 import GrimoireBoard from './GrimoireBoard';
 import NightOrderWidget from './NightOrderWidget';
-
-import type { ValidationSummary } from '../utils/whaleBucketValidation';
 
 interface Props {
   players: Player[];
@@ -31,7 +29,6 @@ interface Props {
   handleTouchStart: (e: React.TouchEvent, index: number) => void;
   handleTouchMove: (e: React.TouchEvent) => void;
   handleTouchEnd: () => void;
-  validationSummary: ValidationSummary | null;
 }
 
 export default function StandardGamePhase({
@@ -41,7 +38,6 @@ export default function StandardGamePhase({
   setNewTravelerName, setNewTravelerRoleId,
   handleDragStart, handleDragOver, handleDragLeave, handleDrop, handleDragEnd,
   handleTouchStart, handleTouchMove, handleTouchEnd,
-  validationSummary,
 }: Props) {
   const [isDragEnabled, setIsDragEnabled] = useState(false);
   return (
@@ -70,101 +66,68 @@ export default function StandardGamePhase({
       <div id="grimoire-controls-container" className="space-y-6 md:pt-10 landscape:pt-10">
 
 
-        {/* Validation Summary */}
-        {validationSummary && players.length >= 5 && (
-          <div
-            id="grimoire-balance-verification"
-            className={cn(
-              "border rounded-lg p-3 space-y-2.5 transition-colors duration-300 text-left",
-              isLightModeActive
-                ? "bg-white border-gray-250 text-clocktower-night shadow-sm"
-                : "bg-gray-900/90 border-gray-800"
-            )}
-          >
-            <div className="flex items-center gap-1.5">
-              {validationSummary.isValid ? (
-                <CheckCircle size={16} className="text-clocktower-outsider" />
-              ) : (
-                <AlertTriangle size={16} className="text-clocktower-minion" />
+
+
+        {/* Add Traveler */}
+        <div className={cn(
+          'rounded-lg border p-3.5 space-y-3 transition-colors duration-300',
+          isLightModeActive
+            ? 'bg-white/50 border-gray-300 text-clocktower-night'
+            : 'bg-gray-900/40 border-gray-800/80'
+        )}>
+          <h4 className={cn(
+            'text-[10px] uppercase font-bold tracking-wider',
+            isLightModeActive ? 'text-gray-600' : 'text-gray-500'
+          )}>Add Traveler (Late Arrival)</h4>
+          <div className="flex flex-col gap-2">
+            <input
+              id="game-traveler-name-input"
+              type="text"
+              placeholder="Traveler name..."
+              value={newTravelerName}
+              onChange={(e) => setNewTravelerName(e.target.value)}
+              autoCapitalize="words"
+              className={cn(
+                'w-full rounded px-2.5 py-1.5 text-xs focus:outline-none border transition-colors',
+                isLightModeActive
+                  ? 'bg-white border-gray-300 text-clocktower-night focus:border-clocktower-blood'
+                  : 'bg-gray-950 border-gray-800 text-gray-200 focus:border-clocktower-blood'
               )}
-              <span className={cn(
-                "font-semibold text-xs tracking-wide uppercase",
-                isLightModeActive ? "text-gray-700" : "text-gray-300"
-              )}>
-                Grimoire Balance Verification
-              </span>
-            </div>
-
-            {validationSummary.modifications.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {validationSummary.modifications.map((m, idx) => (
-                  <span
-                    key={idx}
-                    className={cn(
-                      "text-[9px] border px-1.5 py-0.5 rounded font-medium transition-colors duration-300",
-                      isLightModeActive
-                        ? "bg-clocktower-blood/5 border-clocktower-blood/20 text-clocktower-blood"
-                        : "bg-clocktower-blood/10 border-clocktower-blood/30 text-clocktower-parchment/80"
-                    )}
-                  >
-                    {m}
-                  </span>
+            />
+            <div className="flex gap-2">
+              <select
+                id="game-traveler-role-select"
+                value={newTravelerRoleId}
+                onChange={(e) => setNewTravelerRoleId(e.target.value)}
+                className={cn(
+                  'flex-1 rounded px-2 py-1.5 text-xs focus:outline-none border transition-colors',
+                  isLightModeActive
+                    ? 'bg-white border-gray-300 text-clocktower-night focus:border-clocktower-blood'
+                    : 'bg-gray-950 border-gray-800 text-gray-200 focus:border-clocktower-blood'
+                )}
+              >
+                {(rolesData as Role[]).filter(r => r.team === 'traveler').map(r => (
+                  <option key={r.id} value={r.id} className={isLightModeActive ? 'bg-white text-clocktower-night' : 'bg-gray-950 text-gray-200'}>
+                    {r.name}
+                  </option>
                 ))}
-              </div>
-            )}
-
-            <div className={cn(
-              "grid text-center text-[10px] font-mono border-t pt-2.5",
-              isLightModeActive ? "border-gray-200" : "border-gray-800",
-              validationSummary.expected.traveler > 0 || validationSummary.counts.traveler > 0
-                ? "grid-cols-5 gap-1"
-                : "grid-cols-4 gap-2"
-            )}>
-              <div>
-                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-500 font-sans">Tfolk</div>
-                <div className={cn("font-bold text-xs mt-0.5", validationSummary.isTownsfolkValid ? "text-clocktower-townsfolk" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
-                  {validationSummary.counts.townsfolk} / {validationSummary.expectedTownsfolkLabel}
-                </div>
-              </div>
-              <div>
-                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-500 font-sans">Outsider</div>
-                <div className={cn("font-bold text-xs mt-0.5", validationSummary.isOutsiderValid ? "text-clocktower-outsider" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
-                  {validationSummary.counts.outsider} / {validationSummary.expectedOutsiderLabel}
-                </div>
-              </div>
-              <div>
-                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-500 font-sans">Minion</div>
-                <div className={cn("font-bold text-xs mt-0.5", validationSummary.isMinionValid ? "text-clocktower-minion" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
-                  {validationSummary.counts.minion} / {validationSummary.expected.minion}
-                </div>
-              </div>
-              <div>
-                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-500 font-sans">Demon</div>
-                <div className={cn("font-bold text-xs mt-0.5", validationSummary.isDemonValid ? "text-clocktower-demon" : (isLightModeActive ? "text-amber-700" : "text-yellow-500"))}>
-                  {validationSummary.counts.demon} / {validationSummary.expected.demon}
-                </div>
-              </div>
-              {(validationSummary.expected.traveler > 0 || validationSummary.counts.traveler > 0) && (
-                <div>
-                  <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-gray-500 font-sans">Traveler</div>
-                  <div className="font-bold text-xs mt-0.5 text-clocktower-traveler">
-                    {validationSummary.counts.traveler} / {validationSummary.expected.traveler}
-                  </div>
-                </div>
-              )}
+              </select>
+              <button
+                id="game-add-traveler-button"
+                onClick={addTravelerGamePhase}
+                disabled={players.length >= 20}
+                className={cn(
+                  'px-3 py-1.5 rounded text-xs font-bold transition-all disabled:opacity-40 text-white shadow-sm',
+                  isLightModeActive
+                    ? 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800'
+                    : 'bg-clocktower-traveler hover:bg-purple-400 active:bg-purple-600'
+                )}
+              >
+                Add
+              </button>
             </div>
-
-            {validationSummary.jinxWarnings.length > 0 && (
-              <div className={cn("border-t pt-2 space-y-1", isLightModeActive ? "border-gray-200" : "border-gray-800")}>
-                {validationSummary.jinxWarnings.map((w, idx) => (
-                  <div key={idx} className={cn("text-[10px] flex items-center gap-1 font-medium", isLightModeActive ? "text-amber-700" : "text-yellow-500")}>
-                    <AlertTriangle size={10} /> {w}
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
-        )}
+        </div>
 
         {/* Ledger */}
         <div id="grimoire-ledger-container" className={cn(
@@ -185,7 +148,7 @@ export default function StandardGamePhase({
                 onChange={(e) => setIsDragEnabled(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-7 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 peer-checked:after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-clocktower-blood"></div>
+              <div className="relative w-7 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 peer-checked:after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-clocktower-blood"></div>
               <span className="ml-1.5 text-[9px] font-bold text-gray-500 uppercase tracking-wider">Drag to Reorder</span>
             </label>
           </div>
@@ -261,67 +224,6 @@ export default function StandardGamePhase({
                 </div>
               );
             })}
-          </div>
-        </div>
-
-        {/* Add Traveler */}
-        <div className={cn(
-          'rounded-lg border p-3.5 space-y-3 transition-colors duration-300',
-          isLightModeActive
-            ? 'bg-white/50 border-gray-300 text-clocktower-night'
-            : 'bg-gray-900/40 border-gray-800/80'
-        )}>
-          <h4 className={cn(
-            'text-[10px] uppercase font-bold tracking-wider',
-            isLightModeActive ? 'text-gray-600' : 'text-gray-500'
-          )}>Add Traveler (Late Arrival)</h4>
-          <div className="flex flex-col gap-2">
-            <input
-              id="game-traveler-name-input"
-              type="text"
-              placeholder="Traveler name..."
-              value={newTravelerName}
-              onChange={(e) => setNewTravelerName(e.target.value)}
-              autoCapitalize="words"
-              className={cn(
-                'w-full rounded px-2.5 py-1.5 text-xs focus:outline-none border transition-colors',
-                isLightModeActive
-                  ? 'bg-white border-gray-300 text-clocktower-night focus:border-clocktower-blood'
-                  : 'bg-gray-950 border-gray-800 text-gray-200 focus:border-clocktower-blood'
-              )}
-            />
-            <div className="flex gap-2">
-              <select
-                id="game-traveler-role-select"
-                value={newTravelerRoleId}
-                onChange={(e) => setNewTravelerRoleId(e.target.value)}
-                className={cn(
-                  'flex-1 rounded px-2 py-1.5 text-xs focus:outline-none border transition-colors',
-                  isLightModeActive
-                    ? 'bg-white border-gray-300 text-clocktower-night focus:border-clocktower-blood'
-                    : 'bg-gray-950 border-gray-800 text-gray-200 focus:border-clocktower-blood'
-                )}
-              >
-                {(rolesData as Role[]).filter(r => r.team === 'traveler').map(r => (
-                  <option key={r.id} value={r.id} className={isLightModeActive ? 'bg-white text-clocktower-night' : 'bg-gray-950 text-gray-200'}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                id="game-add-traveler-button"
-                onClick={addTravelerGamePhase}
-                disabled={players.length >= 20}
-                className={cn(
-                  'px-3 py-1.5 rounded text-xs font-bold transition-all disabled:opacity-40 text-white shadow-sm',
-                  isLightModeActive
-                    ? 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800'
-                    : 'bg-clocktower-traveler hover:bg-purple-400 active:bg-purple-600'
-                )}
-              >
-                Add
-              </button>
-            </div>
           </div>
         </div>
       </div>

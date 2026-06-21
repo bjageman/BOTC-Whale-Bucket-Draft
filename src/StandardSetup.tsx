@@ -3,7 +3,7 @@ import { Sun, Moon, ArrowLeft, RefreshCcw } from 'lucide-react';
 import rolesData from './roles.json';
 import { cn } from './utils/cn';
 import type { Player, Role } from './types';
-import { getValidationSummary } from './utils/whaleBucketValidation';
+
 import { performStandardAssignment } from './utils/standardAssignment';
 import PlayerDetailsModal from './components/PlayerDetailsModal';
 import StandardGamePhase from './components/StandardGamePhase';
@@ -391,9 +391,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     setIsLilMonstaGame(assignedPlayers.some(p => p.isTheLilMonsta));
   };
 
-  const validationSummary = useMemo(() => {
-    return getValidationSummary(players);
-  }, [players]);
+
 
   const allAssigned = players.length >= 5 && players.every(p => p.roleId);
   const isLightModeActive = theme === 'light';
@@ -513,8 +511,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           togglePlayerTheMarionette={togglePlayerTheMarionette}
           togglePlayerTheLunatic={togglePlayerTheLunatic}
           togglePlayerTheLilMonsta={togglePlayerTheLilMonsta}
-          validationSummary={validationSummary}
-          isLightModeActive={isLightModeActive}
           allAssigned={allAssigned}
           setPhase={setPhase}
           draggedIndex={draggedIndex}
@@ -555,7 +551,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           handleTouchStart={handleTouchStart}
           handleTouchMove={handleTouchMove}
           handleTouchEnd={handleTouchEnd}
-          validationSummary={validationSummary}
         />
       )}
 

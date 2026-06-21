@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player } from '../WhaleBucket';
 import type { Role } from '../types';
-import rolesData from '../roles.json';
+import rolesData from '../official_roles.json';
 
 interface PreferenceSelectionModalProps {
   activePrefModal: { playerId: string; team: Role['team'] };
@@ -13,6 +13,7 @@ interface PreferenceSelectionModalProps {
   togglePreference: (playerId: string, team: Role['team'], roleId: string) => void;
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   setActivePrefModal: (val: { playerId: string; team: Role['team'] } | null) => void;
+  excludedRoleIds: string[];
 }
 
 export default function PreferenceSelectionModal({
@@ -23,9 +24,11 @@ export default function PreferenceSelectionModal({
   togglePreference,
   setPlayers,
   setActivePrefModal,
+  excludedRoleIds,
 }: PreferenceSelectionModalProps) {
   const filteredPrefRoles = (rolesData as Role[]).filter(r => 
     r.team === activePrefModal.team &&
+    !excludedRoleIds.includes(r.id) &&
     r.name.toLowerCase().includes(prefSearchTerm.toLowerCase())
   );
 
@@ -48,12 +51,12 @@ export default function PreferenceSelectionModal({
           </button>
         </div>
 
-        <div className="flex items-center bg-gray-955 border border-gray-800 rounded px-2.5 py-1.5 text-sm">
-          <Search size={14} className="text-gray-500 mr-2" />
+        <div className="flex items-center bg-gray-955 border border-gray-800 rounded px-2.5 py-0 text-sm">
+          <Search size={14} className="text-gray-500 mr-2 flex-shrink-0" />
           <input
             type="text"
             placeholder={`Search character name...`}
-            className="bg-transparent flex-1 outline-none text-white text-xs placeholder-gray-600"
+            className="bg-transparent flex-1 outline-none text-white text-xs placeholder-gray-650 h-9 w-full"
             value={prefSearchTerm}
             onChange={(e) => setPrefSearchTerm(e.target.value)}
           />
@@ -127,7 +130,10 @@ export default function PreferenceSelectionModal({
           <button
             onClick={() => {
               if (currentPlayer) {
-                const available = (rolesData as Role[]).filter(r => r.team === activePrefModal.team);
+                const available = (rolesData as Role[]).filter(r => 
+                  r.team === activePrefModal.team &&
+                  !excludedRoleIds.includes(r.id)
+                );
                 if (available.length > 0) {
                   const randIdx = Math.floor(Math.random() * available.length);
                   const r = available[randIdx];

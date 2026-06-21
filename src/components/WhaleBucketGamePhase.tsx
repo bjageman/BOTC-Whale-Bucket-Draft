@@ -3,7 +3,8 @@ import { GripVertical } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player } from '../WhaleBucket';
 import type { Role } from '../types';
-import rolesData from '../roles.json';
+import rolesData from '../official_roles.json';
+import allRolesData from '../roles.json';
 import GrimoireBoard from './GrimoireBoard';
 import NightOrderWidget from './NightOrderWidget';
 
@@ -81,6 +82,7 @@ export default function WhaleBucketGamePhase({
       <div className="space-y-6 md:pt-10 landscape:pt-10">
 
 
+        {/* Ledger */}
         <div className={cn(
           "rounded-lg border p-3 space-y-1.5 transition-colors duration-300",
           isLightModeActive
@@ -99,7 +101,7 @@ export default function WhaleBucketGamePhase({
                 onChange={(e) => setIsDragEnabled(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-7 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 peer-checked:after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-clocktower-blood"></div>
+              <div className="relative w-7 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 peer-checked:after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-clocktower-blood"></div>
               <span className="ml-1.5 text-[9px] font-bold text-gray-500 uppercase tracking-wider">Drag to Reorder</span>
             </label>
           </div>
@@ -221,7 +223,7 @@ export default function WhaleBucketGamePhase({
                     : "bg-gray-955 border-gray-800 text-gray-200 focus:border-clocktower-blood"
                 )}
               >
-                {(rolesData as Role[]).filter(r => r.team === 'traveler').map(r => (
+                {(allRolesData as Role[]).filter(r => r.team === 'traveler').map(r => (
                   <option
                     key={r.id}
                     value={r.id}
