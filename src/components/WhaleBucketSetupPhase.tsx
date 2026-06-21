@@ -71,13 +71,14 @@ export default function WhaleBucketSetupPhase({
   setExcludedRoleIds,
 }: WhaleBucketSetupPhaseProps) {
   const [excludeSearchTerm, setExcludeSearchTerm] = useState('');
+  const [isExcludeFocused, setIsExcludeFocused] = useState(false);
 
-  const excludeSuggestions = excludeSearchTerm
-    ? (rolesData as Role[]).filter(r =>
-        !excludedRoleIds.includes(r.id) &&
-        r.name.toLowerCase().includes(excludeSearchTerm.toLowerCase())
-      ).slice(0, 8)
-    : [];
+  const excludeSuggestions = (rolesData as Role[]).filter(r =>
+    !excludedRoleIds.includes(r.id) &&
+    (excludeSearchTerm
+      ? r.name.toLowerCase().includes(excludeSearchTerm.toLowerCase())
+      : true)
+  );
 
   const handleExcludeRole = (roleId: string) => {
     if (!excludedRoleIds.includes(roleId)) {
@@ -315,6 +316,8 @@ export default function WhaleBucketSetupPhase({
               placeholder="Search to exclude..."
               value={excludeSearchTerm}
               onChange={(e) => setExcludeSearchTerm(e.target.value)}
+              onFocus={() => setIsExcludeFocused(true)}
+              onBlur={() => setTimeout(() => setIsExcludeFocused(false), 200)}
               className={cn(
                 "w-full rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-clocktower-blood border",
                 isLightModeActive
@@ -322,7 +325,7 @@ export default function WhaleBucketSetupPhase({
                   : "bg-gray-955 border-gray-800 text-white placeholder-gray-650"
               )}
             />
-            {excludeSearchTerm && (
+            {isExcludeFocused && (
               <div className={cn(
                 "absolute left-0 right-0 mt-1 border rounded-md shadow-xl z-20 max-h-48 overflow-y-auto",
                 isLightModeActive ? "bg-white border-gray-200" : "bg-gray-900 border-gray-800"
