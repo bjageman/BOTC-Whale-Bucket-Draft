@@ -69,4 +69,131 @@ describe('performStandardAssignment', () => {
       expect([leftNeighborIdx, rightNeighborIdx]).toContain(marionetteIdx);
     }
   });
+
+  it('should correctly assign the Drunk role as a fake Townsfolk character', () => {
+    const players: Player[] = [
+      { id: '1', name: 'Alice', isDead: false },
+      { id: '2', name: 'Bob', isDead: false },
+      { id: '3', name: 'Charlie', isDead: false },
+      { id: '4', name: 'David', isDead: false },
+      { id: '5', name: 'Eve', isDead: false },
+      { id: '6', name: 'Frank', isDead: false },
+    ];
+
+    // Standard 6-player setup has 1 Outsider. Drunk is the only Outsider in mockScriptRoles.
+    const result = performStandardAssignment(players, mockScriptRoles, []);
+    expect(result).not.toBeNull();
+    if (!result) return;
+
+    const drunkPlayer = result.find(p => p.isTheDrunk);
+    expect(drunkPlayer).toBeDefined();
+    if (!drunkPlayer) return;
+
+    expect(drunkPlayer.isTheDrunk).toBe(true);
+    // Drunk player must think they are a Townsfolk
+    const fakeRole = mockScriptRoles.find(r => r.id === drunkPlayer.roleId);
+    expect(fakeRole?.team).toBe('townsfolk');
+  });
+
+  it('should correctly assign the Lunatic role as a fake Demon character', () => {
+    const mockScriptWithLunatic: Role[] = [
+      ...mockScriptRoles,
+      { id: 'lunatic', name: 'Lunatic', team: 'outsider' }
+    ];
+
+    const players: Player[] = [
+      { id: '1', name: 'Alice', isDead: false },
+      { id: '2', name: 'Bob', isDead: false },
+      { id: '3', name: 'Charlie', isDead: false },
+      { id: '4', name: 'David', isDead: false },
+      { id: '5', name: 'Eve', isDead: false },
+      { id: '6', name: 'Frank', isDead: false },
+    ];
+
+    // 6-player setup has 1 Outsider. We filter out 'drunk' so 'lunatic' is the only outsider.
+    const scriptWithLunaticOnlyOutsider = mockScriptWithLunatic.filter(r => r.id !== 'drunk');
+
+    const result = performStandardAssignment(players, scriptWithLunaticOnlyOutsider, []);
+    expect(result).not.toBeNull();
+    if (!result) return;
+
+    const lunaticPlayer = result.find(p => p.isTheLunatic);
+    expect(lunaticPlayer).toBeDefined();
+    if (!lunaticPlayer) return;
+
+    expect(lunaticPlayer.isTheLunatic).toBe(true);
+    // Lunatic player must think they are a Demon
+    const fakeRole = mockScriptWithLunatic.find(r => r.id === lunaticPlayer.roleId);
+    expect(fakeRole?.team).toBe('demon');
+  });
+
+  it('should apply the Baron outsider modification (+2 outsiders)', () => {
+    const mockScriptWithBaron: Role[] = [
+      ...mockScriptRoles,
+      { id: 'baron', name: 'Baron', team: 'minion' },
+      { id: 'butler', name: 'Butler', team: 'outsider' },
+      { id: 'saint', name: 'Saint', team: 'outsider' },
+    ];
+
+    const players: Player[] = [
+      { id: '1', name: 'Alice', isDead: false },
+      { id: '2', name: 'Bob', isDead: false },
+      { id: '3', name: 'Charlie', isDead: false },
+      { id: '4', name: 'David', isDead: false },
+      { id: '5', name: 'Eve', isDead: false },
+      { id: '6', name: 'Frank', isDead: false },
+      { id: '7', name: 'Grace', isDead: false },
+    ];
+
+    // 7 players: standard distribution is 5 Townsfolk, 0 Outsider, 1 Minion, 1 Demon.
+    // If Baron is the only minion, it adds 2 outsiders => 3 Townsfolk, 2 Outsiders, 1 Minion, 1 Demon.
+    const scriptWithBaronOnlyMinion = mockScriptWithBaron.filter(r => r.id !== 'poisoner' && r.id !== 'marionette');
+
+    const result = performStandardAssignment(players, scriptWithBaronOnlyMinion, []);
+    expect(result).not.toBeNull();
+    if (!result) return;
+
+    // Count the actual assigned roles by their teams (Baron counts as Minion, Imp as Demon)
+    const assignedRoles = result.map(p => {
+      // Map back to original roles for counting teams
+      if (p.isTheDrunk) return mockScriptWithBaron.find(r => r.id === 'drunk')!;
+      return mockScriptWithBaron.find(r => r.id === p.roleId)!;
+    });
+
+    const outsiderCount = assignedRoles.filter(r => r?.team === 'outsider').length;
+    expect(outsiderCount).toBe(2);
+  });
+
+  it('should handle Legion demon setup (approx. 60% Legion)', () => {
+    const mockScriptWithLegion: Role[] = [
+      ...mockScriptRoles,
+      { id: 'legion', name: 'Legion', team: 'demon' }
+    ];
+
+    const players: Player[] = [
+      { id: '1', name: 'Alice', isDead: false },
+      { id: '2', name: 'Bob', isDead: false },
+      { id: '3', name: 'Charlie', isDead: false },
+      { id: '4', name: 'David', isDead: false },
+      { id: '5', name: 'Eve', isDead: false },
+      { id: '6', name: 'Frank', isDead: false },
+      { id: '7', name: 'Grace', isDead: false },
+      { id: '8', name: 'Heidi', isDead: false },
+      { id: '9', name: 'Ivan', isDead: false },
+      { id: '10', name: 'Judy', isDead: false },
+    ];
+
+    // Force Legion by filtering out other demons
+    const scriptWithLegionOnlyDemon = mockScriptWithLegion.filter(r => r.id !== 'imp');
+
+    const result = performStandardAssignment(players, scriptWithLegionOnlyDemon, []);
+    expect(result).not.toBeNull();
+    if (!result) return;
+
+    const legionCount = result.filter(p => p.roleId === 'legion').length;
+    // 10 players * 0.6 = 6 Legion demons
+    expect(legionCount).toBe(6);
+    expect(result.every(p => p.roleId === 'legion' ? p.isEvil === true : p.isEvil === undefined)).toBe(true);
+  });
 });
+
