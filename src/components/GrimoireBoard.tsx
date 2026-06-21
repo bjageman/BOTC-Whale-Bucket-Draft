@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { Player, Role } from '../types';
 import { cn } from '../utils/cn';
@@ -20,6 +20,8 @@ export default function GrimoireBoard({
   onSelectPlayer,
   rolesData,
 }: GrimoireBoardProps) {
+  const [hoveredOrder, setHoveredOrder] = useState<string[]>([]);
+
   const teamFill = (team: Role['team']) => ({
     townsfolk: 'fill-clocktower-townsfolk',
     outsider: 'fill-clocktower-outsider',
@@ -149,6 +151,9 @@ export default function GrimoireBoard({
 
         const dynamicFontSize = `${baseFontSizeVal * scaleFactor}${baseFontSizeUnit}`;
 
+        const orderIndex = hoveredOrder.indexOf(p.id);
+        const zIndex = orderIndex !== -1 ? 10 + orderIndex : 10;
+
         return (
           <div
             key={p.id}
@@ -157,8 +162,15 @@ export default function GrimoireBoard({
               left: `${leftPos}%`,
               top: `${topPos}%`,
               transform: 'translate(-50%, -50%)',
+              zIndex: zIndex,
             }}
-            className="z-10 hover:z-50 group"
+            onMouseEnter={() => {
+              setHoveredOrder((prev) => {
+                const filtered = prev.filter((id) => id !== p.id);
+                return [...filtered, p.id];
+              });
+            }}
+            className="hover:z-50 group"
           >
             <div className="relative flex flex-col items-center">
               <button
