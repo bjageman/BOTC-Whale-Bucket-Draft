@@ -5,6 +5,7 @@ import { cn } from './utils/cn';
 import type { Player, Role } from './types';
 
 import { performStandardAssignment } from './utils/standardAssignment';
+import { getValidationSummary } from './utils/whaleBucketValidation';
 import PlayerDetailsModal from './components/PlayerDetailsModal';
 import StandardGamePhase from './components/StandardGamePhase';
 import StandardSetupPhase from './components/StandardSetupPhase';
@@ -393,6 +394,10 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
 
 
 
+  const validationSummary = useMemo(() => {
+    return getValidationSummary(players);
+  }, [players]);
+
   const allAssigned = players.length >= 5 && players.every(p => p.roleId);
   const isLightModeActive = theme === 'light';
 
@@ -511,6 +516,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           togglePlayerTheMarionette={togglePlayerTheMarionette}
           togglePlayerTheLunatic={togglePlayerTheLunatic}
           togglePlayerTheLilMonsta={togglePlayerTheLilMonsta}
+          validationSummary={validationSummary}
+          isLightModeActive={isLightModeActive}
           allAssigned={allAssigned}
           setPhase={setPhase}
           draggedIndex={draggedIndex}
