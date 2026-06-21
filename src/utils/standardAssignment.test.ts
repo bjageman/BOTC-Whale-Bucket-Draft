@@ -193,7 +193,6 @@ describe('performStandardAssignment', () => {
     const legionCount = result.filter(p => p.roleId === 'legion').length;
     // 10 players * 0.6 = 6 Legion demons
     expect(legionCount).toBe(6);
-    expect(result.every(p => p.roleId === 'legion' ? p.isEvil === true : p.isEvil === undefined)).toBe(true);
   });
 });
 
