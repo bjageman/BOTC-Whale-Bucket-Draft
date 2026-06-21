@@ -81,6 +81,75 @@ export default function WhaleBucketGamePhase({
       <div className="space-y-6 md:pt-10 landscape:pt-10">
 
 
+        {/* Add Traveler Card (Late Arrival) */}
+        <div className={cn(
+          "rounded-lg border p-3.5 space-y-3 transition-colors duration-300",
+          isLightModeActive
+            ? "bg-white/50 border-gray-300 text-clocktower-night"
+            : "bg-gray-900/40 border-gray-800/80"
+        )}>
+          <h4 className={cn(
+            "text-[10px] uppercase font-bold tracking-wider",
+            isLightModeActive ? "text-gray-600" : "text-gray-500"
+          )}>Add Traveler (Late Arrival)</h4>
+          
+          <div className="flex flex-col gap-2">
+            <input
+              id="game-traveler-name-input"
+              type="text"
+              placeholder="Traveler name..."
+              value={newTravelerName}
+              onChange={(e) => setNewTravelerName(e.target.value)}
+              autoCapitalize="words"
+              className={cn(
+                "w-full rounded px-2.5 py-1.5 text-xs focus:outline-none border transition-colors",
+                isLightModeActive
+                  ? "bg-white border-gray-300 text-clocktower-night focus:border-clocktower-blood"
+                  : "bg-gray-955 border-gray-800 text-gray-200 focus:border-clocktower-blood"
+              )}
+            />
+            
+            <div className="flex gap-2">
+              <select
+                id="game-traveler-role-select"
+                value={newTravelerRoleId}
+                onChange={(e) => setNewTravelerRoleId(e.target.value)}
+                className={cn(
+                  "flex-1 rounded px-2 py-1.5 text-xs focus:outline-none border transition-colors",
+                  isLightModeActive
+                    ? "bg-white border-gray-300 text-clocktower-night focus:border-clocktower-blood"
+                    : "bg-gray-955 border-gray-800 text-gray-200 focus:border-clocktower-blood"
+                )}
+              >
+                {(rolesData as Role[]).filter(r => r.team === 'traveler').map(r => (
+                  <option
+                    key={r.id}
+                    value={r.id}
+                    className={isLightModeActive ? "bg-white text-clocktower-night" : "bg-gray-950 text-gray-200"}
+                  >
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+              
+              <button
+                id="game-add-traveler-button"
+                onClick={addTravelerGamePhase}
+                disabled={players.length >= 20}
+                className={cn(
+                  "px-3 py-1.5 rounded text-xs font-bold transition-all disabled:opacity-40 text-white shadow-sm",
+                  isLightModeActive
+                    ? "bg-purple-600 hover:bg-purple-700 active:bg-purple-800"
+                    : "bg-clocktower-traveler hover:bg-purple-400 active:bg-purple-600"
+                )}
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Ledger */}
         <div className={cn(
           "rounded-lg border p-3 space-y-1.5 transition-colors duration-300",
           isLightModeActive
@@ -178,74 +247,6 @@ export default function WhaleBucketGamePhase({
                 </div>
               );
             })}
-          </div>
-        </div>
-
-        {/* Add Traveler Card (Late Arrival) */}
-        <div className={cn(
-          "rounded-lg border p-3.5 space-y-3 transition-colors duration-300",
-          isLightModeActive
-            ? "bg-white/50 border-gray-300 text-clocktower-night"
-            : "bg-gray-900/40 border-gray-800/80"
-        )}>
-          <h4 className={cn(
-            "text-[10px] uppercase font-bold tracking-wider",
-            isLightModeActive ? "text-gray-600" : "text-gray-500"
-          )}>Add Traveler (Late Arrival)</h4>
-          
-          <div className="flex flex-col gap-2">
-            <input
-              id="game-traveler-name-input"
-              type="text"
-              placeholder="Traveler name..."
-              value={newTravelerName}
-              onChange={(e) => setNewTravelerName(e.target.value)}
-              autoCapitalize="words"
-              className={cn(
-                "w-full rounded px-2.5 py-1.5 text-xs focus:outline-none border transition-colors",
-                isLightModeActive
-                  ? "bg-white border-gray-300 text-clocktower-night focus:border-clocktower-blood"
-                  : "bg-gray-955 border-gray-800 text-gray-200 focus:border-clocktower-blood"
-              )}
-            />
-            
-            <div className="flex gap-2">
-              <select
-                id="game-traveler-role-select"
-                value={newTravelerRoleId}
-                onChange={(e) => setNewTravelerRoleId(e.target.value)}
-                className={cn(
-                  "flex-1 rounded px-2 py-1.5 text-xs focus:outline-none border transition-colors",
-                  isLightModeActive
-                    ? "bg-white border-gray-300 text-clocktower-night focus:border-clocktower-blood"
-                    : "bg-gray-955 border-gray-800 text-gray-200 focus:border-clocktower-blood"
-                )}
-              >
-                {(rolesData as Role[]).filter(r => r.team === 'traveler').map(r => (
-                  <option
-                    key={r.id}
-                    value={r.id}
-                    className={isLightModeActive ? "bg-white text-clocktower-night" : "bg-gray-950 text-gray-200"}
-                  >
-                    {r.name}
-                  </option>
-                ))}
-              </select>
-              
-              <button
-                id="game-add-traveler-button"
-                onClick={addTravelerGamePhase}
-                disabled={players.length >= 20}
-                className={cn(
-                  "px-3 py-1.5 rounded text-xs font-bold transition-all disabled:opacity-40 text-white shadow-sm",
-                  isLightModeActive
-                    ? "bg-purple-600 hover:bg-purple-700 active:bg-purple-800"
-                    : "bg-clocktower-traveler hover:bg-purple-400 active:bg-purple-600"
-                )}
-              >
-                Add
-              </button>
-            </div>
           </div>
         </div>
       </div>
