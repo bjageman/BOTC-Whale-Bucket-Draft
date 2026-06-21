@@ -76,7 +76,8 @@ export default function WhaleBucketSetupPhase({
   const excludeSuggestions = (rolesData as Role[]).filter(r =>
     !excludedRoleIds.includes(r.id) &&
     (excludeSearchTerm
-      ? r.name.toLowerCase().includes(excludeSearchTerm.toLowerCase())
+      ? (r.name.toLowerCase().includes(excludeSearchTerm.toLowerCase()) ||
+         r.team.toLowerCase().includes(excludeSearchTerm.toLowerCase()))
       : true)
   );
 
