@@ -65,9 +65,6 @@ export default function StandardGamePhase({
       {/* Column 2: Controls */}
       <div id="grimoire-controls-container" className="space-y-6 md:pt-10 landscape:pt-10">
 
-
-
-
         {/* Add Traveler */}
         <div className={cn(
           'rounded-lg border p-3.5 space-y-3 transition-colors duration-300',

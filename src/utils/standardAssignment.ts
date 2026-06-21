@@ -52,7 +52,7 @@ export function performStandardAssignment(
 
     const shuffledPlayers = shuffle(players);
     const travelerPlayers = shuffledPlayers.slice(0, travelerCount);
-    const basePlayers = shuffledPlayers.slice(travelerCount);
+    const basePlayers = players.filter(p => !travelerPlayers.some(tp => tp.id === p.id));
 
     const assignedRoles = shuffle(finalRolesList);
 
@@ -181,7 +181,7 @@ export function performStandardAssignment(
   const roleIdsInPlay = finalRolesList.map(r => r.id);
   const shuffledPlayers = shuffle(players);
   const travelerPlayers = shuffledPlayers.slice(0, travelerCount);
-  const basePlayers = shuffledPlayers.slice(travelerCount);
+  const basePlayers = players.filter(p => !travelerPlayers.some(tp => tp.id === p.id));
 
   const K = basePlayers.length;
   const assignedRoles: Role[] = new Array(K);
