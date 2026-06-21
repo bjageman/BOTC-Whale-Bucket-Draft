@@ -83,7 +83,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         setPhase(ph || 'setup');
         setTimeOfDay(tod || 'night');
         setDayNumber(dn || 1);
-        if (at !== undefined) setAllowTravelers(!!at);
+        if (at !== undefined) setAllowTravelers(false); // Force traveler selection off
         if (lmg !== undefined) setIsLilMonstaGame(lmg);
 
       } catch (e) {
@@ -482,7 +482,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           newPlayerName={newPlayerName}
           setNewPlayerName={setNewPlayerName}
           allowTravelers={allowTravelers}
-          setAllowTravelers={setAllowTravelers}
           draggedIndex={draggedIndex}
           dragOverIndex={dragOverIndex}
           handleDragStart={handleDragStart}

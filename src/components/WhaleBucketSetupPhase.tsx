@@ -12,7 +12,6 @@ interface WhaleBucketSetupPhaseProps {
   newPlayerName: string;
   setNewPlayerName: (name: string) => void;
   allowTravelers: boolean;
-  setAllowTravelers: (allow: boolean) => void;
   draggedIndex: number | null;
   dragOverIndex: number | null;
   handleDragStart: (e: React.DragEvent, index: number) => void;
@@ -42,7 +41,6 @@ export default function WhaleBucketSetupPhase({
   newPlayerName,
   setNewPlayerName,
   allowTravelers,
-  setAllowTravelers,
   draggedIndex,
   dragOverIndex,
   handleDragStart,
@@ -68,27 +66,7 @@ export default function WhaleBucketSetupPhase({
 }: WhaleBucketSetupPhaseProps) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-[5fr_3fr] md:grid-rows-[auto_1fr] md:items-start animate-fadeIn">
-      {/* Section A: Draft Options */}
-      <div className="md:col-start-2 md:row-start-1 w-full">
-        {/* Draft Options Toggle */}
-        <div className="bg-gray-900/60 p-4 rounded-lg border border-gray-800/50 flex flex-col gap-3">
-          <div>
-            <span className="text-xs font-bold text-gray-300 block uppercase tracking-wider text-left">Draft Options</span>
-            <span className="text-[10px] text-gray-500 block text-left">Configure drafting setup rules</span>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              id="draft-traveler-toggle"
-              type="checkbox"
-              checked={allowTravelers}
-              onChange={(e) => setAllowTravelers(e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 peer-checked:after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-clocktower-traveler"></div>
-            <span className="ml-2 text-xs font-semibold text-gray-300">Players will pick a traveler</span>
-          </label>
-        </div>
-      </div>
+
 
       {/* Section B: Seating & Preferences */}
       <div className="md:col-start-1 md:row-start-1 md:row-span-2 space-y-6 w-full">
@@ -292,7 +270,7 @@ export default function WhaleBucketSetupPhase({
       </div>
 
       {/* Section C: Distribution & Assign Button */}
-      <div className="md:col-start-2 md:row-start-2 space-y-6 w-full">
+      <div className="md:col-start-2 md:row-start-1 md:row-span-2 space-y-6 w-full">
         {/* Validation Summary */}
         {validationSummary && players.length >= 5 && (
           <div
