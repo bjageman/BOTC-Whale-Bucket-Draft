@@ -149,5 +149,10 @@
   {"id": "deviant", "name": "Deviant", "team": "traveler"},
   {"id": "apprentice", "name": "Apprentice", "team": "traveler"},
   {"id": "judge", "name": "Judge", "team": "traveler"},
-  {"id": "bishop", "name": "Bishop", "team": "traveler"}
+  {"id": "bishop", "name": "Bishop", "team": "traveler"},
+  {"id": "matron", "name": "Matron", "team": "traveler"},
+  {"id": "voudon", "name": "Voudon", "team": "traveler"},
+  {"id": "gangster", "name": "Gangster", "team": "traveler"},
+  {"id": "cacklejack", "name": "Cacklejack", "team": "traveler"},
+  {"id": "gnome", "name": "Gnome", "team": "traveler"}
 ]

@@ -38,8 +38,10 @@ export function assignCharacters(
   const basePlayers = players.filter(p => !travelerIds.has(p.id));
 
   // 2. Assign traveler roles
-  const travelerRoles = allRoles.filter(r => r.team === 'traveler');
-  const masterTravelers = (rolesData as Role[]).filter(r => r.team === 'traveler');
+  const travelerRoles = allRoles.filter(r => r.team === 'traveler' || (r.team as string) === 'traveller');
+  const masterTravelers = (rolesData as Role[])
+    .filter(r => r.team === 'traveler' || (r.team as string) === 'traveller')
+    .map(r => ({ ...r, team: (r.team as string) === 'traveller' ? 'traveler' : r.team }));
   const availableTravelers = travelerRoles.length > 0 ? travelerRoles : masterTravelers;
 
   const usedTravelerIds = new Set<string>();
