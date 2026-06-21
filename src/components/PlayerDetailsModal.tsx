@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Pencil, X, Search } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Role } from '../types';
@@ -62,6 +62,11 @@ export default function PlayerDetailsModal({
   onSetModalRoleSearch,
   isLilMonstaGame = false,
 }: PlayerDetailsModalProps) {
+  const isMobile = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }, []);
+
   const modalNameInputRef = useRef<HTMLInputElement | null>(null);
 
   const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
@@ -196,7 +201,7 @@ export default function PlayerDetailsModal({
                     )}
                     value={modalRoleSearch}
                     onChange={(e) => onSetModalRoleSearch(e.target.value)}
-                    autoFocus
+                    autoFocus={!isMobile}
                   />
                 </div>
                 <button
@@ -434,7 +439,7 @@ function RoleList({ hasRole, roles, players, currentPlayerId, isLightModeActive,
 
   return (
     <div className={cn(
-      'overflow-y-auto max-h-32 md:max-h-36 border rounded divide-y pr-1',
+      'overflow-y-auto max-h-60 md:max-h-72 border rounded divide-y pr-1',
       isLightModeActive
         ? 'border-gray-300 bg-white/50 divide-gray-200'
         : 'border-gray-800 bg-gray-950/40 divide-gray-800'

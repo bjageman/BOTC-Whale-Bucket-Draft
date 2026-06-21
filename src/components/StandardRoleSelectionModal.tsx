@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player, Role } from '../types';
@@ -23,6 +24,11 @@ export default function StandardRoleSelectionModal({
   isLightModeActive,
   selectionRoles,
 }: StandardRoleSelectionModalProps) {
+  const isMobile = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }, []);
+
   const player = players.find(p => p.id === activePlayerId);
   const TEAM_ORDER: Record<string, number> = {
     townsfolk: 1,
@@ -66,7 +72,7 @@ export default function StandardRoleSelectionModal({
           <input
             id="role-search-input"
             type="text"
-            autoFocus
+            autoFocus={!isMobile}
             placeholder="Search character name..."
             className="bg-transparent flex-1 outline-none text-xs text-white"
             value={searchTerm}
