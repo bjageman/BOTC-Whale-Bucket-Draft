@@ -283,8 +283,10 @@ export default function NightOrderWidget({
                     <span
                       className={cn(
                         "font-bold font-serif text-sm",
-                        isInfo ? "text-gray-600 dark:text-gray-400" : "text-gray-900 dark:text-[#f4e4bc]",
-                        isChecked && "line-through text-gray-400 dark:text-gray-500"
+                        isInfo
+                          ? (isLightModeActive ? "text-gray-600" : "text-gray-400")
+                          : (isLightModeActive ? "text-gray-900" : "text-[#f4e4bc]"),
+                        isChecked && "line-through text-gray-500"
                       )}
                     >
                       {item.name}
@@ -299,7 +301,10 @@ export default function NightOrderWidget({
 
                     {/* Player name */}
                     {item.player && (
-                      <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                      <span className={cn(
+                        "text-xs font-medium",
+                        isLightModeActive ? "text-gray-600" : "text-gray-400"
+                      )}>
                         — {item.player.name}
                       </span>
                     )}
@@ -337,8 +342,10 @@ export default function NightOrderWidget({
                   {item.description && (
                     <p
                       className={cn(
-                        "text-xs mt-1 leading-relaxed text-gray-600 dark:text-gray-300",
-                        isChecked && "text-gray-400 dark:text-gray-500"
+                        "text-xs mt-1 leading-relaxed",
+                        isChecked
+                          ? "text-gray-500"
+                          : (isLightModeActive ? "text-gray-600" : "text-gray-300")
                       )}
                     >
                       {item.description.replace(/:reminder:/g, '').trim()}
