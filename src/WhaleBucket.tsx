@@ -197,7 +197,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       }
       for (const team of teams) {
         if (newPrefs[team].length === 0) {
-          const available = allRoles.filter(r => r.team === team);
+          const available = allRoles.filter(r => r.team === team && !excludedRoleIds.includes(r.id));
           if (available.length > 0) {
             const randIdx = Math.floor(Math.random() * available.length);
             newPrefs[team] = [available[randIdx].id];
