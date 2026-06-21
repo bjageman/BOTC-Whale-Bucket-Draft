@@ -1,0 +1,83 @@
+import { describe, it, expect } from 'vitest';
+import { getValidationSummary } from './whaleBucketValidation';
+import type { Player } from '../types';
+
+describe('whaleBucketValidation utility', () => {
+  it('should return null for empty player list', () => {
+    expect(getValidationSummary([])).toBeNull();
+  });
+
+  it('should correctly validate a standard 8-player distribution', () => {
+    // 8 players: standard distribution is 5 Townsfolk, 1 Outsider, 1 Minion, 1 Demon
+    const players: Player[] = [
+      { id: '1', name: 'Player 1', roleId: 'washerwoman', isDead: false }, // townsfolk
+      { id: '2', name: 'Player 2', roleId: 'librarian', isDead: false }, // townsfolk
+      { id: '3', name: 'Player 3', roleId: 'investigator', isDead: false }, // townsfolk
+      { id: '4', name: 'Player 4', roleId: 'chef', isDead: false }, // townsfolk
+      { id: '5', name: 'Player 5', roleId: 'empath', isDead: false }, // townsfolk
+      { id: '6', name: 'Player 6', roleId: 'drunk', isDead: false }, // outsider
+      { id: '7', name: 'Player 7', roleId: 'poisoner', isDead: false }, // minion
+      { id: '8', name: 'Player 8', roleId: 'imp', isDead: false }, // demon
+    ];
+
+    const summary = getValidationSummary(players);
+    expect(summary).not.toBeNull();
+    if (summary) {
+      expect(summary.base).toEqual({ townsfolk: 5, outsider: 1, minion: 1, demon: 1, traveler: 0 });
+      expect(summary.expected).toEqual({ townsfolk: 5, outsider: 1, minion: 1, demon: 1, traveler: 0 });
+      expect(summary.counts.townsfolk).toBe(5);
+      expect(summary.counts.outsider).toBe(1);
+      expect(summary.counts.minion).toBe(1);
+      expect(summary.counts.demon).toBe(1);
+      expect(summary.isValid).toBe(true);
+    }
+  });
+
+  it('should apply Lil\' Monsta modifications correctly', () => {
+    // 8 players with Lil' Monsta (+1 Minion, -1 Demon)
+    const players: Player[] = [
+      { id: '1', name: 'Player 1', roleId: 'washerwoman', isDead: false },
+      { id: '2', name: 'Player 2', roleId: 'librarian', isDead: false },
+      { id: '3', name: 'Player 3', roleId: 'investigator', isDead: false },
+      { id: '4', name: 'Player 4', roleId: 'chef', isDead: false },
+      { id: '5', name: 'Player 5', roleId: 'empath', isDead: false },
+      { id: '6', name: 'Player 6', roleId: 'drunk', isDead: false },
+      { id: '7', name: 'Player 7', roleId: 'poisoner', isDead: false },
+      { id: '8', name: 'Player 8', roleId: 'baron', isDead: false }, // Second minion instead of demon
+      { id: '9', name: 'Lil Monsta', roleId: 'lilmonsta', isDead: false, isTheLilMonsta: true },
+    ];
+
+    const summary = getValidationSummary(players);
+    expect(summary).not.toBeNull();
+    if (summary) {
+      // Lil Monsta counts as a player, making it 9 players total.
+      // Standard 9 players: 5 townsfolk, 2 outsiders, 1 minion, 1 demon
+      // With Lil Monsta modification: +1 minion, -1 demon => 2 minions, 0 demons
+      expect(summary.expected.minion).toBe(2);
+      expect(summary.expected.demon).toBe(0);
+      expect(summary.modifications).toContain("Lil' Monsta (+1 Minion, -1 Demon)");
+    }
+  });
+
+  it('should handle Atheist setups correctly', () => {
+    // Atheist setup with no evil players
+    const players: Player[] = [
+      { id: '1', name: 'Player 1', roleId: 'washerwoman', isDead: false },
+      { id: '2', name: 'Player 2', roleId: 'librarian', isDead: false },
+      { id: '3', name: 'Player 3', roleId: 'investigator', isDead: false },
+      { id: '4', name: 'Player 4', roleId: 'chef', isDead: false },
+      { id: '5', name: 'Player 5', roleId: 'empath', isDead: false },
+      { id: '6', name: 'Player 6', roleId: 'drunk', isDead: false },
+      { id: '7', name: 'Player 7', roleId: 'butler', isDead: false },
+      { id: '8', name: 'Player 8', roleId: 'atheist', isDead: false },
+    ];
+
+    const summary = getValidationSummary(players);
+    expect(summary).not.toBeNull();
+    if (summary) {
+      expect(summary.expected.demon).toBe(0);
+      expect(summary.expected.minion).toBe(0);
+      expect(summary.modifications).toContain("Atheist (No Evil players)");
+    }
+  });
+});
