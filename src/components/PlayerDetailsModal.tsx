@@ -131,22 +131,22 @@ export default function PlayerDetailsModal({
               type="button"
               onClick={() => setIsNameHidden(!isNameHidden)}
               className={cn(
-                'p-1.5 rounded focus:outline-none transition-colors shrink-0 border',
+                'p-2 -mt-4 mr-2 rounded focus:outline-none transition-colors shrink-0 border shadow-sm',
                 isLightModeActive 
-                  ? 'hover:bg-black/5 border-gray-300 text-gray-600' 
-                  : 'hover:bg-white/10 border-gray-700 text-gray-400'
+                  ? 'bg-white hover:bg-gray-100 border-gray-300 text-gray-700' 
+                  : 'bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-200'
               )}
               title={isNameHidden ? "Show name" : "Hide name"}
             >
               {isNameHidden ? (
                 <EyeOff
-                  size={14}
-                  className="opacity-75 hover:opacity-100 transition-opacity"
+                  size={18}
+                  className="opacity-90 hover:opacity-100 transition-opacity"
                 />
               ) : (
                 <Eye
-                  size={14}
-                  className="opacity-75 hover:opacity-100 transition-opacity"
+                  size={18}
+                  className="opacity-90 hover:opacity-100 transition-opacity"
                 />
               )}
             </button>
@@ -188,14 +188,14 @@ export default function PlayerDetailsModal({
             type="button"
             onClick={onClose}
             className={cn(
-              'p-1.5 rounded-lg border transition-colors shrink-0',
+              'p-2 -mt-4 ml-2 rounded-lg border transition-colors shrink-0 shadow-sm',
               isLightModeActive
-                ? 'border-gray-300 text-gray-655 hover:bg-gray-100'
-                : 'border-gray-700 text-gray-400 hover:bg-gray-800'
+                ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
+                : 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700'
             )}
             title="Close"
           >
-            <X size={16} />
+            <X size={20} />
           </button>
         </div>
 
