@@ -271,5 +271,57 @@ describe('performStandardAssignment', () => {
     const nonRiotCount = result.filter(p => p.roleId && p.roleId !== 'riot').length;
     expect(nonRiotCount).toBe(3);
   });
+
+  it('should place Lord of Typhon contiguously with its minions in standard randomization', () => {
+    const scriptWithTyphon: Role[] = [
+      { id: 'chef', name: 'Chef', team: 'townsfolk' },
+      { id: 'empath', name: 'Empath', team: 'townsfolk' },
+      { id: 'fortune_teller', name: 'Fortune Teller', team: 'townsfolk' },
+      { id: 'lordoftyphon', name: 'Lord of Typhon', team: 'demon' },
+      { id: 'poisoner', name: 'Poisoner', team: 'minion' },
+      { id: 'spy', name: 'Spy', team: 'minion' },
+    ];
+
+    const players: Player[] = [
+      { id: '1', name: 'Alice', isDead: false },
+      { id: '2', name: 'Bob', isDead: false },
+      { id: '3', name: 'Charlie', isDead: false },
+      { id: '4', name: 'David', isDead: false },
+      { id: '5', name: 'Eve', isDead: false },
+    ];
+
+    // For Lord of Typhon: 5 players = 1 demon + 2 minions (1 base + 1 from Typhon) = 3 evil
+    // Run multiple times to verify contiguous layout and Typhon positioning
+    for (let run = 0; run < 20; run++) {
+      const result = performStandardAssignment(players, scriptWithTyphon, []);
+      expect(result).not.toBeNull();
+      if (!result) return;
+
+      const evilIndices = result
+        .map((p, idx) => ({ roleId: p.roleId, idx }))
+        .filter(x => x.roleId === 'lordoftyphon' || x.roleId === 'poisoner' || x.roleId === 'spy')
+        .map(x => x.idx);
+
+      expect(evilIndices.length).toBe(3);
+
+      const sorted = [...evilIndices].sort((a, b) => a - b);
+      const isContiguous = 
+        (sorted[1] === sorted[0] + 1 && sorted[2] === sorted[1] + 1) ||
+        (sorted[0] === 0 && sorted[1] === 1 && sorted[2] === 4) ||
+        (sorted[0] === 0 && sorted[1] === 3 && sorted[2] === 4);
+
+      expect(isContiguous).toBe(true);
+
+      const typhonIdx = result.findIndex(p => p.roleId === 'lordoftyphon');
+      const leftNeighborIdx = (typhonIdx - 1 + 5) % 5;
+      const rightNeighborIdx = (typhonIdx + 1) % 5;
+
+      const leftRole = result[leftNeighborIdx].roleId;
+      const rightRole = result[rightNeighborIdx].roleId;
+
+      expect(leftRole === 'poisoner' || leftRole === 'spy').toBe(true);
+      expect(rightRole === 'poisoner' || rightRole === 'spy').toBe(true);
+    }
+  });
 });
 

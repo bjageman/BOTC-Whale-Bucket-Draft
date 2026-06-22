@@ -287,7 +287,66 @@ export function performStandardAssignment(
   const demonRoleIndex = finalRolesList.findIndex(r => r.team === 'demon');
   const marionetteRoleIndex = finalRolesList.findIndex(r => r.id === 'marionette');
 
-  if (demonRoleIndex !== -1 && marionetteRoleIndex !== -1 && K >= 3) {
+  const typhonRoleIndex = finalRolesList.findIndex(r => r.id === 'lordoftyphon');
+
+  if (typhonRoleIndex !== -1) {
+    const evilRoles = finalRolesList.filter(r => r.team === 'demon' || r.team === 'minion');
+    const goodRoles = finalRolesList.filter(r => r.team !== 'demon' && r.team !== 'minion');
+    const E = evilRoles.length;
+
+    const start = Math.floor(Math.random() * K);
+    let typhonRelativeIdx = 0;
+    if (E >= 3) {
+      typhonRelativeIdx = 1 + Math.floor(Math.random() * (E - 2));
+    } else if (E === 2) {
+      typhonRelativeIdx = Math.floor(Math.random() * 2);
+    }
+
+    const minionRoles = evilRoles.filter(r => r.id !== 'lordoftyphon');
+    const hasMarionette = minionRoles.some(r => r.id === 'marionette');
+
+    if (hasMarionette && E >= 3) {
+      const adjacentOffsets = [-1, 1];
+      const chosenOffset = adjacentOffsets[Math.floor(Math.random() * adjacentOffsets.length)];
+      const marionetteRelativeIdx = typhonRelativeIdx + chosenOffset;
+
+      const otherMinions = minionRoles.filter(m => m.id !== 'marionette');
+      const shuffledOtherMinions = shuffle(otherMinions);
+
+      let otherMinionCount = 0;
+      for (let i = 0; i < E; i++) {
+        const idx = (start + i) % K;
+        if (i === typhonRelativeIdx) {
+          assignedRoles[idx] = finalRolesList[typhonRoleIndex];
+        } else if (i === marionetteRelativeIdx) {
+          assignedRoles[idx] = minionRoles.find(m => m.id === 'marionette')!;
+        } else {
+          assignedRoles[idx] = shuffledOtherMinions[otherMinionCount++];
+        }
+        assignedIndices.add(idx);
+      }
+    } else {
+      const shuffledMinions = shuffle(minionRoles);
+      let minionCount = 0;
+      for (let i = 0; i < E; i++) {
+        const idx = (start + i) % K;
+        if (i === typhonRelativeIdx) {
+          assignedRoles[idx] = finalRolesList[typhonRoleIndex];
+        } else {
+          assignedRoles[idx] = shuffledMinions[minionCount++];
+        }
+        assignedIndices.add(idx);
+      }
+    }
+
+    const shuffledGood = shuffle(goodRoles);
+    let goodAssignCount = 0;
+    for (let i = 0; i < K; i++) {
+      if (!assignedIndices.has(i)) {
+        assignedRoles[i] = shuffledGood[goodAssignCount++];
+      }
+    }
+  } else if (demonRoleIndex !== -1 && marionetteRoleIndex !== -1 && K >= 3) {
     const d_idx = Math.floor(Math.random() * K);
     assignedRoles[d_idx] = finalRolesList[demonRoleIndex];
     assignedIndices.add(d_idx);

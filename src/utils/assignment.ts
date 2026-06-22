@@ -312,8 +312,29 @@ function assignBaseCharacters(
     assignment.push({ player: { ...demonPlayer, isEvil: undefined }, role: demonRole, fromPref: demonFromPref });
     
     const numMinions = demonRole.id === 'kazali' ? 0 : (base.minion + (demonRole.id === 'lilmonsta' || demonRole.id === 'lordoftyphon' ? 1 : 0));
-    for (let i = 1; i <= numMinions; i++) {
-      const minionPlayer = shuffledPlayers[i];
+    const minionPlayers: Player[] = [];
+    if (demonRole.id === 'lordoftyphon') {
+      const d_idx = players.findIndex(p => p.id === demonPlayer.id);
+      const E = 1 + numMinions;
+      let typhonRelativeIdx = 0;
+      if (E >= 3) {
+        typhonRelativeIdx = 1 + Math.floor(Math.random() * (E - 2));
+      } else if (E === 2) {
+        typhonRelativeIdx = Math.floor(Math.random() * 2);
+      }
+      const start_idx = (d_idx - typhonRelativeIdx + N) % N;
+      for (let i = 0; i < E; i++) {
+        if (i !== typhonRelativeIdx) {
+          minionPlayers.push(players[(start_idx + i) % N]);
+        }
+      }
+    } else {
+      for (let i = 1; i <= numMinions; i++) {
+        minionPlayers.push(shuffledPlayers[i]);
+      }
+    }
+
+    for (const minionPlayer of minionPlayers) {
       const { role: minionRole, fromPref: minionFromPref } = selectRoleForPlayer(minionPlayer, 'minion', usedRoleIds);
       usedRoleIds.add(minionRole.id);
       assignment.push({ player: { ...minionPlayer, isEvil: undefined }, role: minionRole, fromPref: minionFromPref });
@@ -332,7 +353,8 @@ function assignBaseCharacters(
       }
     }
     
-    const remainingPlayers = shuffledPlayers.slice(1 + numMinions);
+    const minionPlayerIds = new Set(minionPlayers.map(mp => mp.id));
+    const remainingPlayers = shuffledPlayers.filter(p => p.id !== demonPlayer.id && !minionPlayerIds.has(p.id));
     const hasXaan = assignment.some(a => a.role.id === 'xaan');
     const targetOutsiders = (demonRole.id === 'kazali' || hasXaan) ? Math.floor(Math.random() * (remainingPlayers.length + 1)) : base.outsider;
     const tempAssignment: { player: Player; team: 'townsfolk' | 'outsider' }[] = [];
