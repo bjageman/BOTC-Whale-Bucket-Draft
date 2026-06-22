@@ -85,287 +85,322 @@ export default function GrimoireBoard({
   }, [players.length]);
 
   return (
-    <div
-      id="grimoire-circle-board"
-      className={cn(
-        "relative border shadow-inner flex items-center justify-center overflow-visible my-4 mx-auto transition-colors duration-300",
-        timeOfDay === 'day'
-          ? "bg-[#f5f3eb] border-[#d4d4d8] shadow-gray-200/50"
-          : "bg-[#141416] border-[#27272a] shadow-black/45",
-        grimoireConfig.boardClass
-      )}
-      style={{ containerType: 'size' }}
-    >
-      {onResetTime && (
-        <button
-          onClick={onResetTime}
-          className={cn(
-            "absolute top-4 left-4 z-30 px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
-            timeOfDay === 'day'
-              ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46] hover:bg-[#ffffff] hover:text-[#18181b]"
-              : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa] hover:bg-[#27272a] hover:text-[#f4f4f5]"
-          )}
-          title="Reset back to Night 1"
-        >
-          Reset Time
-        </button>
-      )}
-
-      {onResetDead && (
-        <button
-          onClick={onResetDead}
-          className={cn(
-            "absolute top-4 right-4 z-30 px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
-            timeOfDay === 'day'
-              ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46] hover:bg-[#ffffff] hover:text-[#18181b]"
-              : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa] hover:bg-[#27272a] hover:text-[#f4f4f5]"
-          )}
-          title="Mark everyone as alive"
-        >
-          Reset Dead
-        </button>
-      )}
-      <button
-        id="grimoire-time-toggle-button"
-        onClick={toggleTimeOfDay}
-        style={grimoireConfig.centerBtnStyle}
-        className={cn(
-          "absolute rounded-full border flex flex-col items-center justify-center transition-all cursor-pointer z-20 select-none shadow-md",
-          timeOfDay === 'day'
-            ? "bg-[#fefce8] border-[#fef08a] text-[#854d0e] hover:bg-[#fef9c3]"
-            : "bg-[#1a1a1a]/80 border-[#8b0000]/30 text-[#f4e4bc] hover:bg-[#27272a]"
-        )}
-        title="Click to toggle Day/Night"
-      >
-        <span
-          style={grimoireConfig.centerText1Style}
-          className="font-bold font-mono uppercase tracking-wide"
-        >
-          {timeOfDay} {dayNumber}
-        </span>
-        <span
-          style={grimoireConfig.centerText2Style}
-          className="font-semibold font-sans uppercase tracking-widest mt-0.5 opacity-80"
-        >
-          {players.filter(p => !p.isDead).length} Alive
-        </span>
-      </button>
-
-      {players.map((p, index) => {
-        const total = players.length;
-        const angle = (index * (360 / total) - 90) * (Math.PI / 180);
-
-        const leftPos = 50 + grimoireConfig.radiusX * Math.cos(angle);
-        const topPos = 50 + grimoireConfig.radiusY * Math.sin(angle);
-
-        const roleObj = rolesData.find((r) => r.id === p.roleId);
-        const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
-        const isEvil = p.isEvil !== undefined ? p.isEvil : defaultEvil;
-
-        // Calculate dynamic font size and split name by space to prevent overflow
-        const baseFontSizeVal = parseFloat(grimoireConfig.nameStyle.fontSize as string);
-        const baseFontSizeUnit = (grimoireConfig.nameStyle.fontSize as string).replace(/[0-9.]/g, '');
-        const nameLength = p.name.length;
-        const longestWordLength = Math.max(...p.name.split(' ').map(w => w.length));
-
-        let scaleFactor = 1.0;
-        
-        // Shrink based on the longest word
-        if (longestWordLength > 12) scaleFactor = 0.55;
-        else if (longestWordLength > 10) scaleFactor = 0.65;
-        else if (longestWordLength > 8) scaleFactor = 0.75;
-        else if (longestWordLength > 6) scaleFactor = 0.86;
-        
-        // Shrink based on total length
-        if (nameLength > 18) scaleFactor = Math.min(scaleFactor, 0.55);
-        else if (nameLength > 14) scaleFactor = Math.min(scaleFactor, 0.65);
-        else if (nameLength > 10) scaleFactor = Math.min(scaleFactor, 0.78);
-        else if (nameLength > 8) scaleFactor = Math.min(scaleFactor, 0.9);
-
-        const dynamicFontSize = `${baseFontSizeVal * scaleFactor}${baseFontSizeUnit}`;
-
-        const orderIndex = hoveredOrder.indexOf(p.id);
-        const zIndex = orderIndex !== -1 ? 10 + orderIndex : 10;
-
-        return (
-          <div
-            key={p.id}
-            style={{
-              position: 'absolute',
-              left: `${leftPos}%`,
-              top: `${topPos}%`,
-              transform: 'translate(-50%, -50%)',
-              zIndex: zIndex,
-            }}
-            onMouseEnter={() => {
-              setHoveredOrder((prev) => {
-                const filtered = prev.filter((id) => id !== p.id);
-                return [...filtered, p.id];
-              });
-            }}
-            className="hover:z-50 group"
+    <div className="w-full flex flex-col items-center">
+      {/* Mobile Reset Buttons Row */}
+      <div className="flex justify-between w-full px-4 md:hidden mb-2 max-w-[450px]">
+        {onResetTime ? (
+          <button
+            onClick={onResetTime}
+            className={cn(
+              "px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
+              timeOfDay === 'day'
+                ? "bg-white border-gray-300 text-gray-750 hover:bg-gray-50 active:bg-gray-100"
+                : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850 active:bg-gray-800"
+            )}
+            title="Reset back to Night 1"
           >
-            <div className="relative flex flex-col items-center">
-              <button
-                id={`grimoire-player-${p.id}`}
-                onClick={() => onSelectPlayer(p.id)}
-                style={grimoireConfig.btnStyle}
-                className={cn(
-                  "rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-md relative group-hover:scale-125 group-hover:shadow-lg select-none",
-                  p.isDead ? "scale-95" : "hover:bg-[#fafafa]"
-                )}
-              >
-                {/* SVG representing the token */}
-                <svg viewBox="0 0 200 200" className={cn("w-full h-full absolute inset-0 z-0 select-none pointer-events-none", p.isDead && "opacity-60")}>
-                  <defs>
-                    <path id={`topTextPath-${p.id}`} d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
-                    <path id={`bottomTextPath-${p.id}`} d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
-                  </defs>
-                  
-                  {/* Token background circle */}
-                  <circle
-                    cx="100"
-                    cy="100"
-                    r="90"
-                    fill={p.isDead ? "#e4e4e7" : "#ffffff"}
-                    className={cn(
-                      "stroke-[6px]",
-                      isEvil ? "stroke-clocktower-minion" : "stroke-clocktower-townsfolk"
-                    )}
-                  />
-                  
-                  {/* Inner ring */}
-                  <circle
-                    cx="100"
-                    cy="100"
-                    r="58"
-                    fill="none"
-                    stroke="#e4e4e7"
-                    strokeWidth="1"
-                    strokeDasharray="3 3"
-                  />
-                  
-                  {roleObj && (
-                    <>
-                      {/* Curved Character Name */}
-                      <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(roleObj.team))}>
-                        <textPath href={`#topTextPath-${p.id}`} startOffset="50%" textAnchor="middle">
-                          {roleObj.name}
-                        </textPath>
-                      </text>
-                      
-                      {/* Curved Character Type */}
-                      <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(roleObj.team))}>
-                        <textPath href={`#bottomTextPath-${p.id}`} startOffset="50%" textAnchor="middle">
-                          {roleObj.team}
-                        </textPath>
-                      </text>
-                    </>
-                  )}
-                </svg>
+            Reset Time
+          </button>
+        ) : <div />}
 
-                {/* Centered character icon */}
-                {roleObj && (
-                  <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none">
-                    <div className="w-[50%] h-[50%] flex items-center justify-center">
-                      <img
-                        src={`/icons/${roleObj.id}.svg`}
-                        alt={roleObj.name}
-                        className={cn(
-                          "w-full h-full object-contain transition-all duration-200 select-none",
-                          p.isDead ? "grayscale opacity-15" : "opacity-35"
-                        )}
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      />
-                    </div>
-                  </div>
-                )}
+        {onResetDead ? (
+          <button
+            onClick={onResetDead}
+            className={cn(
+              "px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
+              timeOfDay === 'day'
+                ? "bg-white border-gray-300 text-gray-750 hover:bg-gray-50 active:bg-gray-100"
+                : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850 active:bg-gray-800"
+            )}
+            title="Mark everyone as alive"
+          >
+            Reset Dead
+          </button>
+        ) : <div />}
+      </div>
 
-                {/* Player Name Overlay */}
-                <span
-                  style={{
-                    ...grimoireConfig.nameStyle,
-                    fontSize: dynamicFontSize,
-                    textShadow: p.isDead
-                      ? 'none'
-                      : '0 1.5px 3px rgba(255,255,255,1.0), 0 0 5px rgba(255,255,255,1.0), 0 0 8px rgba(255,255,255,0.9)'
-                  }}
+      <div
+        id="grimoire-circle-board"
+        className={cn(
+          "relative border shadow-inner flex items-center justify-center overflow-visible my-4 mx-auto transition-colors duration-300",
+          timeOfDay === 'day'
+            ? "bg-[#f5f3eb] border-[#d4d4d8] shadow-gray-200/50"
+            : "bg-[#141416] border-[#27272a] shadow-black/45",
+          grimoireConfig.boardClass
+        )}
+        style={{ containerType: 'size' }}
+      >
+        {onResetTime && (
+          <button
+            onClick={onResetTime}
+            className={cn(
+              "hidden md:block absolute top-4 left-4 z-30 px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
+              timeOfDay === 'day'
+                ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46] hover:bg-[#ffffff] hover:text-[#18181b]"
+                : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa] hover:bg-[#27272a] hover:text-[#f4f4f5]"
+            )}
+            title="Reset back to Night 1"
+          >
+            Reset Time
+          </button>
+        )}
+
+        {onResetDead && (
+          <button
+            onClick={onResetDead}
+            className={cn(
+              "hidden md:block absolute top-4 right-4 z-30 px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
+              timeOfDay === 'day'
+                ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46] hover:bg-[#ffffff] hover:text-[#18181b]"
+                : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa] hover:bg-[#27272a] hover:text-[#f4f4f5]"
+            )}
+            title="Mark everyone as alive"
+          >
+            Reset Dead
+          </button>
+        )}
+        <button
+          id="grimoire-time-toggle-button"
+          onClick={toggleTimeOfDay}
+          style={grimoireConfig.centerBtnStyle}
+          className={cn(
+            "absolute rounded-full border flex flex-col items-center justify-center transition-all cursor-pointer z-20 select-none shadow-md",
+            timeOfDay === 'day'
+              ? "bg-[#fefce8] border-[#fef08a] text-[#854d0e] hover:bg-[#fef9c3]"
+              : "bg-[#1a1a1a]/80 border-[#8b0000]/30 text-[#f4e4bc] hover:bg-[#27272a]"
+          )}
+          title="Click to toggle Day/Night"
+        >
+          <span
+            style={grimoireConfig.centerText1Style}
+            className="font-bold font-mono uppercase tracking-wide"
+          >
+            {timeOfDay} {dayNumber}
+          </span>
+          <span
+            style={grimoireConfig.centerText2Style}
+            className="font-semibold font-sans uppercase tracking-widest mt-0.5 opacity-80"
+          >
+            {players.filter(p => !p.isDead).length} Alive
+          </span>
+        </button>
+
+        {players.map((p, index) => {
+          const total = players.length;
+          const angle = (index * (360 / total) - 90) * (Math.PI / 180);
+
+          const leftPos = 50 + grimoireConfig.radiusX * Math.cos(angle);
+          const topPos = 50 + grimoireConfig.radiusY * Math.sin(angle);
+
+          const roleObj = rolesData.find((r) => r.id === p.roleId);
+          const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
+          const isEvil = p.isEvil !== undefined ? p.isEvil : defaultEvil;
+
+          // Calculate dynamic font size and split name by space to prevent overflow
+          const baseFontSizeVal = parseFloat(grimoireConfig.nameStyle.fontSize as string);
+          const baseFontSizeUnit = (grimoireConfig.nameStyle.fontSize as string).replace(/[0-9.]/g, '');
+          const nameLength = p.name.length;
+          const longestWordLength = Math.max(...p.name.split(' ').map(w => w.length));
+
+          let scaleFactor = 1.0;
+          
+          // Shrink based on the longest word
+          if (longestWordLength > 12) scaleFactor = 0.55;
+          else if (longestWordLength > 10) scaleFactor = 0.65;
+          else if (longestWordLength > 8) scaleFactor = 0.75;
+          else if (longestWordLength > 6) scaleFactor = 0.86;
+          
+          // Shrink based on total length
+          if (nameLength > 18) scaleFactor = Math.min(scaleFactor, 0.55);
+          else if (nameLength > 14) scaleFactor = Math.min(scaleFactor, 0.65);
+          else if (nameLength > 10) scaleFactor = Math.min(scaleFactor, 0.78);
+          else if (nameLength > 8) scaleFactor = Math.min(scaleFactor, 0.9);
+
+          const dynamicFontSize = `${baseFontSizeVal * scaleFactor}${baseFontSizeUnit}`;
+
+          const orderIndex = hoveredOrder.indexOf(p.id);
+          const zIndex = orderIndex !== -1 ? 10 + orderIndex : 10;
+
+          return (
+            <div
+              key={p.id}
+              style={{
+                position: 'absolute',
+                left: `${leftPos}%`,
+                top: `${topPos}%`,
+                transform: 'translate(-50%, -50%)',
+                zIndex: zIndex,
+              }}
+              onMouseEnter={() => {
+                setHoveredOrder((prev) => {
+                  const filtered = prev.filter((id) => id !== p.id);
+                  return [...filtered, p.id];
+                });
+              }}
+              className="hover:z-50 group"
+            >
+              <div className="relative flex flex-col items-center">
+                <button
+                  id={`grimoire-player-${p.id}`}
+                  onClick={() => onSelectPlayer(p.id)}
+                  style={grimoireConfig.btnStyle}
                   className={cn(
-                    "font-bold font-sans tracking-tighter text-center leading-[1.05] z-20 relative pointer-events-none select-none break-words whitespace-normal max-w-[82%] inline-block align-middle",
-                    p.isDead ? "line-through text-[#1a1a1a] opacity-75" : "text-[#1a1a1a] font-bold"
+                    "rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-md relative group-hover:scale-125 group-hover:shadow-lg select-none",
+                    p.isDead ? "scale-95" : "hover:bg-[#fafafa]"
                   )}
                 >
-                  {p.name}
-                </span>
+                  {/* SVG representing the token */}
+                  <svg viewBox="0 0 200 200" className={cn("w-full h-full absolute inset-0 z-0 select-none pointer-events-none", p.isDead && "opacity-60")}>
+                    <defs>
+                      <path id={`topTextPath-${p.id}`} d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
+                      <path id={`bottomTextPath-${p.id}`} d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
+                    </defs>
+                    
+                    {/* Token background circle */}
+                    <circle
+                      cx="100"
+                      cy="100"
+                      r="90"
+                      fill={p.isDead ? "#e4e4e7" : "#ffffff"}
+                      className={cn(
+                        "stroke-[6px]",
+                        isEvil ? "stroke-clocktower-minion" : "stroke-clocktower-townsfolk"
+                      )}
+                    />
+                    
+                    {/* Inner ring */}
+                    <circle
+                      cx="100"
+                      cy="100"
+                      r="58"
+                      fill="none"
+                      stroke="#e4e4e7"
+                      strokeWidth="1"
+                      strokeDasharray="3 3"
+                    />
+                    
+                    {roleObj && (
+                      <>
+                        {/* Curved Character Name */}
+                        <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(roleObj.team))}>
+                          <textPath href={`#topTextPath-${p.id}`} startOffset="50%" textAnchor="middle">
+                            {roleObj.name}
+                          </textPath>
+                        </text>
+                        
+                        {/* Curved Character Type */}
+                        <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(roleObj.team))}>
+                          <textPath href={`#bottomTextPath-${p.id}`} startOffset="50%" textAnchor="middle">
+                            {roleObj.team}
+                          </textPath>
+                        </text>
+                      </>
+                    )}
+                  </svg>
 
-                {p.isTheDrunk && (
+                  {/* Centered character icon */}
+                  {roleObj && (
+                    <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none">
+                      <div className="w-[50%] h-[50%] flex items-center justify-center">
+                        <img
+                          src={`/icons/${roleObj.id}.svg`}
+                          alt={roleObj.name}
+                          className={cn(
+                            "w-full h-full object-contain transition-all duration-200 select-none",
+                            p.isDead ? "grayscale opacity-15" : "opacity-35"
+                          )}
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Player Name Overlay */}
                   <span
-                    style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
-                    className="absolute bottom-0 bg-yellow-600 text-black font-black border-yellow-700 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
-                  >
-                    THE DRUNK
-                  </span>
-                )}
-                {p.isTheMarionette && (
-                  <span
-                    style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
-                    className="absolute bottom-0 bg-clocktower-minion text-white font-black border-clocktower-minion/40 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
-                  >
-                    THE MARIONETTE
-                  </span>
-                )}
-                {p.isTheLunatic && (
-                  <span
-                    style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
-                    className="absolute bottom-0 bg-clocktower-outsider text-white font-black border-clocktower-outsider/40 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
-                  >
-                    THE LUNATIC
-                  </span>
-                )}
-                {p.isTheLilMonsta && (
-                  <span
-                    style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
-                    className="absolute bottom-0 bg-clocktower-demon text-white font-black border-clocktower-demon/40 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
-                  >
-                    LIL' MONSTA
-                  </span>
-                )}
-                {p.isDrunkOrPoisoned && (
-                  <div
                     style={{
-                      position: 'absolute',
-                      top: '14%',
-                      right: '14%',
-                      fontSize: '4.0cqw',
-                      lineHeight: 1,
-                      zIndex: 30,
+                      ...grimoireConfig.nameStyle,
+                      fontSize: dynamicFontSize,
+                      textShadow: p.isDead
+                        ? 'none'
+                        : '0 1.5px 3px rgba(255,255,255,1.0), 0 0 5px rgba(255,255,255,1.0), 0 0 8px rgba(255,255,255,0.9)'
                     }}
-                    title="Drunk/Poisoned"
+                    className={cn(
+                      "font-bold font-sans tracking-tighter text-center leading-[1.05] z-20 relative pointer-events-none select-none break-words whitespace-normal max-w-[82%] inline-block align-middle",
+                      p.isDead ? "line-through text-[#1a1a1a] opacity-75" : "text-[#1a1a1a] font-bold"
+                    )}
                   >
-                    🤢
-                  </div>
-                )}
-                {p.isDead && p.hasDeadVote && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '25%',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      fontSize: '4.0cqw',
-                      lineHeight: 1,
-                      zIndex: 30,
-                    }}
-                    title="Vote Token Active"
-                  >
-                    🗳️
-                  </div>
-                )}
-              </button>
+                    {p.name}
+                  </span>
+
+                  {p.isTheDrunk && (
+                    <span
+                      style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
+                      className="absolute bottom-0 bg-yellow-600 text-black font-black border-yellow-700 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
+                    >
+                      THE DRUNK
+                    </span>
+                  )}
+                  {p.isTheMarionette && (
+                    <span
+                      style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
+                      className="absolute bottom-0 bg-clocktower-minion text-white font-black border-clocktower-minion/40 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
+                    >
+                      THE MARIONETTE
+                    </span>
+                  )}
+                  {p.isTheLunatic && (
+                    <span
+                      style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
+                      className="absolute bottom-0 bg-clocktower-outsider text-white font-black border-clocktower-outsider/40 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
+                    >
+                      THE LUNATIC
+                    </span>
+                  )}
+                  {p.isTheLilMonsta && (
+                    <span
+                      style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
+                      className="absolute bottom-0 bg-clocktower-demon text-white font-black border-clocktower-demon/40 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
+                    >
+                      LIL' MONSTA
+                    </span>
+                  )}
+                  {p.isDrunkOrPoisoned && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '14%',
+                        right: '14%',
+                        fontSize: '4.0cqw',
+                        lineHeight: 1,
+                        zIndex: 30,
+                      }}
+                      title="Drunk/Poisoned"
+                    >
+                      🤢
+                    </div>
+                  )}
+                  {p.isDead && p.hasDeadVote && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '25%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        fontSize: '4.0cqw',
+                        lineHeight: 1,
+                        zIndex: 30,
+                      }}
+                      title="Vote Token Active"
+                    >
+                      🗳️
+                    </div>
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
