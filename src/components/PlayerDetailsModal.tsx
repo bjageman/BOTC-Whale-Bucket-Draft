@@ -131,22 +131,22 @@ export default function PlayerDetailsModal({
               type="button"
               onClick={() => setIsNameHidden(!isNameHidden)}
               className={cn(
-                'p-1.5 rounded focus:outline-none transition-colors shrink-0 border',
+                'p-2 -mt-4 mr-2 rounded focus:outline-none transition-colors shrink-0 border shadow-sm',
                 isLightModeActive 
-                  ? 'hover:bg-black/5 border-gray-300 text-gray-600' 
-                  : 'hover:bg-white/10 border-gray-700 text-gray-400'
+                  ? 'bg-white hover:bg-gray-100 border-gray-300 text-gray-700' 
+                  : 'bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-200'
               )}
               title={isNameHidden ? "Show name" : "Hide name"}
             >
               {isNameHidden ? (
                 <EyeOff
-                  size={14}
-                  className="opacity-75 hover:opacity-100 transition-opacity"
+                  size={18}
+                  className="opacity-90 hover:opacity-100 transition-opacity"
                 />
               ) : (
                 <Eye
-                  size={14}
-                  className="opacity-75 hover:opacity-100 transition-opacity"
+                  size={18}
+                  className="opacity-90 hover:opacity-100 transition-opacity"
                 />
               )}
             </button>
@@ -188,14 +188,14 @@ export default function PlayerDetailsModal({
             type="button"
             onClick={onClose}
             className={cn(
-              'p-1.5 rounded-lg border transition-colors shrink-0',
+              'p-2 -mt-4 ml-2 rounded-lg border transition-colors shrink-0 shadow-sm',
               isLightModeActive
-                ? 'border-gray-300 text-gray-655 hover:bg-gray-100'
-                : 'border-gray-700 text-gray-400 hover:bg-gray-800'
+                ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
+                : 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700'
             )}
             title="Close"
           >
-            <X size={16} />
+            <X size={20} />
           </button>
         </div>
 
@@ -259,61 +259,67 @@ export default function PlayerDetailsModal({
           ) : (
             /* Character display — click to open search */
             <button
-              id="detail-change-role-button"
-              type="button"
-              onClick={() => onSetSearchingRole(true)}
-              className={cn(
-                'w-full flex flex-col items-center justify-center py-4 rounded-xl border border-transparent transition-all duration-200 hover:scale-[1.02]',
-                isLightModeActive
-                  ? 'hover:bg-black/5 hover:border-gray-300/40'
-                  : 'hover:bg-white/5 hover:border-gray-800/40'
-              )}
-            >
-              {roleObj ? (
-                <div className="flex flex-col items-center space-y-3">
-                  <div className="relative w-36 h-36 flex items-center justify-center select-none">
-                     {/* The SVG containing the token background, inner rings, and curved text */}
-                    <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl absolute inset-0 z-10">
-                      <defs>
-                        {/* Top text path (arcing upwards, clockwise from 9 to 3 o'clock) */}
-                        <path id="topTextPath" d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
-                        {/* Bottom text path (arcing downwards, clockwise from 3 to 9 o'clock) */}
-                        <path id="bottomTextPath" d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
-                      </defs>
-                      
-                      {/* Token background circle */}
-                      <circle cx="100" cy="100" r="90" fill="#ffffff" stroke="#d4d4d8" strokeWidth="6" />
-                      {/* Inner ring for aesthetic detail wrapping the central icon */}
-                      <circle cx="100" cy="100" r="58" fill="none" stroke="#e4e4e7" strokeWidth="1" strokeDasharray="3 3" />
-                      
-                      {/* Curved character name at the top */}
-                      <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(roleObj.team))}>
-                        <textPath href="#topTextPath" startOffset="50%" textAnchor="middle">
-                          {roleObj.name}
-                        </textPath>
-                      </text>
-                      
-                      {/* Curved character type at the bottom */}
-                      <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(roleObj.team))}>
-                        <textPath href="#bottomTextPath" startOffset="50%" textAnchor="middle">
-                          {roleObj.team}
-                        </textPath>
-                      </text>
-                    </svg>
-                    
-                    {/* Centered character icon */}
-                    <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                      <div className="w-[47%] h-[47%] flex items-center justify-center">
-                        <img
-                          src={`/icons/${roleObj.id}.svg`}
-                          alt={roleObj.name}
-                          className="w-full h-full object-contain"
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+               id="detail-change-role-button"
+               type="button"
+               onClick={() => onSetSearchingRole(true)}
+               disabled={isNameHidden}
+               className={cn(
+                 'w-full flex flex-col items-center justify-center py-4 rounded-xl border border-transparent transition-all duration-200',
+                 isNameHidden
+                   ? 'cursor-not-allowed'
+                   : isLightModeActive
+                     ? 'hover:scale-[1.02] hover:bg-black/5 hover:border-gray-300/40'
+                     : 'hover:scale-[1.02] hover:bg-white/5 hover:border-gray-800/40'
+               )}
+             >
+               {roleObj ? (
+                 <div className="flex flex-col items-center space-y-3">
+                   <div className={cn(
+                     "relative flex items-center justify-center select-none transition-all duration-300",
+                     isNameHidden ? "w-48 h-48" : "w-36 h-36"
+                   )}>
+                      {/* The SVG containing the token background, inner rings, and curved text */}
+                     <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl absolute inset-0 z-10">
+                       <defs>
+                         {/* Top text path (arcing upwards, clockwise from 9 to 3 o'clock) */}
+                         <path id="topTextPath" d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
+                         {/* Bottom text path (arcing downwards, clockwise from 3 to 9 o'clock) */}
+                         <path id="bottomTextPath" d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
+                       </defs>
+                       
+                       {/* Token background circle */}
+                       <circle cx="100" cy="100" r="90" fill="#ffffff" stroke="#d4d4d8" strokeWidth="6" />
+                       {/* Inner ring for aesthetic detail wrapping the central icon */}
+                       <circle cx="100" cy="100" r="58" fill="none" stroke="#e4e4e7" strokeWidth="1" strokeDasharray="3 3" />
+                       
+                       {/* Curved character name at the top */}
+                       <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(roleObj.team))}>
+                         <textPath href="#topTextPath" startOffset="50%" textAnchor="middle">
+                           {roleObj.name}
+                         </textPath>
+                       </text>
+                       
+                       {/* Curved character type at the bottom */}
+                       <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(roleObj.team))}>
+                         <textPath href="#bottomTextPath" startOffset="50%" textAnchor="middle">
+                           {roleObj.team}
+                         </textPath>
+                       </text>
+                     </svg>
+                     
+                     {/* Centered character icon */}
+                     <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                       <div className="w-[47%] h-[47%] flex items-center justify-center">
+                         <img
+                           src={`/icons/${roleObj.id}.svg`}
+                           alt={roleObj.name}
+                           className="w-full h-full object-contain"
+                           onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                         />
+                       </div>
+                     </div>
+                   </div>
+                 </div>
               ) : (
                 <div className="flex flex-col items-center space-y-2 py-1">
                   <div className={cn(

@@ -375,7 +375,7 @@ export function performStandardAssignment(
     }
   }
 
-  return players.map(p => {
+  const assignedPlayers = players.map(p => {
     const isTraveler = travelerPlayers.some(tp => tp.id === p.id);
     if (isTraveler) {
       const matched = selectionRoles.find(r => r.team === 'traveler') || { id: 'beggar' };
@@ -428,4 +428,40 @@ export function performStandardAssignment(
       isEvil: (roleId === 'legion' || isTheMarionette) ? true : undefined,
     };
   });
+
+  const hasHuntsmanInPlay = assignedPlayers.some(p => p.roleId === 'huntsman');
+  const hasDamselInPlay = assignedPlayers.some(p => p.roleId === 'damsel');
+  const travelerRoleIds = new Set(selectionRoles.filter(r => r.team === 'traveler').map(r => r.id));
+
+  if (hasHuntsmanInPlay && !hasDamselInPlay) {
+    const eligiblePlayers = assignedPlayers.filter(p => 
+      p.roleId && 
+      !travelerRoleIds.has(p.roleId) &&
+      !p.isTheMarionette &&
+      !p.isTheLunatic &&
+      p.roleId !== 'huntsman' &&
+      (tfs.some(t => t.id === p.roleId) || outs.some(o => o.id === p.roleId))
+    );
+    if (eligiblePlayers.length > 0) {
+      const chosenForDamsel = eligiblePlayers[Math.floor(Math.random() * eligiblePlayers.length)];
+      chosenForDamsel.roleId = 'damsel';
+      chosenForDamsel.isTheDrunk = false;
+    }
+  }
+
+  const hasBountyHunter = assignedPlayers.some(p => p.roleId === 'bountyhunter' && !p.isTheDrunk && !p.isTheMarionette && !p.isTheLunatic);
+  if (hasBountyHunter) {
+    const townsfolkPlayers = assignedPlayers.filter(p => 
+      p.roleId && 
+      !travelerRoleIds.has(p.roleId) &&
+      tfs.some(t => t.id === p.roleId) &&
+      !p.isTheMarionette
+    );
+    if (townsfolkPlayers.length > 0) {
+      const chosen = townsfolkPlayers[Math.floor(Math.random() * townsfolkPlayers.length)];
+      chosen.isEvil = true;
+    }
+  }
+
+  return assignedPlayers;
 }
