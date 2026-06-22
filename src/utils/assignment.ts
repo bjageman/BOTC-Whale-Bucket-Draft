@@ -412,11 +412,15 @@ function assignBaseCharacters(
         
         let jinxesMet = true;
         if (hasChoirboy && !hasKing) {
-          const otherTF = fullAssignment.find(a => a.role.team === 'townsfolk' && a.role.id !== 'choirboy' && a.role.id !== 'balloonist');
-          if (otherTF) {
-            const kingRole = allRoles.find(r => r.id === 'king')!;
-            otherTF.role = kingRole;
-            otherTF.fromPref = !!otherTF.player.preferences?.townsfolk.includes('king');
+          const kingRole = allRoles.find(r => r.id === 'king');
+          if (kingRole) {
+            const otherTF = fullAssignment.find(a => a.role.team === 'townsfolk' && a.role.id !== 'choirboy' && a.role.id !== 'balloonist');
+            if (otherTF) {
+              otherTF.role = kingRole;
+              otherTF.fromPref = !!otherTF.player.preferences?.townsfolk.includes('king');
+            } else {
+              jinxesMet = false;
+            }
           } else {
             jinxesMet = false;
           }

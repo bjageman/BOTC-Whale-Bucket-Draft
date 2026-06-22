@@ -87,4 +87,33 @@ describe('assignCharacters', () => {
     expect(damselAssignment).toBeDefined();
     expect(damselAssignment?.player.id).not.toBe(huntsmanAssignment?.player.id);
   });
+
+  it('should assign a King when a Choirboy is in play', () => {
+    const roles: Role[] = [
+      { id: 'choirboy', name: 'Choirboy', team: 'townsfolk' },
+      { id: 'chef', name: 'Chef', team: 'townsfolk' },
+      { id: 'king', name: 'King', team: 'townsfolk' },
+      { id: 'poisoner', name: 'Poisoner', team: 'minion' },
+      { id: 'imp', name: 'Imp', team: 'demon' },
+    ];
+
+    const players: Player[] = [
+      { id: '1', name: 'Alice', isDead: false, preferences: { townsfolk: ['choirboy'], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '2', name: 'Bob', isDead: false, preferences: { townsfolk: ['chef'], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '3', name: 'Charlie', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: ['imp'], traveler: [] } },
+      { id: '4', name: 'David', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '5', name: 'Eve', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] } },
+    ];
+
+    const result = assignCharacters(players, roles);
+    expect(result).not.toBeNull();
+    if (!result) return;
+
+    const choirboyAssignment = result.find(r => r.role.id === 'choirboy');
+    const kingAssignment = result.find(r => r.role.id === 'king');
+
+    expect(choirboyAssignment).toBeDefined();
+    expect(kingAssignment).toBeDefined();
+    expect(kingAssignment?.player.id).not.toBe(choirboyAssignment?.player.id);
+  });
 });
