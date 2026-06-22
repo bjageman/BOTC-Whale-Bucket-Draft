@@ -30,7 +30,7 @@ interface Props {
   handleTouchMove: (e: React.TouchEvent) => void;
   handleTouchEnd: () => void;
   onResetDead?: () => void;
-  onResetDay?: () => void;
+  onResetTime?: () => void;
 }
 
 export default function StandardGamePhase({
@@ -40,7 +40,7 @@ export default function StandardGamePhase({
   setNewTravelerName, setNewTravelerRoleId,
   handleDragStart, handleDragOver, handleDragLeave, handleDrop, handleDragEnd,
   handleTouchStart, handleTouchMove, handleTouchEnd,
-  onResetDead, onResetDay,
+  onResetDead, onResetTime,
 }: Props) {
   const [isDragEnabled, setIsDragEnabled] = useState(false);
   return (
@@ -56,7 +56,7 @@ export default function StandardGamePhase({
             onSelectPlayer={setSelectedPlayerId}
             rolesData={selectionRoles}
             onResetDead={onResetDead}
-            onResetDay={onResetDay}
+            onResetTime={onResetTime}
           />
         </div>
         <NightOrderWidget

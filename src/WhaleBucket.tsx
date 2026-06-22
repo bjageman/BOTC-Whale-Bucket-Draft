@@ -423,10 +423,10 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     }
   };
 
-  const resetDay = () => {
-    if (confirm('Reset back to Day 1?')) {
+  const resetTime = () => {
+    if (confirm('Reset back to Night 1?')) {
       setDayNumber(1);
-      setTimeOfDay('day');
+      setTimeOfDay('night');
     }
   };
 
@@ -608,7 +608,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           setNewTravelerName={setNewTravelerName}
           setNewTravelerRoleId={setNewTravelerRoleId}
           onResetDead={resetDead}
-          onResetDay={resetDay}
+          onResetTime={resetTime}
         />
       )}
 

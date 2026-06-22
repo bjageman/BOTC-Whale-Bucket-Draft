@@ -11,7 +11,7 @@ interface GrimoireBoardProps {
   onSelectPlayer: (playerId: string) => void;
   rolesData: Role[];
   onResetDead?: () => void;
-  onResetDay?: () => void;
+  onResetTime?: () => void;
 }
 
 export default function GrimoireBoard({
@@ -22,7 +22,7 @@ export default function GrimoireBoard({
   onSelectPlayer,
   rolesData,
   onResetDead,
-  onResetDay,
+  onResetTime,
 }: GrimoireBoardProps) {
   const [hoveredOrder, setHoveredOrder] = useState<string[]>([]);
 
@@ -96,18 +96,18 @@ export default function GrimoireBoard({
       )}
       style={{ containerType: 'size' }}
     >
-      {onResetDay && (
+      {onResetTime && (
         <button
-          onClick={onResetDay}
+          onClick={onResetTime}
           className={cn(
-            "absolute top-4 left-4 z-30 px-2 py-1 rounded text-[9px] md:text-[10px] font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
+            "absolute top-4 left-4 z-30 px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
             timeOfDay === 'day'
               ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46] hover:bg-[#ffffff] hover:text-[#18181b]"
               : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa] hover:bg-[#27272a] hover:text-[#f4f4f5]"
           )}
-          title="Reset back to Day 1"
+          title="Reset back to Night 1"
         >
-          Reset Day
+          Reset Time
         </button>
       )}
 
@@ -115,7 +115,7 @@ export default function GrimoireBoard({
         <button
           onClick={onResetDead}
           className={cn(
-            "absolute top-4 right-4 z-30 px-2 py-1 rounded text-[9px] md:text-[10px] font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
+            "absolute top-4 right-4 z-30 px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
             timeOfDay === 'day'
               ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46] hover:bg-[#ffffff] hover:text-[#18181b]"
               : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa] hover:bg-[#27272a] hover:text-[#f4f4f5]"
