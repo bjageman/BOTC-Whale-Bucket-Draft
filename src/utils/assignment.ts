@@ -414,7 +414,8 @@ function assignBaseCharacters(
         if (hasChoirboy && !hasKing) {
           const kingRole = allRoles.find(r => r.id === 'king');
           if (kingRole) {
-            const otherTF = fullAssignment.find(a => a.role.team === 'townsfolk' && a.role.id !== 'choirboy' && a.role.id !== 'balloonist');
+            const otherTF = fullAssignment.find(a => a.role.team === 'townsfolk' && a.role.id !== 'choirboy' && a.role.id !== 'balloonist' && !a.fromPref) ||
+                            fullAssignment.find(a => a.role.team === 'townsfolk' && a.role.id !== 'choirboy' && a.role.id !== 'balloonist');
             if (otherTF) {
               otherTF.role = kingRole;
               otherTF.fromPref = !!otherTF.player.preferences?.townsfolk.includes('king');
@@ -429,12 +430,14 @@ function assignBaseCharacters(
         if (hasHuntsman && !hasDamsel) {
           const damselRole = allRoles.find(r => r.id === 'damsel');
           if (damselRole) {
-            const otherOut = fullAssignment.find(a => a.role.team === 'outsider');
+            const otherOut = fullAssignment.find(a => a.role.team === 'outsider' && !a.fromPref) ||
+                             fullAssignment.find(a => a.role.team === 'outsider');
             if (otherOut) {
               otherOut.role = damselRole;
               otherOut.fromPref = !!otherOut.player.preferences?.outsider.includes('damsel');
             } else {
-              const otherTF = fullAssignment.find(a => a.role.team === 'townsfolk' && a.role.id !== 'huntsman' && a.role.id !== 'choirboy' && a.role.id !== 'king' && a.role.id !== 'balloonist');
+              const otherTF = fullAssignment.find(a => a.role.team === 'townsfolk' && a.role.id !== 'huntsman' && a.role.id !== 'choirboy' && a.role.id !== 'king' && a.role.id !== 'balloonist' && !a.fromPref) ||
+                              fullAssignment.find(a => a.role.team === 'townsfolk' && a.role.id !== 'huntsman' && a.role.id !== 'choirboy' && a.role.id !== 'king' && a.role.id !== 'balloonist');
               if (otherTF) {
                 otherTF.role = damselRole;
                 otherTF.fromPref = !!otherTF.player.preferences?.outsider.includes('damsel');

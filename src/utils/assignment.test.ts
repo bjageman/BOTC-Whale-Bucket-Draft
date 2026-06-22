@@ -116,4 +116,39 @@ describe('assignCharacters', () => {
     expect(kingAssignment).toBeDefined();
     expect(kingAssignment?.player.id).not.toBe(choirboyAssignment?.player.id);
   });
+
+  it('should not override another player preference to assign King if a neutral candidate exists', () => {
+    const roles: Role[] = [
+      { id: 'choirboy', name: 'Choirboy', team: 'townsfolk' },
+      { id: 'chef', name: 'Chef', team: 'townsfolk' },
+      { id: 'king', name: 'King', team: 'townsfolk' },
+      { id: 'poisoner', name: 'Poisoner', team: 'minion' },
+      { id: 'imp', name: 'Imp', team: 'demon' },
+    ];
+
+    // Alice prefers choirboy. Bob prefers chef. Charlie has no preferences.
+    // We expect Bob to get Chef, and Charlie to get King.
+    const players: Player[] = [
+      { id: '1', name: 'Alice', isDead: false, preferences: { townsfolk: ['choirboy'], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '2', name: 'Bob', isDead: false, preferences: { townsfolk: ['chef'], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '3', name: 'Charlie', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: ['imp'], traveler: [] } },
+      { id: '4', name: 'David', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '5', name: 'Eve', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] } },
+    ];
+
+    const result = assignCharacters(players, roles);
+    expect(result).not.toBeNull();
+    if (!result) return;
+
+    const chefAssignment = result.find(r => r.role.id === 'chef');
+    const kingAssignment = result.find(r => r.role.id === 'king');
+
+    expect(chefAssignment).toBeDefined();
+    expect(kingAssignment).toBeDefined();
+
+    // Bob should get Chef (honored preference)
+    expect(chefAssignment?.player.id).toBe('2');
+    // King should be assigned to one of the neutral players (like Charlie, David or Eve), not Bob
+    expect(kingAssignment?.player.id).not.toBe('2');
+  });
 });
