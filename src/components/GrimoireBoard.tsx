@@ -44,8 +44,8 @@ export default function GrimoireBoard({
         charLimit: 16,
         tooltipClass: "top-18",
         centerBtnStyle: { width: '25cqw', height: '25cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '3.5cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '2.8cqw', marginTop: '0.1cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '4.2cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '3.4cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     } else if (count <= 10) {
       return {
@@ -59,8 +59,8 @@ export default function GrimoireBoard({
         charLimit: 14,
         tooltipClass: "top-16",
         centerBtnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '2.9cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '2.3cqw', marginTop: '0.1cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '3.5cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '2.8cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     } else {
       return {
@@ -74,8 +74,8 @@ export default function GrimoireBoard({
         charLimit: 12,
         tooltipClass: "top-14",
         centerBtnStyle: { width: '17cqw', height: '17cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '2.4cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '1.9cqw', marginTop: '0.1cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '2.8cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '2.2cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     }
   }, [players.length]);
@@ -105,7 +105,7 @@ export default function GrimoireBoard({
         title="Click to toggle Day/Night"
       >
         <span
-          style={grimoireConfig.centerText2Style}
+          style={grimoireConfig.centerText1Style}
           className="font-bold font-mono uppercase tracking-wide"
         >
           {timeOfDay} {dayNumber}
