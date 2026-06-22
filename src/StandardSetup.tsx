@@ -361,10 +361,13 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         const parsedRoles = parsed
           .map((item: unknown) => {
             if (typeof item === 'string') {
-              return { id: item };
+              return { id: item.replace(/_/g, '') };
             }
             if (item && typeof item === 'object' && 'id' in item && typeof (item as { id: unknown }).id === 'string') {
-              return item as { id: string };
+              return { 
+                ...(item as Record<string, unknown>), 
+                id: (item as { id: string }).id.replace(/_/g, '') 
+              } as { id: string };
             }
             return null;
           })
