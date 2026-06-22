@@ -214,4 +214,61 @@ describe('assignCharacters', () => {
       expect(bobAssignment?.role.id).not.toBe('riot');
     }
   });
+
+  it('should place Lord of Typhon and minions in a contiguous line with Typhon in the middle', () => {
+    const roles: Role[] = [
+      { id: 'chef', name: 'Chef', team: 'townsfolk' },
+      { id: 'empath', name: 'Empath', team: 'townsfolk' },
+      { id: 'fortune_teller', name: 'Fortune Teller', team: 'townsfolk' },
+      { id: 'lordoftyphon', name: 'Lord of Typhon', team: 'demon' },
+      { id: 'poisoner', name: 'Poisoner', team: 'minion' },
+      { id: 'spy', name: 'Spy', team: 'minion' },
+    ];
+
+    // With Lord of Typhon, E = 1 (demon) + (1 minion + 1 from Typhon) = 3 evil players
+    // They must sit contiguously in a circle, with Lord of Typhon in the middle.
+    for (let run = 0; run < 20; run++) {
+      const players: Player[] = [
+        { id: '1', name: 'Alice', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] } },
+        { id: '2', name: 'Bob', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] } },
+        { id: '3', name: 'Charlie', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: ['lordoftyphon'], traveler: [] } },
+        { id: '4', name: 'David', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] } },
+        { id: '5', name: 'Eve', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] } },
+      ];
+
+      const result = assignCharacters(players, roles);
+      expect(result).not.toBeNull();
+      if (!result) return;
+
+      const evilPlayerIds = result
+        .filter(r => r.role.team === 'demon' || r.role.team === 'minion')
+        .map(r => r.player.id);
+
+      const evilIndices = evilPlayerIds.map(id => players.findIndex(p => p.id === id));
+      expect(evilIndices.length).toBe(3);
+
+      // Check if indices are contiguous in a circle of size 5
+      const sorted = [...evilIndices].sort((a, b) => a - b);
+      const isContiguous = 
+        (sorted[1] === sorted[0] + 1 && sorted[2] === sorted[1] + 1) || // e.g. 1, 2, 3
+        (sorted[0] === 0 && sorted[1] === 1 && sorted[2] === 4) ||     // e.g. 0, 1, 4 (wrapping around)
+        (sorted[0] === 0 && sorted[1] === 3 && sorted[2] === 4);       // e.g. 0, 3, 4 (wrapping around)
+
+      expect(isContiguous).toBe(true);
+
+      // Find the player index of Lord of Typhon in the original players circle
+      const typhonAssignment = result.find(r => r.role.id === 'lordoftyphon')!;
+      const typhonIdx = players.findIndex(p => p.id === typhonAssignment.player.id);
+
+      // The neighbors of Lord of Typhon in the circle must both be evil (minions)
+      const leftNeighbor = players[(typhonIdx - 1 + 5) % 5];
+      const rightNeighbor = players[(typhonIdx + 1) % 5];
+
+      const leftRole = result.find(r => r.player.id === leftNeighbor.id)!.role;
+      const rightRole = result.find(r => r.player.id === rightNeighbor.id)!.role;
+
+      expect(leftRole.team).toBe('minion');
+      expect(rightRole.team).toBe('minion');
+    }
+  });
 });
