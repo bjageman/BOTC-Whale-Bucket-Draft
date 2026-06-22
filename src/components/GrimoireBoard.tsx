@@ -10,6 +10,8 @@ interface GrimoireBoardProps {
   toggleTimeOfDay: () => void;
   onSelectPlayer: (playerId: string) => void;
   rolesData: Role[];
+  onResetDead?: () => void;
+  onResetTime?: () => void;
 }
 
 export default function GrimoireBoard({
@@ -19,6 +21,8 @@ export default function GrimoireBoard({
   toggleTimeOfDay,
   onSelectPlayer,
   rolesData,
+  onResetDead,
+  onResetTime,
 }: GrimoireBoardProps) {
   const [hoveredOrder, setHoveredOrder] = useState<string[]>([]);
 
@@ -44,8 +48,8 @@ export default function GrimoireBoard({
         charLimit: 16,
         tooltipClass: "top-18",
         centerBtnStyle: { width: '25cqw', height: '25cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '3.5cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '2.8cqw', marginTop: '0.1cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '4.2cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '3.4cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     } else if (count <= 10) {
       return {
@@ -59,8 +63,8 @@ export default function GrimoireBoard({
         charLimit: 14,
         tooltipClass: "top-16",
         centerBtnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '2.9cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '2.3cqw', marginTop: '0.1cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '3.5cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '2.8cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     } else {
       return {
@@ -74,8 +78,8 @@ export default function GrimoireBoard({
         charLimit: 12,
         tooltipClass: "top-14",
         centerBtnStyle: { width: '17cqw', height: '17cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '2.4cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '1.9cqw', marginTop: '0.1cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '2.8cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '2.2cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     }
   }, [players.length]);
@@ -92,6 +96,35 @@ export default function GrimoireBoard({
       )}
       style={{ containerType: 'size' }}
     >
+      {onResetTime && (
+        <button
+          onClick={onResetTime}
+          className={cn(
+            "absolute top-4 left-4 z-30 px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
+            timeOfDay === 'day'
+              ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46] hover:bg-[#ffffff] hover:text-[#18181b]"
+              : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa] hover:bg-[#27272a] hover:text-[#f4f4f5]"
+          )}
+          title="Reset back to Night 1"
+        >
+          Reset Time
+        </button>
+      )}
+
+      {onResetDead && (
+        <button
+          onClick={onResetDead}
+          className={cn(
+            "absolute top-4 right-4 z-30 px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
+            timeOfDay === 'day'
+              ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46] hover:bg-[#ffffff] hover:text-[#18181b]"
+              : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa] hover:bg-[#27272a] hover:text-[#f4f4f5]"
+          )}
+          title="Mark everyone as alive"
+        >
+          Reset Dead
+        </button>
+      )}
       <button
         id="grimoire-time-toggle-button"
         onClick={toggleTimeOfDay}
@@ -106,15 +139,15 @@ export default function GrimoireBoard({
       >
         <span
           style={grimoireConfig.centerText1Style}
-          className="font-serif tracking-widest font-bold transition-colors"
-        >
-          BOTC
-        </span>
-        <span
-          style={grimoireConfig.centerText2Style}
           className="font-bold font-mono uppercase tracking-wide"
         >
           {timeOfDay} {dayNumber}
+        </span>
+        <span
+          style={grimoireConfig.centerText2Style}
+          className="font-semibold font-sans uppercase tracking-widest mt-0.5 opacity-80"
+        >
+          {players.filter(p => !p.isDead).length} Alive
         </span>
       </button>
 

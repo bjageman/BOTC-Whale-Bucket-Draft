@@ -233,7 +233,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
 
     const updatedPlayers = players.map(p => {
       const assigned = result.find(r => r.player.id === p.id);
-      let isRevealed = assigned?.fromPref || assigned?.role.id === 'legion';
+      let isRevealed = assigned?.fromPref || assigned?.role.id === 'legion' || assigned?.role.id === 'riot';
       if (hasChoirboy && (assigned?.role.id === 'choirboy' || assigned?.role.id === 'king')) {
         isRevealed = true;
       }
@@ -405,7 +405,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   };
 
   const resetGame = () => {
-    if (confirm('Are you sure you want to reset the game? This clears all players and preferences.')) {
+    if (confirm('Are you sure you want to reset the game? This clears all players and settings.')) {
       setPlayers([]);
       setPhase('setup');
       setActiveDraftPlayerId(null);
@@ -414,6 +414,19 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       setDayNumber(1);
       setIsLilMonstaGame(false);
       localStorage.removeItem('whale-bucket-game');
+    }
+  };
+
+  const resetDead = () => {
+    if (confirm('Mark all players as alive?')) {
+      setPlayers(prev => prev.map(p => ({ ...p, isDead: false, hasDeadVote: false })));
+    }
+  };
+
+  const resetTime = () => {
+    if (confirm('Reset back to Night 1?')) {
+      setDayNumber(1);
+      setTimeOfDay('night');
     }
   };
 
@@ -594,6 +607,8 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           addTravelerGamePhase={addTravelerGamePhase}
           setNewTravelerName={setNewTravelerName}
           setNewTravelerRoleId={setNewTravelerRoleId}
+          onResetDead={resetDead}
+          onResetTime={resetTime}
         />
       )}
 

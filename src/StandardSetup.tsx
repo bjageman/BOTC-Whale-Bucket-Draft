@@ -64,6 +64,19 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     }
   };
 
+  const resetDead = () => {
+    if (confirm('Mark all players as alive?')) {
+      setPlayers(prev => prev.map(p => ({ ...p, isDead: false, hasDeadVote: false })));
+    }
+  };
+
+  const resetTime = () => {
+    if (confirm('Reset back to Night 1?')) {
+      setDayNumber(1);
+      setTimeOfDay('night');
+    }
+  };
+
   // Drag and drop states
   const {
     draggedIndex,
@@ -596,6 +609,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           handleTouchStart={handleTouchStart}
           handleTouchMove={handleTouchMove}
           handleTouchEnd={handleTouchEnd}
+          onResetDead={resetDead}
+          onResetTime={resetTime}
         />
       )}
 
