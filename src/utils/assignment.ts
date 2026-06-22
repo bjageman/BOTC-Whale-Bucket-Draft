@@ -183,15 +183,28 @@ function assignBaseCharacters(
     const usedRoleIds = new Set<string>();
     const assignment: AssignmentResult[] = [];
     const legionRole = allRoles.find(r => r.id === 'legion')!;
-    for (let i = 0; i < L; i++) {
+
+    // Categorize players based on preferences to respect good-preferring players
+    const goodPreferring = initialShuffledPlayers.filter(p => (p.preferences?.townsfolk || []).length > 0 && !(p.preferences?.demon || []).includes('legion'));
+    const legionPreferring = initialShuffledPlayers.filter(p => (p.preferences?.demon || []).includes('legion'));
+    const neutral = initialShuffledPlayers.filter(p => !goodPreferring.some(gp => gp.id === p.id) && !legionPreferring.some(lp => lp.id === p.id));
+
+    // Prioritize good-preferring players for Townsfolk roles, then neutral, then legion-preferring as fallback
+    const candidatesForGood = [...goodPreferring, ...neutral, ...legionPreferring];
+    const goodPlayers = candidatesForGood.slice(0, N - L);
+    const legionPlayers = candidatesForGood.slice(N - L);
+
+    // Assign Legion to the legionPlayers
+    for (const p of legionPlayers) {
       assignment.push({
-        player: { ...initialShuffledPlayers[i], isEvil: true },
+        player: { ...p, isEvil: true },
         role: legionRole,
-        fromPref: !!initialShuffledPlayers[i].preferences?.demon.includes('legion')
+        fromPref: !!p.preferences?.demon.includes('legion')
       });
     }
-    for (let i = L; i < N; i++) {
-      const p = initialShuffledPlayers[i];
+
+    // Assign Townsfolk to the goodPlayers, honoring their preferences
+    for (const p of goodPlayers) {
       const { role, fromPref } = selectRoleForPlayer(p, 'townsfolk', usedRoleIds);
       usedRoleIds.add(role.id);
       assignment.push({
@@ -200,6 +213,7 @@ function assignBaseCharacters(
         fromPref
       });
     }
+
     return assignment;
   }
 
