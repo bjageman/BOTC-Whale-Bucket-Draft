@@ -230,7 +230,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     
     const updatedPlayers = players.map(p => {
       const assigned = result.find(r => r.player.id === p.id);
-      let roleId = (assigned?.fromPref || assigned?.role.id === 'legion') ? assigned?.role.id : undefined;
+      let roleId = (assigned?.fromPref || assigned?.role.id === 'legion' || assigned?.role.id === 'king' || assigned?.role.id === 'damsel') ? assigned?.role.id : undefined;
       let isTheLunatic = false;
       let isTheLilMonsta = false;
 
