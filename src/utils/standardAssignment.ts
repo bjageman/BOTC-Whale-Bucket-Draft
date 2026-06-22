@@ -375,7 +375,7 @@ export function performStandardAssignment(
     }
   }
 
-  return players.map(p => {
+  const assignedPlayers = players.map(p => {
     const isTraveler = travelerPlayers.some(tp => tp.id === p.id);
     if (isTraveler) {
       const matched = selectionRoles.find(r => r.team === 'traveler') || { id: 'beggar' };
@@ -428,4 +428,21 @@ export function performStandardAssignment(
       isEvil: (roleId === 'legion' || isTheMarionette) ? true : undefined,
     };
   });
+
+  const hasBountyHunter = assignedPlayers.some(p => p.roleId === 'bountyhunter' && !p.isTheDrunk && !p.isTheMarionette && !p.isTheLunatic);
+  if (hasBountyHunter) {
+    const travelerRoleIds = new Set(selectionRoles.filter(r => r.team === 'traveler').map(r => r.id));
+    const townsfolkPlayers = assignedPlayers.filter(p => 
+      p.roleId && 
+      !travelerRoleIds.has(p.roleId) &&
+      tfs.some(t => t.id === p.roleId) &&
+      !p.isTheMarionette
+    );
+    if (townsfolkPlayers.length > 0) {
+      const chosen = townsfolkPlayers[Math.floor(Math.random() * townsfolkPlayers.length)];
+      chosen.isEvil = true;
+    }
+  }
+
+  return assignedPlayers;
 }

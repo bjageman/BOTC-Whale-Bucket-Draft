@@ -271,4 +271,34 @@ describe('assignCharacters', () => {
       expect(rightRole.team).toBe('minion');
     }
   });
+
+  it('should turn one Townsfolk player evil when Bounty Hunter is in play', () => {
+    const roles: Role[] = [
+      { id: 'bountyhunter', name: 'Bounty Hunter', team: 'townsfolk' },
+      { id: 'chef', name: 'Chef', team: 'townsfolk' },
+      { id: 'empath', name: 'Empath', team: 'townsfolk' },
+      { id: 'poisoner', name: 'Poisoner', team: 'minion' },
+      { id: 'imp', name: 'Imp', team: 'demon' },
+    ];
+
+    const players: Player[] = [
+      { id: '1', name: 'Alice', isDead: false, preferences: { townsfolk: ['bountyhunter'], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '2', name: 'Bob', isDead: false, preferences: { townsfolk: ['chef'], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '3', name: 'Charlie', isDead: false, preferences: { townsfolk: ['empath'], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '4', name: 'David', isDead: false, preferences: { townsfolk: [], outsider: [], minion: ['poisoner'], demon: [], traveler: [] } },
+      { id: '5', name: 'Eve', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: ['imp'], traveler: [] } },
+    ];
+
+    for (let trial = 0; trial < 10; trial++) {
+      const result = assignCharacters(players, roles);
+      expect(result).not.toBeNull();
+      if (!result) return;
+
+      const hasBountyHunter = result.some(r => r.role.id === 'bountyhunter');
+      expect(hasBountyHunter).toBe(true);
+
+      const evilTownsfolk = result.filter(r => r.role.team === 'townsfolk' && r.player.isEvil === true);
+      expect(evilTownsfolk.length).toBe(1);
+    }
+  });
 });

@@ -85,7 +85,20 @@ export function assignCharacters(
   const baseAssignments = assignBaseCharacters(basePlayers, allRoles, baseDist);
   if (!baseAssignments) return null;
 
-  return [...baseAssignments, ...travelerAssignments];
+  const finalAssignments = [...baseAssignments, ...travelerAssignments];
+  const hasBountyHunter = finalAssignments.some(a => a.role.id === 'bountyhunter');
+  if (hasBountyHunter) {
+    const townsfolkAssignments = finalAssignments.filter(a => 
+      a.role.team === 'townsfolk' &&
+      a.player.isEvil !== true
+    );
+    if (townsfolkAssignments.length > 0) {
+      const chosen = townsfolkAssignments[Math.floor(Math.random() * townsfolkAssignments.length)];
+      chosen.player = { ...chosen.player, isEvil: true };
+    }
+  }
+
+  return finalAssignments;
 }
 
 function assignBaseCharacters(

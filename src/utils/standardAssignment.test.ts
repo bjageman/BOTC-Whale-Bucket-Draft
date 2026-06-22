@@ -323,5 +323,37 @@ describe('performStandardAssignment', () => {
       expect(rightRole === 'poisoner' || rightRole === 'spy').toBe(true);
     }
   });
+
+  it('should turn one townsfolk player evil when Bounty Hunter is in play', () => {
+    const scriptWithBountyHunter: Role[] = [
+      ...mockScriptRoles,
+      { id: 'bountyhunter', name: 'Bounty Hunter', team: 'townsfolk' },
+    ];
+    
+    for (let trial = 0; trial < 10; trial++) {
+      const players: Player[] = [
+        { id: '1', name: 'Alice', isDead: false },
+        { id: '2', name: 'Bob', isDead: false },
+        { id: '3', name: 'Charlie', isDead: false },
+        { id: '4', name: 'David', isDead: false },
+        { id: '5', name: 'Eve', isDead: false },
+        { id: '6', name: 'Frank', isDead: false },
+      ];
+
+      const result = performStandardAssignment(players, scriptWithBountyHunter, []);
+      expect(result).not.toBeNull();
+      if (!result) return;
+
+      const hasBountyHunter = result.some(p => p.roleId === 'bountyhunter' && !p.isTheDrunk && !p.isTheMarionette && !p.isTheLunatic);
+      if (hasBountyHunter) {
+        const evilTownsfolkCount = result.filter(p => {
+          const role = scriptWithBountyHunter.find(r => r.id === p.roleId);
+          return role && role.team === 'townsfolk' && p.isEvil && !p.isTheMarionette;
+        }).length;
+
+        expect(evilTownsfolkCount).toBe(1);
+      }
+    }
+  });
 });
 
