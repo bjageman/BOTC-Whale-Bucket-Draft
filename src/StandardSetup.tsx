@@ -372,7 +372,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
             return null;
           })
           .filter((item: { id: string } | null): item is { id: string } => {
-            if (!item || item.id === '_meta') return false;
+            if (!item || item.id === '_meta' || item.id === 'meta') return false;
             
             const officialMatch = (officialRoles as { id: string; name: string; team: string }[]).find(r => r.id.toLowerCase() === item.id.toLowerCase());
             if (officialMatch && (officialMatch.team === 'fabled' || officialMatch.team === 'loric')) {
