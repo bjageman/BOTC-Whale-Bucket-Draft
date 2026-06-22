@@ -1,5 +1,5 @@
-import { useRef, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Pencil, X, Search } from 'lucide-react';
+import { useRef, useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight, X, Search, Eye, EyeOff } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Role } from '../types';
 import officialRoles from '../official_roles.json';
@@ -67,6 +67,7 @@ export default function PlayerDetailsModal({
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }, []);
 
+  const [isNameHidden, setIsNameHidden] = useState(false);
   const modalNameInputRef = useRef<HTMLInputElement | null>(null);
 
   const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
@@ -122,46 +123,64 @@ export default function PlayerDetailsModal({
           title="Next player"
         >
           <ChevronRight size={22} />
-        </button>
-
-        {/* Row 1: Name (editable) + X close */}
+        </button>        {/* Row 1: Name (editable) + X close */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 group min-w-0 flex-1">
             <button
+              id="detail-hide-name-button"
               type="button"
-              onClick={() => modalNameInputRef.current?.focus()}
+              onClick={() => setIsNameHidden(!isNameHidden)}
               className={cn(
-                'p-1 rounded focus:outline-none transition-colors shrink-0',
-                isLightModeActive ? 'hover:bg-black/5' : 'hover:bg-white/10'
+                'p-1.5 rounded focus:outline-none transition-colors shrink-0 border',
+                isLightModeActive 
+                  ? 'hover:bg-black/5 border-gray-300 text-gray-600' 
+                  : 'hover:bg-white/10 border-gray-700 text-gray-400'
               )}
-              title="Edit name"
+              title={isNameHidden ? "Show name" : "Hide name"}
             >
-              <Pencil
-                size={13}
-                className={cn(
-                  'opacity-30 group-hover:opacity-75 transition-opacity',
-                  isLightModeActive ? 'text-clocktower-night' : 'text-white'
-                )}
-              />
+              {isNameHidden ? (
+                <EyeOff
+                  size={14}
+                  className="opacity-75 hover:opacity-100 transition-opacity"
+                />
+              ) : (
+                <Eye
+                  size={14}
+                  className="opacity-75 hover:opacity-100 transition-opacity"
+                />
+              )}
             </button>
             <div className="min-w-0 flex-1">
-              <input
-                ref={modalNameInputRef}
-                type="text"
-                value={p.name}
-                onChange={(e) => onUpdateName(p.id, e.target.value)}
-                onFocus={(e) => e.target.select()}
-                onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-                autoCapitalize="words"
-                className={cn(
-                  'font-bold text-xl bg-transparent border-b border-transparent focus:border-clocktower-blood focus:outline-none w-full transition-all duration-200',
-                  isLightModeActive ? 'text-clocktower-night' : 'text-white'
-                )}
-                placeholder="Player Name"
-              />
-              <p className={cn('text-[11px] font-medium mt-0', isLightModeActive ? 'text-gray-500' : 'text-gray-400')}>
-                Player {currentIndex + 1} of {players.length}
-              </p>
+              {isNameHidden ? (
+                <div 
+                  className={cn(
+                    'font-bold text-xl py-1 border-b border-transparent w-full font-sans tracking-[0.25em] select-none',
+                    isLightModeActive ? 'text-clocktower-night' : 'text-white'
+                  )}
+                >
+                  ••••••••
+                </div>
+              ) : (
+                <input
+                  ref={modalNameInputRef}
+                  type="text"
+                  value={p.name}
+                  onChange={(e) => onUpdateName(p.id, e.target.value)}
+                  onFocus={(e) => e.target.select()}
+                  onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                  autoCapitalize="words"
+                  className={cn(
+                    'font-bold text-xl bg-transparent border-b border-transparent focus:border-clocktower-blood focus:outline-none w-full transition-all duration-200',
+                    isLightModeActive ? 'text-clocktower-night' : 'text-white'
+                  )}
+                  placeholder="Player Name"
+                />
+              )}
+              {!isNameHidden && (
+                <p className={cn('text-[11px] font-medium mt-0', isLightModeActive ? 'text-gray-500' : 'text-gray-400')}>
+                  Player {currentIndex + 1} of {players.length}
+                </p>
+              )}
             </div>
           </div>
           <button
@@ -171,7 +190,7 @@ export default function PlayerDetailsModal({
             className={cn(
               'p-1.5 rounded-lg border transition-colors shrink-0',
               isLightModeActive
-                ? 'border-gray-300 text-gray-600 hover:bg-gray-100'
+                ? 'border-gray-300 text-gray-655 hover:bg-gray-100'
                 : 'border-gray-700 text-gray-400 hover:bg-gray-800'
             )}
             title="Close"
@@ -253,7 +272,7 @@ export default function PlayerDetailsModal({
               {roleObj ? (
                 <div className="flex flex-col items-center space-y-3">
                   <div className="relative w-36 h-36 flex items-center justify-center select-none">
-                    {/* The SVG containing the token background, inner rings, and curved text */}
+                     {/* The SVG containing the token background, inner rings, and curved text */}
                     <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl absolute inset-0 z-10">
                       <defs>
                         {/* Top text path (arcing upwards, clockwise from 9 to 3 o'clock) */}
@@ -327,89 +346,93 @@ export default function PlayerDetailsModal({
           )}
         </div>
 
-        {/* Status toggles */}
-        <div className="flex items-center gap-2">
-          <button
-            id="detail-status-toggle-button"
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onToggleDead(p.id); }}
-            className={cn(
-              'px-4 py-2 rounded text-xs font-bold border transition-all shadow-sm flex-1',
-              !p.isDead
-                ? 'bg-clocktower-outsider border-clocktower-outsider/40 text-white hover:bg-emerald-600'
-                : 'bg-clocktower-blood border-clocktower-blood/40 text-white hover:bg-red-800'
-            )}
-          >
-            {p.isDead ? 'Dead' : 'Alive'}
-          </button>
-          <button
-            id="detail-alignment-toggle-button"
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onToggleEvil(p.id); }}
-            className={cn(
-              'px-4 py-2 rounded text-xs font-bold border transition-all shadow-sm flex-1',
-              !isEvil
-                ? 'bg-clocktower-townsfolk border-clocktower-townsfolk/40 text-white hover:bg-blue-600'
-                : 'bg-clocktower-minion border-clocktower-minion/40 text-white hover:bg-red-500'
-            )}
-          >
-            {isEvil ? '👿 Evil' : '😇 Good'}
-          </button>
-          <button
-            id="detail-drunk-poisoned-toggle-button"
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onToggleDrunkOrPoisoned(p.id); }}
-            className={cn(
-              'px-4 py-2 rounded text-xs font-bold border transition-all shadow-sm flex-1 flex items-center justify-center gap-1',
-              p.isDrunkOrPoisoned
-                ? 'bg-purple-600 border-purple-600/40 text-white hover:bg-purple-700'
-                : isLightModeActive
-                  ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-600'
-                  : 'bg-gray-950/40 border-gray-800 text-gray-550 hover:text-gray-300'
-            )}
-          >
-            🤢 Drunk/Poisoned
-          </button>
-        </div>
-
-        {(p.isDead || isLilMonstaGame) && (
-          <div className="flex items-center gap-2">
-            {p.isDead && (
+        {/* Status toggles - hidden when name is hidden */}
+        {!isNameHidden && (
+          <>
+            <div className="flex items-center gap-2">
               <button
-                id="detail-vote-token-toggle"
+                id="detail-status-toggle-button"
                 type="button"
-                onClick={(e) => { e.stopPropagation(); onToggleDeadVote?.(p.id); }}
+                onClick={(e) => { e.stopPropagation(); onToggleDead(p.id); }}
                 className={cn(
-                  'px-3 py-2 rounded text-[11px] font-bold border transition-all shadow-sm flex-1 flex items-center justify-center gap-1',
-                  p.hasDeadVote
-                    ? 'bg-amber-600 border-amber-600/40 text-white hover:bg-amber-700'
-                    : isLightModeActive
-                      ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-655'
-                      : 'bg-gray-955 border-gray-800 text-gray-550 hover:text-gray-300'
+                  'px-4 py-2 rounded text-xs font-bold border transition-all shadow-sm flex-1',
+                  !p.isDead
+                    ? 'bg-clocktower-outsider border-clocktower-outsider/40 text-white hover:bg-emerald-600'
+                    : 'bg-clocktower-blood border-clocktower-blood/40 text-white hover:bg-red-800'
                 )}
               >
-                🗳️ {p.hasDeadVote ? 'Vote: Active' : 'Vote: Spent'}
+                {p.isDead ? 'Dead' : 'Alive'}
               </button>
-            )}
-
-            {isLilMonstaGame && (
               <button
-                id="detail-lilmonsta-toggle-button"
+                id="detail-alignment-toggle-button"
                 type="button"
-                onClick={(e) => { e.stopPropagation(); onToggleLilMonsta?.(p.id); }}
+                onClick={(e) => { e.stopPropagation(); onToggleEvil(p.id); }}
                 className={cn(
-                  'px-3 py-2 rounded text-[11px] font-bold border transition-all shadow-sm flex-1 flex items-center justify-center gap-1',
-                  p.isTheLilMonsta
-                    ? 'bg-clocktower-demon border-clocktower-demon/40 text-white font-black hover:bg-red-800'
+                  'px-4 py-2 rounded text-xs font-bold border transition-all shadow-sm flex-1',
+                  !isEvil
+                    ? 'bg-clocktower-townsfolk border-clocktower-townsfolk/40 text-white hover:bg-blue-600'
+                    : 'bg-clocktower-minion border-clocktower-minion/40 text-white hover:bg-red-500'
+                )}
+              >
+                {isEvil ? '👿 Evil' : '😇 Good'}
+              </button>
+              <button
+                id="detail-drunk-poisoned-toggle-button"
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onToggleDrunkOrPoisoned(p.id); }}
+                className={cn(
+                  'px-4 py-2 rounded text-xs font-bold border transition-all shadow-sm flex-1 flex items-center justify-center gap-1',
+                  p.isDrunkOrPoisoned
+                    ? 'bg-purple-600 border-purple-600/40 text-white hover:bg-purple-700'
                     : isLightModeActive
                       ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-600'
-                      : 'bg-gray-955/40 border-gray-800 text-gray-550 hover:text-gray-300'
+                      : 'bg-gray-950/40 border-gray-800 text-gray-550 hover:text-gray-300'
                 )}
               >
-                😈 Lil' Monsta
+                🤢 Drunk/Poisoned
               </button>
+            </div>
+
+            {(p.isDead || isLilMonstaGame) && (
+              <div className="flex items-center gap-2">
+                {p.isDead && (
+                  <button
+                    id="detail-vote-token-toggle"
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onToggleDeadVote?.(p.id); }}
+                    className={cn(
+                      'px-3 py-2 rounded text-[11px] font-bold border transition-all shadow-sm flex-1 flex items-center justify-center gap-1',
+                      p.hasDeadVote
+                        ? 'bg-amber-600 border-amber-600/40 text-white hover:bg-amber-700'
+                        : isLightModeActive
+                          ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-655'
+                          : 'bg-gray-955 border-gray-800 text-gray-550 hover:text-gray-300'
+                    )}
+                  >
+                    🗳️ {p.hasDeadVote ? 'Vote: Active' : 'Vote: Spent'}
+                  </button>
+                )}
+
+                {isLilMonstaGame && (
+                  <button
+                    id="detail-lilmonsta-toggle-button"
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onToggleLilMonsta?.(p.id); }}
+                    className={cn(
+                      'px-3 py-2 rounded text-[11px] font-bold border transition-all shadow-sm flex-1 flex items-center justify-center gap-1',
+                      p.isTheLilMonsta
+                        ? 'bg-clocktower-demon border-clocktower-demon/40 text-white font-black hover:bg-red-800'
+                        : isLightModeActive
+                          ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-600'
+                          : 'bg-gray-955/40 border-gray-800 text-gray-550 hover:text-gray-300'
+                    )}
+                  >
+                    😈 Lil' Monsta
+                  </button>
+                )}
+              </div>
             )}
-          </div>
+          </>
         )}
       </div>
     </div>
