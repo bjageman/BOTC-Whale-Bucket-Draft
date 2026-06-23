@@ -253,7 +253,7 @@ export default function GrimoireBoard({
                       const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
                       const isEvil = p.isEvil !== undefined ? p.isEvil : defaultEvil;
 
-                      let transformClass = "absolute inset-0 transition-all duration-300 ease-out";
+                      let transformClass = "absolute inset-0 transition-all duration-300 ease-out hover:z-20";
                       if (displayRoles.length > 1) {
                         if (displayRoles.length === 2) {
                           transformClass += idx === 0 
