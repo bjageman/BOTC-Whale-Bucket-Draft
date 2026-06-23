@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import type { Player, Role } from '../types';
 import { cn } from '../utils/cn';
@@ -27,6 +27,38 @@ export default function GrimoireBoard({
   const [hoveredOrder, setHoveredOrder] = useState<string[]>([]);
   const [playerTopIndex, setPlayerTopIndex] = useState<Record<string, number>>({});
   const [fannedPlayerId, setFannedPlayerId] = useState<string | null>(null);
+  const [boardAspect, setBoardAspect] = useState<number>(1.3);
+  const boardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const boardElement = boardRef.current;
+    if (!boardElement) return;
+
+    const updateAspect = () => {
+      const rect = boardElement.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        setBoardAspect(rect.height / rect.width);
+      }
+    };
+
+    updateAspect();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateAspect);
+      return () => {
+        window.removeEventListener('resize', updateAspect);
+      };
+    }
+
+    const observer = new ResizeObserver(() => {
+      updateAspect();
+    });
+    observer.observe(boardElement);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   const touchStartedFannedRef = useRef<boolean>(false);
   const touchStartTimeRef = useRef<number>(0);
 
@@ -88,19 +120,26 @@ export default function GrimoireBoard({
     }
   }, [players.length]);
 
+  const dynamicRadiusX = useMemo(() => {
+    if (boardAspect < 1.15) {
+      return grimoireConfig.radiusX * 0.85;
+    }
+    return grimoireConfig.radiusX;
+  }, [grimoireConfig.radiusX, boardAspect]);
+
+  const dynamicRadiusY = useMemo(() => {
+    if (boardAspect < 1.15) {
+      return grimoireConfig.radiusY * 0.80;
+    }
+    return grimoireConfig.radiusY;
+  }, [grimoireConfig.radiusY, boardAspect]);
+
   const evenAngles = useMemo(() => {
     const total = players.length;
     if (total <= 1) return [0];
 
-    // Account for the board aspect ratio (height / width) so that the integration
-    // calculates uniform spacing in visual screen coordinates rather than raw percentage coordinates.
-    let aspect = 1.3;
-    if (total <= 6) aspect = 112 / 88;
-    else if (total <= 10) aspect = 118 / 90;
-    else aspect = 124 / 92;
-
-    const rx = grimoireConfig.radiusX;
-    const ry = grimoireConfig.radiusY * aspect;
+    const rx = dynamicRadiusX;
+    const ry = dynamicRadiusY * boardAspect;
 
     const n = 3.6;
     const p = 2 / n;
@@ -154,7 +193,7 @@ export default function GrimoireBoard({
     }
 
     return angles;
-  }, [players.length, grimoireConfig.radiusX, grimoireConfig.radiusY]);
+  }, [players.length, dynamicRadiusX, dynamicRadiusY, boardAspect]);
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -193,6 +232,7 @@ export default function GrimoireBoard({
 
       <div
         id="grimoire-circle-board"
+        ref={boardRef}
         className={cn(
           "relative border shadow-inner flex items-center justify-center overflow-visible my-4 mx-auto transition-colors duration-300",
           timeOfDay === 'day'
@@ -266,8 +306,8 @@ export default function GrimoireBoard({
           const n = 3.6;
           const pExponent = 2 / n;
 
-          const leftPos = 50 + grimoireConfig.radiusX * Math.sign(cosVal) * Math.pow(Math.abs(cosVal), pExponent);
-          const topPos = 50 + grimoireConfig.radiusY * Math.sign(sinVal) * Math.pow(Math.abs(sinVal), pExponent);
+          const leftPos = 50 + dynamicRadiusX * Math.sign(cosVal) * Math.pow(Math.abs(cosVal), pExponent);
+          const topPos = 50 + dynamicRadiusY * Math.sign(sinVal) * Math.pow(Math.abs(sinVal), pExponent);
 
           // Calculate dynamic font size and split name by space to prevent overflow
           const baseFontSizeVal = parseFloat(grimoireConfig.nameStyle.fontSize as string);
