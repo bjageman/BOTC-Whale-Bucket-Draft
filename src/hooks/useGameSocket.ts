@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Peer } from 'peerjs';
-import type { DataConnection } from 'peerjs';
+
+// Use a free public PieSocket demo cluster API key for development and testing.
+// PieSocket provides a generous free tier of 500k messages/day and 100 concurrent connections.
+const PIESOCKET_API_KEY = 'o7ee7Gx2z1ecb0Ogb9g7367s76sC5G6O';
+const PIESOCKET_CLUSTER_ID = 'demo';
 
 export function useGameSocket(gameCode: string, onMessage: (data: any) => void) {
+  const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const onMessageRef = useRef(onMessage);
-
-  const peerRef = useRef<Peer | null>(null);
-  const connectionsRef = useRef<{ [peerId: string]: DataConnection }>({});
-  const clientConnRef = useRef<DataConnection | null>(null);
 
   // Keep callback ref updated to prevent re-subscribing on every callback change
   useEffect(() => {
@@ -17,181 +17,66 @@ export function useGameSocket(gameCode: string, onMessage: (data: any) => void) 
 
   useEffect(() => {
     if (!gameCode) return;
-
-    // Use lowercased room code as a prefix/channel matching token.
-    // Storyteller is the host, matching "botc-host-<gamecode>"
-    // Since peer IDs must be unique globally, we make the storyteller the "host".
-    // If we're the host, we listen for connections.
-    // If we're the player, we connect to the host.
-    const path = window.location.pathname + window.location.hash;
-    const isHost = path.includes('/standard') || path.includes('/whale-bucket');
-    const topic = `botc-companion-${gameCode.toLowerCase()}`;
-    const hostPeerId = `${topic}-host`;
-
+    const channelId = `botc-companion-${gameCode.toLowerCase()}`;
     let isMounted = true;
-    let peer: Peer;
+    let reconnectTimeout: any;
 
-    if (isHost) {
-      console.log(`[P2P Host] Initializing peer with ID: ${hostPeerId}`);
-      peer = new Peer(hostPeerId, {
-        debug: 1,
-        config: {
-          iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            {
-              urls: "turns:openrelay.metered.ca:443",
-              username: "openrelayproject",
-              credential: "openrelayproject"
-            },
-            {
-              urls: "turns:openrelay.metered.ca:443?transport=tcp",
-              username: "openrelayproject",
-              credential: "openrelayproject"
-            }
-          ]
-        }
-      });
-      peerRef.current = peer;
+    function connect() {
+      // Connect to PieSocket public demo cluster WebSocket
+      const wsUrl = `wss://${PIESOCKET_CLUSTER_ID}.piesocket.com/v3/${channelId}?api_key=${PIESOCKET_API_KEY}`;
+      console.log(`[PieSocket] Connecting to: ${wsUrl}`);
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
 
-      peer.on('open', () => {
+      ws.onopen = () => {
         if (isMounted) {
-          console.log(`[P2P Host] Registered signaling ID: ${hostPeerId}`);
+          console.log(`[PieSocket] Connection opened successfully for channel: ${channelId}`);
           setIsConnected(true);
         }
-      });
-
-      peer.on('connection', (conn) => {
-        if (!isMounted) return;
-        console.log(`[P2P Host] Accepted connection from player peer: ${conn.peer}`);
-        connectionsRef.current[conn.peer] = conn;
-
-        conn.on('open', () => {
-          console.log(`[P2P Host] Connection handshaked with: ${conn.peer}`);
-        });
-
-        conn.on('data', (data: any) => {
-          console.log(`[P2P Host] Received data from ${conn.peer}:`, data);
-          onMessageRef.current(data);
-        });
-
-        conn.on('close', () => {
-          console.log(`[P2P Host] Connection closed by: ${conn.peer}`);
-          delete connectionsRef.current[conn.peer];
-        });
-
-        conn.on('error', (err) => {
-          console.error(`[P2P Host] Connection error with ${conn.peer}:`, err);
-        });
-      });
-    } else {
-      // Player client connects to host
-      // Generate a random client peer ID
-      const clientPeerId = `${topic}-client-${Math.random().toString(36).substring(2, 9)}`;
-      console.log(`[P2P Client] Initializing peer with ID: ${clientPeerId}`);
-      peer = new Peer(clientPeerId, {
-        debug: 1,
-        config: {
-          iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            {
-              urls: "turns:openrelay.metered.ca:443",
-              username: "openrelayproject",
-              credential: "openrelayproject"
-            },
-            {
-              urls: "turns:openrelay.metered.ca:443?transport=tcp",
-              username: "openrelayproject",
-              credential: "openrelayproject"
-            }
-          ]
-        }
-      });
-      peerRef.current = peer;
-
-      let reconnectTimeout: any;
-
-      const connectToHost = () => {
-        if (!isMounted) return;
-        console.log(`[P2P Client] Connecting to host ID: ${hostPeerId}`);
-        const conn = peer.connect(hostPeerId, {
-          reliable: true,
-        });
-        clientConnRef.current = conn;
-
-        conn.on('open', () => {
-          if (isMounted) {
-            console.log(`[P2P Client] Connected to host successfully.`);
-            setIsConnected(true);
-          }
-        });
-
-        conn.on('data', (data: any) => {
-          console.log(`[P2P Client] Received data from host:`, data);
-          onMessageRef.current(data);
-        });
-
-        conn.on('close', () => {
-          if (isMounted) {
-            console.log(`[P2P Client] Host disconnected. Reconnecting in 3s...`);
-            setIsConnected(false);
-            clearTimeout(reconnectTimeout);
-            reconnectTimeout = setTimeout(connectToHost, 3000);
-          }
-        });
-
-        conn.on('error', (err) => {
-          console.error(`[P2P Client] Host connection error:`, err);
-          conn.close();
-        });
       };
 
-      peer.on('open', () => {
-        connectToHost();
-      });
-
-      peer.on('error', (err: any) => {
-        console.error(`[P2P Client] Peer error:`, err);
-        if (err.type === 'peer-unavailable') {
-          console.log(`[P2P Client] Host peer is currently unavailable. Retrying in 3s...`);
-          setIsConnected(false);
-          clearTimeout(reconnectTimeout);
-          reconnectTimeout = setTimeout(connectToHost, 3000);
+      ws.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          console.log(`[PieSocket] Message received on channel ${channelId}:`, payload);
+          onMessageRef.current(payload);
+        } catch (e) {
+          console.warn(`[PieSocket] Non-JSON or unparseable event on channel ${channelId}:`, event.data, e);
         }
-      });
+      };
 
-      return () => {
-        clearTimeout(reconnectTimeout);
+      ws.onclose = () => {
+        if (isMounted) {
+          console.warn(`[PieSocket] Connection closed for channel ${channelId}. Attempting reconnection in 3s...`);
+          setIsConnected(false);
+          reconnectTimeout = setTimeout(connect, 3000);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error(`[PieSocket] Error on channel ${channelId}:`, error);
+        ws.close();
       };
     }
 
+    connect();
+
     return () => {
       isMounted = false;
-      if (peerRef.current) {
-        console.log(`[P2P] Cleaning up PeerJS instance`);
-        peerRef.current.destroy();
+      clearTimeout(reconnectTimeout);
+      if (wsRef.current) {
+        console.log(`[PieSocket] Cleaning up connection for channel: ${channelId}`);
+        wsRef.current.close();
       }
     };
   }, [gameCode]);
 
   const sendMessage = useCallback(async (payload: any) => {
-    const path = window.location.pathname + window.location.hash;
-    const isHost = path.includes('/standard') || path.includes('/whale-bucket');
-    if (isHost) {
-      console.log(`[P2P Host] Broadcasting message to all connected clients:`, payload);
-      Object.values(connectionsRef.current).forEach((conn) => {
-        if (conn.open) {
-          conn.send(payload);
-        }
-      });
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      console.log(`[PieSocket] Publishing message to channel:`, payload);
+      wsRef.current.send(JSON.stringify(payload));
     } else {
-      if (clientConnRef.current && clientConnRef.current.open) {
-        console.log(`[P2P Client] Sending message to host:`, payload);
-        clientConnRef.current.send(payload);
-      } else {
-        console.warn(`[P2P Client] Cannot send message: Connection to host is not open.`);
-      }
+      console.warn(`[PieSocket] WebSocket is not open. Cannot send message:`, payload);
     }
   }, []);
 
