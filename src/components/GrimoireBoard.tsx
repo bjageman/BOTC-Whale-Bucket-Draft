@@ -72,53 +72,91 @@ export default function GrimoireBoard({
 
   const grimoireConfig = useMemo(() => {
     const count = players.length;
+    const isDesktop = boardAspect < 1.15;
+
     if (count <= 6) {
       return {
         boardClass: "w-[88vw] h-[112vw] max-w-[560px] max-h-[700px] md:max-h-[500px] landscape:max-h-[500px] rounded-[28px]",
         radiusX: 38,
         radiusY: 36,
-        btnStyle: { width: '25cqw', height: '25cqw' } as CSSProperties,
+        btnStyle: isDesktop
+          ? { width: '140px', height: '140px' } as CSSProperties
+          : { width: '30cqw', height: '30cqw' } as CSSProperties,
         dotStyle: { top: '6%', width: '1.8cqw', height: '1.8cqw' } as CSSProperties,
-        nameStyle: { fontSize: '4.2cqw', maxWidth: '23cqw', marginTop: '0.5cqw' } as CSSProperties,
-        roleStyle: { fontSize: '3.3cqw', maxWidth: '23cqw', marginTop: '0cqw' } as CSSProperties,
+        nameStyle: isDesktop
+          ? { fontSize: '23.5px', maxWidth: '130px', marginTop: '2.8px' } as CSSProperties
+          : { fontSize: '4.8cqw', maxWidth: '28cqw', marginTop: '0.5cqw' } as CSSProperties,
+        roleStyle: isDesktop
+          ? { fontSize: '18.5px', maxWidth: '130px', marginTop: '0px' } as CSSProperties
+          : { fontSize: '3.8cqw', maxWidth: '28cqw', marginTop: '0cqw' } as CSSProperties,
         charLimit: 16,
         tooltipClass: "top-18",
-        centerBtnStyle: { width: '25cqw', height: '25cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '4.2cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '3.4cqw', marginTop: '0.2cqw' } as CSSProperties,
+        centerBtnStyle: isDesktop
+          ? { width: '140px', height: '140px' } as CSSProperties
+          : { width: '30cqw', height: '30cqw' } as CSSProperties,
+        centerText1Style: isDesktop
+          ? { fontSize: '23.5px' } as CSSProperties
+          : { fontSize: '4.8cqw' } as CSSProperties,
+        centerText2Style: isDesktop
+          ? { fontSize: '18.5px', marginTop: '1px' } as CSSProperties
+          : { fontSize: '3.8cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     } else if (count <= 10) {
       return {
         boardClass: "w-[90vw] h-[118vw] max-w-[620px] max-h-[760px] md:max-h-[500px] landscape:max-h-[500px] rounded-[34px]",
         radiusX: 40,
         radiusY: 38,
-        btnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
+        btnStyle: isDesktop
+          ? { width: '130px', height: '130px' } as CSSProperties
+          : { width: '26cqw', height: '26cqw' } as CSSProperties,
         dotStyle: { top: '6%', width: '1.5cqw', height: '1.5cqw' } as CSSProperties,
-        nameStyle: { fontSize: '3.6cqw', maxWidth: '19cqw', marginTop: '0.4cqw' } as CSSProperties,
-        roleStyle: { fontSize: '2.8cqw', maxWidth: '19cqw', marginTop: '0cqw' } as CSSProperties,
+        nameStyle: isDesktop
+          ? { fontSize: '22.3px', maxWidth: '118px', marginTop: '2.5px' } as CSSProperties
+          : { fontSize: '4.3cqw', maxWidth: '24cqw', marginTop: '0.4cqw' } as CSSProperties,
+        roleStyle: isDesktop
+          ? { fontSize: '17.3px', maxWidth: '118px', marginTop: '0px' } as CSSProperties
+          : { fontSize: '3.4cqw', maxWidth: '24cqw', marginTop: '0cqw' } as CSSProperties,
         charLimit: 14,
         tooltipClass: "top-16",
-        centerBtnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '3.5cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '2.8cqw', marginTop: '0.2cqw' } as CSSProperties,
+        centerBtnStyle: isDesktop
+          ? { width: '130px', height: '130px' } as CSSProperties
+          : { width: '26cqw', height: '26cqw' } as CSSProperties,
+        centerText1Style: isDesktop
+          ? { fontSize: '22.3px' } as CSSProperties
+          : { fontSize: '4.0cqw' } as CSSProperties,
+        centerText2Style: isDesktop
+          ? { fontSize: '17.8px', marginTop: '1px' } as CSSProperties
+          : { fontSize: '3.2cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     } else {
       return {
         boardClass: "w-[92vw] h-[124vw] max-w-[680px] max-h-[820px] md:max-h-[500px] landscape:max-h-[500px] rounded-[40px]",
         radiusX: 42,
         radiusY: 40,
-        btnStyle: { width: '16.5cqw', height: '16.5cqw' } as CSSProperties,
+        btnStyle: isDesktop
+          ? { width: '112px', height: '112px' } as CSSProperties
+          : { width: '21cqw', height: '21cqw' } as CSSProperties,
         dotStyle: { top: '6%', width: '1.2cqw', height: '1.2cqw' } as CSSProperties,
-        nameStyle: { fontSize: '3.0cqw', maxWidth: '15cqw', marginTop: '0.3cqw' } as CSSProperties,
-        roleStyle: { fontSize: '2.3cqw', maxWidth: '15cqw', marginTop: '0cqw' } as CSSProperties,
+        nameStyle: isDesktop
+          ? { fontSize: '20.4px', maxWidth: '102px', marginTop: '2.0px' } as CSSProperties
+          : { fontSize: '3.7cqw', maxWidth: '19cqw', marginTop: '0.3cqw' } as CSSProperties,
+        roleStyle: isDesktop
+          ? { fontSize: '15.6px', maxWidth: '102px', marginTop: '0px' } as CSSProperties
+          : { fontSize: '2.8cqw', maxWidth: '19cqw', marginTop: '0cqw' } as CSSProperties,
         charLimit: 12,
         tooltipClass: "top-14",
-        centerBtnStyle: { width: '17cqw', height: '17cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '2.8cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '2.2cqw', marginTop: '0.2cqw' } as CSSProperties,
+        centerBtnStyle: isDesktop
+          ? { width: '115px', height: '115px' } as CSSProperties
+          : { width: '21cqw', height: '21cqw' } as CSSProperties,
+        centerText1Style: isDesktop
+          ? { fontSize: '21.0px' } as CSSProperties
+          : { fontSize: '3.1cqw' } as CSSProperties,
+        centerText2Style: isDesktop
+          ? { fontSize: '17.0px', marginTop: '1px' } as CSSProperties
+          : { fontSize: '2.5cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     }
-  }, [players.length]);
+  }, [players.length, boardAspect]);
 
   const dynamicRadiusX = useMemo(() => {
     return grimoireConfig.radiusX;
