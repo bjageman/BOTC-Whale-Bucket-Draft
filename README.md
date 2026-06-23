@@ -40,6 +40,25 @@ The app ships with the full catalogue of official BOTC roles across all standard
 - [Node.js](https://nodejs.org/) 20+
 - npm
 
+### Real-Time Multiplayer Setup
+
+This app supports a real-time multiplayer portal allowing players to join rooms from their phones, submit role preferences (for Whale Bucket), and view their assigned tokens.
+
+Real-time message routing is powered by **PieSocket**. To enable this:
+
+1. Sign up for a free developer account at **[PieSocket.com](https://www.piesocket.com)**.
+2. In your dashboard, copy your **API Key** and **Cluster ID**.
+3. Copy `.env.example` in the root of the project to a new file named `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+4. Paste your PieSocket credentials into `.env`:
+   ```env
+   VITE_PIESOCKET_API_KEY=your_piesocket_api_key_here
+   VITE_PIESOCKET_CLUSTER_ID=your_piesocket_cluster_id_here
+   ```
+5. Ensure your production deployment environment also defines these two variables.
+
 ### Development
 
 ```bash
