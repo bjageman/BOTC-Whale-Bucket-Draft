@@ -78,6 +78,7 @@ export default function PlayerDetailsModal({
 
   const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
   const isEvil = p.isEvil !== undefined ? p.isEvil : defaultEvil;
+  const officialRole = roleObj ? officialRoles.find(r => r.id === roleObj.id) : undefined;
 
   const teamFill = (team: Role['team']) => ({
     townsfolk: 'fill-clocktower-townsfolk',
@@ -464,25 +465,15 @@ export default function PlayerDetailsModal({
              </div>
            )}
 
-           {/* Ability text display */}
-           {displayRoles.length > 0 && !isSearchingRole && (
-             <div className="text-center px-4 mt-3 space-y-2 max-h-32 overflow-y-auto pr-1">
-               {displayRoles.map((roleId) => {
-                 const rObj = (rolesData as Role[]).find(r => r.id === roleId);
-                 const offRole = rObj ? officialRoles.find(r => r.id === rObj.id) : undefined;
-                 if (!offRole?.ability) return null;
-                 return (
-                   <p key={roleId} className={cn(
-                     'text-xs leading-relaxed italic font-medium pt-1.5 first:pt-0',
-                     displayRoles.length > 1 && 'border-t border-dashed border-gray-300/10'
-                   )}>
-                     {displayRoles.length > 1 && (
-                       <strong className="not-italic text-[10px] tracking-wider uppercase mr-1">{rObj?.name}:</strong>
-                     )}
-                     "{offRole.ability}"
-                   </p>
-                 );
-               })}
+           {/* Ability text display (only for standard single role mode) */}
+           {!allowMultipleRoles && roleObj && officialRole?.ability && !isSearchingRole && (
+             <div className="text-center px-4 mt-2">
+               <p className={cn(
+                 'text-xs leading-relaxed italic font-medium',
+                 isLightModeActive ? 'text-gray-650' : 'text-gray-300'
+               )}>
+                 "{officialRole.ability}"
+               </p>
              </div>
            )}
          </div>
