@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Sun, Moon, ArrowLeft, RefreshCcw } from 'lucide-react';
 import rolesData from './roles.json';
 import officialRoles from './official_roles.json';
@@ -129,11 +129,13 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     return null;
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const broadcastTimeoutRef = useRef<any>(null);
-  const sendMessageRef = useRef<any>(null);
+  const broadcastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sendMessageRef = useRef<((payload: unknown) => Promise<void>) | null>(null);
 
-  const broadcastSetupUpdate = (listToBroadcast: Player[]) => {
-    clearTimeout(broadcastTimeoutRef.current);
+  const broadcastSetupUpdate = useCallback((listToBroadcast: Player[]) => {
+    if (broadcastTimeoutRef.current) {
+      clearTimeout(broadcastTimeoutRef.current);
+    }
     broadcastTimeoutRef.current = setTimeout(() => {
       if (sendMessageRef.current) {
         sendMessageRef.current({
@@ -143,7 +145,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         });
       }
     }, 1000);
-  };
+  }, []);
 
   const closeDetailsModal = () => {
     setSelectedPlayerId(null);
@@ -198,8 +200,14 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     movePlayer,
   } = usePlayerDragAndDrop(players, setPlayers);
 
-  const handleIncomingMessage = (payload: any) => {
-    if (payload.type === 'player_join') {
+  const handleIncomingMessage = (data: unknown) => {
+    const payload = data as {
+      type: string;
+      id: string;
+      name: string;
+      checkOnly?: boolean;
+    };
+    if (payload.type === 'player_join' && payload.name && payload.id) {
       const isExistingPlayer = players.some(
         p => p.name.trim().toLowerCase() === payload.name.trim().toLowerCase() || p.id === payload.id
       );
@@ -207,12 +215,14 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         return;
       }
 
-      sendMessage({
-        type: 'code_valid',
-        gameType: 'standard',
-        playerId: payload.id,
-        playerName: payload.name
-      });
+      if (sendMessageRef.current) {
+        sendMessageRef.current({
+          type: 'code_valid',
+          gameType: 'standard',
+          playerId: payload.id,
+          playerName: payload.name
+        });
+      }
 
       if (!payload.checkOnly) {
         setPlayers(prev => {
@@ -221,7 +231,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           return [
             ...prev,
             {
-              id: payload.id || 'p-' + Math.random().toString(36).substring(2, 9),
+              id: payload.id,
               name: payload.name,
               isDead: false,
               roleId: '',
@@ -235,7 +245,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           payload.checkOnly ? players : [
             ...players,
             {
-              id: payload.id || 'p-' + Math.random().toString(36).substring(2, 9),
+              id: payload.id,
               name: payload.name,
               isDead: false,
               roleId: '',
@@ -245,8 +255,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         broadcastSetupUpdate(updatedPlayers);
       }
 
-      if (phase === 'game') {
-        sendMessage({
+      if (phase === 'game' && sendMessageRef.current) {
+        sendMessageRef.current({
           type: 'game_update',
           players,
           timeOfDay,
@@ -257,7 +267,10 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   };
 
   const { sendMessage } = useGameSocket(gameCode, handleIncomingMessage);
-  sendMessageRef.current = sendMessage;
+
+  useEffect(() => {
+    sendMessageRef.current = sendMessage;
+  }, [sendMessage]);
 
   // Sync game state to players when in game phase
   useEffect(() => {
@@ -281,7 +294,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       }, 500);
       return () => clearTimeout(initialTimer);
     }
-  }, [phase]);
+  }, [phase, players, broadcastSetupUpdate]);
 
   // Save to localStorage and update document theme
   useEffect(() => {

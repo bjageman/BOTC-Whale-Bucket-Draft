@@ -3,12 +3,23 @@ import { useGameSocket } from './hooks/useGameSocket';
 import rolesData from './official_roles.json';
 import { cn } from './utils/cn';
 import { ShieldAlert, Sparkles, Moon, Sun, ArrowRight, Eye, EyeOff, Settings, CheckCircle2, RotateCcw } from 'lucide-react';
-import type { Role } from './types';
+import type { Role, Player } from './types';
 import GrimoireBoard from './components/GrimoireBoard';
 
 export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: () => void }) {
-  const [code, setCode] = useState('');
-  const [name, setName] = useState('');
+  const [code, setCode] = useState(() => {
+    const savedCode = sessionStorage.getItem('joined-code');
+    if (savedCode) return savedCode.toUpperCase();
+    const params = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.search);
+    const urlCode = params.get('code');
+    if (urlCode && urlCode.length === 4) {
+      return urlCode.toUpperCase();
+    }
+    return '';
+  });
+  const [name, setName] = useState(() => {
+    return sessionStorage.getItem('joined-name') || '';
+  });
   const [playerId] = useState(() => {
     const saved = sessionStorage.getItem('botc-player-id');
     if (saved) return saved;
@@ -30,7 +41,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
   const [revealed, setRevealed] = useState(false);
 
   // Dynamic game state synced from Storyteller for the player tracker
-  const [players, setPlayers] = useState<any[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
   const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>('night');
   const [dayNumber, setDayNumber] = useState(1);
 
@@ -42,35 +53,38 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
     demon: [] as string[],
   });
 
-  const connectionTimeoutRef = useRef<any>(null);
-  const joinRetryIntervalRef = useRef<any>(null);
+  const connectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const joinRetryIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    const connTimeout = connectionTimeoutRef.current;
+    const retryInterval = joinRetryIntervalRef.current;
     return () => {
-      clearTimeout(connectionTimeoutRef.current);
-      clearInterval(joinRetryIntervalRef.current);
+      if (connTimeout) clearTimeout(connTimeout);
+      if (retryInterval) clearInterval(retryInterval);
     };
   }, []);
 
-  // Restore session if possible
-  useEffect(() => {
-    const savedCode = sessionStorage.getItem('joined-code');
-    const savedName = sessionStorage.getItem('joined-name');
-    if (savedCode && savedName) {
-      setCode(savedCode.toUpperCase());
-      setName(savedName);
-    }
-  }, []);
+  interface GamePayload {
+    type: string;
+    gameType: 'standard' | 'whale-bucket';
+    playerId?: string;
+    playerName?: string;
+    players?: Player[];
+    timeOfDay?: 'night' | 'day';
+    dayNumber?: number;
+  }
 
-  const handleMessage = (payload: any) => {
+  const handleMessage = (data: unknown) => {
+    const payload = data as GamePayload;
     if (payload.type === 'setup_update') {
       const isMyNameInList = payload.players?.some(
-        (pl: any) => pl.name.trim().toLowerCase() === name.trim().toLowerCase() || pl.id === playerId
+        (pl) => pl.name.trim().toLowerCase() === name.trim().toLowerCase() || pl.id === playerId
       );
 
       if (isMyNameInList) {
-        clearInterval(joinRetryIntervalRef.current);
-        clearTimeout(connectionTimeoutRef.current);
+        if (joinRetryIntervalRef.current) clearInterval(joinRetryIntervalRef.current);
+        if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
         setGameType(payload.gameType);
 
         if (state === 'checking') {
@@ -89,8 +103,8 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
       }
     } else if (payload.type === 'code_valid') {
       if (payload.playerId === playerId || payload.playerName?.trim().toLowerCase() === name.trim().toLowerCase()) {
-        clearInterval(joinRetryIntervalRef.current);
-        clearTimeout(connectionTimeoutRef.current);
+        if (joinRetryIntervalRef.current) clearInterval(joinRetryIntervalRef.current);
+        if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
         setGameType(payload.gameType);
 
         if (state === 'checking') {
@@ -110,7 +124,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
         setDayNumber(payload.dayNumber || 1);
 
         // Check if I am in the player list and find my assigned role
-        const me = payload.players.find((pl: any) => pl.name.trim().toLowerCase() === name.trim().toLowerCase() || pl.id === playerId);
+        const me = payload.players.find((pl) => pl.name.trim().toLowerCase() === name.trim().toLowerCase() || pl.id === playerId);
         if (me && me.roleId) {
           const rObj = (rolesData as Role[]).find(r => r.id === me.roleId);
           if (rObj) {
@@ -148,8 +162,12 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
     setErrorMsg(null);
     setState('checking');
 
-    clearTimeout(connectionTimeoutRef.current);
-    clearInterval(joinRetryIntervalRef.current);
+    if (connectionTimeoutRef.current) {
+      clearTimeout(connectionTimeoutRef.current);
+    }
+    if (joinRetryIntervalRef.current) {
+      clearInterval(joinRetryIntervalRef.current);
+    }
 
     let attempts = 0;
     const sendJoinMessage = () => {
@@ -161,7 +179,9 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
       });
       attempts++;
       if (attempts >= 5) {
-        clearInterval(joinRetryIntervalRef.current);
+        if (joinRetryIntervalRef.current) {
+          clearInterval(joinRetryIntervalRef.current);
+        }
         setState('join');
         setErrorMsg('Could not reach Storyteller. Double check the code and ensure their setup screen is open.');
       }
@@ -217,15 +237,6 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
       return { ...prev, [team]: updated };
     });
   };
-
-  // Auto-fill code from URL if present
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.search);
-    const urlCode = params.get('code');
-    if (urlCode && urlCode.length === 4) {
-      setCode(urlCode.toUpperCase());
-    }
-  }, []);
 
   const isLight = theme === 'light';
 
@@ -489,7 +500,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
 
                 {/* Role ability summary */}
                 <p className="text-xs text-gray-400 mt-3 max-w-[90%] leading-relaxed">
-                  {(rolesData as any).find((r: any) => r.id === assignedRole.id)?.ability}
+                  {(rolesData as Array<{ id: string; ability: string }>).find((r) => r.id === assignedRole.id)?.ability}
                 </p>
               </div>
             </div>

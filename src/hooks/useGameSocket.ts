@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 const PIESOCKET_API_KEY = import.meta.env.VITE_PIESOCKET_API_KEY || '';
 const PIESOCKET_CLUSTER_ID = import.meta.env.VITE_PIESOCKET_CLUSTER_ID || 'demo';
 
-export function useGameSocket(gameCode: string, onMessage: (data: any) => void) {
+export function useGameSocket(gameCode: string, onMessage: (data: unknown) => void) {
   const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const onMessageRef = useRef(onMessage);
@@ -19,7 +19,7 @@ export function useGameSocket(gameCode: string, onMessage: (data: any) => void) 
     if (!gameCode) return;
     const channelId = `botc-companion-${gameCode.toLowerCase()}`;
     let isMounted = true;
-    let reconnectTimeout: any;
+    let reconnectTimeout: ReturnType<typeof setTimeout> | undefined;
 
     function connect() {
       // Connect to PieSocket public demo cluster WebSocket
@@ -37,7 +37,7 @@ export function useGameSocket(gameCode: string, onMessage: (data: any) => void) 
 
       ws.onmessage = (event) => {
         try {
-          const payload = JSON.parse(event.data);
+          const payload = JSON.parse(event.data) as unknown;
           console.log(`[PieSocket] Message received on channel ${channelId}:`, payload);
           onMessageRef.current(payload);
         } catch (e) {
@@ -71,7 +71,7 @@ export function useGameSocket(gameCode: string, onMessage: (data: any) => void) 
     };
   }, [gameCode]);
 
-  const sendMessage = useCallback(async (payload: any) => {
+  const sendMessage = useCallback(async (payload: unknown) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       console.log(`[PieSocket] Publishing message to channel:`, payload);
       wsRef.current.send(JSON.stringify(payload));
