@@ -40,12 +40,7 @@ export function useGameSocket(gameCode: string, onMessage: (data: any) => void) 
             { urls: 'stun:stun.l.google.com:19302' },
             { urls: 'stun:stun1.l.google.com:19302' },
             {
-              urls: "turn:openrelay.metered.ca:80",
-              username: "openrelayproject",
-              credential: "openrelayproject"
-            },
-            {
-              urls: "turn:openrelay.metered.ca:443",
+              urls: "turns:openrelay.metered.ca:443",
               username: "openrelayproject",
               credential: "openrelayproject"
             },
@@ -101,12 +96,7 @@ export function useGameSocket(gameCode: string, onMessage: (data: any) => void) 
             { urls: 'stun:stun.l.google.com:19302' },
             { urls: 'stun:stun1.l.google.com:19302' },
             {
-              urls: "turn:openrelay.metered.ca:80",
-              username: "openrelayproject",
-              credential: "openrelayproject"
-            },
-            {
-              urls: "turn:openrelay.metered.ca:443",
+              urls: "turns:openrelay.metered.ca:443",
               username: "openrelayproject",
               credential: "openrelayproject"
             },
