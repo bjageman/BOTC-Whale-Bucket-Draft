@@ -78,7 +78,6 @@ export default function GrimoireBoard({
         radiusX: 34,
         radiusY: 36,
         btnStyle: { width: '30cqw', height: '30cqw' } as CSSProperties,
-        btnClass: "md:max-w-[150px] md:max-h-[150px]",
         dotStyle: { top: '6%', width: '2.0cqw', height: '2.0cqw' } as CSSProperties,
         nameStyle: { fontSize: '4.8cqw', maxWidth: '28cqw', marginTop: '0.5cqw' } as CSSProperties,
         roleStyle: { fontSize: '3.8cqw', maxWidth: '28cqw', marginTop: '0cqw' } as CSSProperties,
@@ -94,7 +93,6 @@ export default function GrimoireBoard({
         radiusX: 36,
         radiusY: 38,
         btnStyle: { width: '26cqw', height: '26cqw' } as CSSProperties,
-        btnClass: "md:max-w-[130px] md:max-h-[130px]",
         dotStyle: { top: '6%', width: '1.7cqw', height: '1.7cqw' } as CSSProperties,
         nameStyle: { fontSize: '4.3cqw', maxWidth: '24cqw', marginTop: '0.4cqw' } as CSSProperties,
         roleStyle: { fontSize: '3.4cqw', maxWidth: '24cqw', marginTop: '0cqw' } as CSSProperties,
@@ -110,7 +108,6 @@ export default function GrimoireBoard({
         radiusX: 38,
         radiusY: 40,
         btnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
-        btnClass: "md:max-w-[105px] md:max-h-[105px]",
         dotStyle: { top: '6%', width: '1.4cqw', height: '1.4cqw' } as CSSProperties,
         nameStyle: { fontSize: '3.7cqw', maxWidth: '19cqw', marginTop: '0.3cqw' } as CSSProperties,
         roleStyle: { fontSize: '2.8cqw', maxWidth: '19cqw', marginTop: '0cqw' } as CSSProperties,
@@ -125,14 +122,14 @@ export default function GrimoireBoard({
 
   const dynamicRadiusX = useMemo(() => {
     if (boardAspect < 1.15) {
-      return grimoireConfig.radiusX * 0.98; // Very slight reduction with smaller tokens
+      return grimoireConfig.radiusX * 0.96; // Minimal horizontal reduction since width isn't constrained
     }
     return grimoireConfig.radiusX;
   }, [grimoireConfig.radiusX, boardAspect]);
 
   const dynamicRadiusY = useMemo(() => {
     if (boardAspect < 1.15) {
-      return grimoireConfig.radiusY * 0.94; // Mild vertical reduction for 10% smaller tokens
+      return grimoireConfig.radiusY * 0.92; // Gentle vertical reduction to avoid overflowing top/bottom
     }
     return grimoireConfig.radiusY;
   }, [grimoireConfig.radiusY, boardAspect]);
@@ -386,7 +383,6 @@ export default function GrimoireBoard({
                   style={grimoireConfig.btnStyle}
                   className={cn(
                     "rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-md relative select-none",
-                    grimoireConfig.btnClass,
                     isFanned ? "group-hover:scale-125 group-hover:shadow-lg" : "",
                     p.isDead ? "scale-95" : "hover:bg-[#fafafa]"
                   )}
