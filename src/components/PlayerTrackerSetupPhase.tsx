@@ -59,7 +59,7 @@ export default function PlayerTrackerSetupPhase({
     <div className="grid grid-cols-1 gap-6 md:grid-cols-[5fr_3fr] md:grid-rows-[auto_1fr] md:items-start animate-fadeIn">
       {/* Section A: Script Upload */}
       <div className="md:col-start-2 md:row-start-1 space-y-6 w-full">
-        <section className="bg-gray-900/50 p-4 rounded-lg border border-gray-800/80 space-y-4 text-left">
+        <section className="bg-gray-900/50 p-4 rounded-lg border border-gray-800/80 space-y-4">
           <div>
             <h3 className="text-xs font-bold text-gray-555 uppercase tracking-wider">Active Script Filter</h3>
             <div className="flex items-center gap-2 mt-1">
@@ -109,7 +109,7 @@ export default function PlayerTrackerSetupPhase({
       </div>
 
       {/* Section B: Players list */}
-      <div className="md:col-start-1 md:row-start-1 md:row-span-2 space-y-6 w-full text-left">
+      <div className="md:col-start-1 md:row-start-1 md:row-span-2 space-y-6 w-full">
         <section>
           <h2 className="text-lg font-semibold text-gray-300 mb-4">Players List ({players.length})</h2>
 

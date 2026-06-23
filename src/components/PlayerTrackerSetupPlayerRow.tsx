@@ -40,9 +40,6 @@ export default function PlayerTrackerSetupPlayerRow({
   removePlayer,
   updatePlayerName,
 }: PlayerTrackerSetupPlayerRowProps) {
-  const isDragged = draggedIndex === index;
-  const isDragOver = dragOverIndex === index;
-
   return (
     <div
       data-drag-index={index}
@@ -53,25 +50,25 @@ export default function PlayerTrackerSetupPlayerRow({
       onDrop={(e) => handleDrop(e, index)}
       onDragEnd={handleDragEnd}
       className={cn(
-        "bg-gray-900/60 p-3 rounded-lg border border-gray-800/50 flex items-center justify-between gap-3 transition-all duration-200",
-        isDragged && "opacity-40 scale-95 border-clocktower-blood/30 bg-clocktower-blood/5",
-        isDragOver && "border-clocktower-townsfolk bg-clocktower-townsfolk/5 translate-y-1 shadow-lg shadow-black/20"
+        "bg-gray-900/60 p-3 rounded-lg border border-gray-800/50 space-y-2 transition-all duration-200",
+        draggedIndex === index && "opacity-20 border-2 border-dashed border-clocktower-blood bg-black/40 scale-[0.96]",
+        dragOverIndex === index && draggedIndex !== index && "border-t-4 border-t-clocktower-blood bg-clocktower-blood/10 shadow-[0_4px_12px_rgba(139,0,0,0.15)] translate-y-1"
       )}
     >
-      <div className="flex items-center gap-2 flex-1 min-w-0">
+      <div className="flex items-center gap-2">
         {/* Drag Handle */}
         <div
           onTouchStart={(e) => handleTouchStart(e, index)}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="cursor-grab hover:text-white text-gray-500 p-1 select-none shrink-0"
+          className="text-gray-600 cursor-grab active:cursor-grabbing hover:text-gray-400 p-0.5 shrink-0 flex items-center select-none touch-none"
           title="Drag to seat player"
         >
-          <GripVertical size={16} />
+          <GripVertical size={14} />
         </div>
 
         {/* Index indicator */}
-        <span className="text-[11px] font-mono text-gray-550 shrink-0 select-none">
+        <span className="text-xs text-gray-500 font-mono w-5 select-none">
           #{index + 1}
         </span>
 
@@ -80,31 +77,31 @@ export default function PlayerTrackerSetupPlayerRow({
           type="text"
           value={p.name}
           onChange={(e) => updatePlayerName(p.id, e.target.value)}
+          onFocus={(e) => e.target.select()}
           placeholder="Player Name"
-          className="bg-transparent text-sm text-gray-200 font-bold border-b border-transparent hover:border-gray-800 focus:border-clocktower-blood focus:outline-none py-0.5 px-1 flex-1 min-w-0 transition-all"
+          autoCapitalize="words"
+          className="flex-grow min-w-0 font-semibold text-gray-200 bg-transparent border-b border-transparent hover:border-gray-800/80 focus:border-clocktower-blood focus:outline-none px-1.5 py-0.5 rounded transition-all"
         />
-      </div>
 
-      <div className="flex items-center gap-1.5 shrink-0">
-        {/* Reordering buttons (for accessibility/mobile fallback) */}
-        <div className="flex flex-col select-none">
+        {/* Reordering buttons pill */}
+        <div className="flex gap-0.5 items-center bg-gray-955/45 px-1 py-0.5 rounded border border-gray-850 shrink-0">
           <button
             type="button"
-            onClick={() => movePlayer(index, 'up')}
             disabled={index === 0}
-            className="text-gray-500 hover:text-white disabled:opacity-30 disabled:hover:text-gray-500 p-0.5"
-            title="Move Seat Up"
+            onClick={() => movePlayer(index, 'up')}
+            className="text-gray-500 hover:text-gray-200 disabled:opacity-20 disabled:hover:text-gray-500 transition-colors p-0.5"
+            title="Move player up"
           >
-            <ChevronUp size={14} />
+            <ChevronUp size={12} />
           </button>
           <button
             type="button"
-            onClick={() => movePlayer(index, 'down')}
             disabled={index === players.length - 1}
-            className="text-gray-500 hover:text-white disabled:opacity-30 disabled:hover:text-gray-500 p-0.5"
-            title="Move Seat Down"
+            onClick={() => movePlayer(index, 'down')}
+            className="text-gray-500 hover:text-gray-200 disabled:opacity-20 disabled:hover:text-gray-500 transition-colors p-0.5"
+            title="Move player down"
           >
-            <ChevronDown size={14} />
+            <ChevronDown size={12} />
           </button>
         </div>
 
@@ -112,7 +109,7 @@ export default function PlayerTrackerSetupPlayerRow({
         <button
           type="button"
           onClick={() => removePlayer(p.id)}
-          className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+          className="text-gray-600 hover:text-red-500 p-1 transition-colors shrink-0"
           title="Remove Player"
         >
           <Trash2 size={16} />
