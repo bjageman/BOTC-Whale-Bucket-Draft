@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { GripVertical } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player, Role } from '../types';
@@ -21,6 +21,7 @@ interface Props {
   addTravelerGamePhase: () => void;
   setNewTravelerName: (v: string) => void;
   setNewTravelerRoleId: (v: string) => void;
+  handleMouseDown: (e: React.MouseEvent) => void;
   handleDragStart: (e: React.DragEvent, index: number) => void;
   handleDragOver: (e: React.DragEvent, index: number) => void;
   handleDragLeave: () => void;
@@ -31,6 +32,7 @@ interface Props {
   handleTouchEnd: () => void;
   onResetDead?: () => void;
   onResetTime?: () => void;
+  showNightOrder?: boolean;
 }
 
 export default function StandardGamePhase({
@@ -38,11 +40,11 @@ export default function StandardGamePhase({
   isLightModeActive, selectionRoles, draggedIndex, dragOverIndex,
   setSelectedPlayerId, toggleTimeOfDay, addTravelerGamePhase,
   setNewTravelerName, setNewTravelerRoleId,
-  handleDragStart, handleDragOver, handleDragLeave, handleDrop, handleDragEnd,
+  handleMouseDown, handleDragStart, handleDragOver, handleDragLeave, handleDrop, handleDragEnd,
   handleTouchStart, handleTouchMove, handleTouchEnd,
   onResetDead, onResetTime,
+  showNightOrder = true,
 }: Props) {
-  const [isDragEnabled, setIsDragEnabled] = useState(false);
   return (
     <div className="space-y-6 animate-fadeIn md:grid md:grid-cols-[3fr_2fr] md:gap-8 md:space-y-0 md:items-start landscape:grid landscape:grid-cols-[3fr_2fr] landscape:gap-6 landscape:space-y-0 landscape:items-start">
       {/* Column 1: Board & Night Order */}
@@ -59,12 +61,14 @@ export default function StandardGamePhase({
             onResetTime={onResetTime}
           />
         </div>
-        <NightOrderWidget
-          players={players}
-          timeOfDay={timeOfDay}
-          dayNumber={dayNumber}
-          isLightModeActive={isLightModeActive}
-        />
+        {showNightOrder && (
+          <NightOrderWidget
+            players={players}
+            timeOfDay={timeOfDay}
+            dayNumber={dayNumber}
+            isLightModeActive={isLightModeActive}
+          />
+        )}
       </div>
 
       {/* Column 2: Controls */}
@@ -143,50 +147,40 @@ export default function StandardGamePhase({
               'text-[10px] uppercase font-bold tracking-wider',
               isLightModeActive ? 'text-gray-600' : 'text-gray-500'
             )}>Grimoire Ledger Reference</h4>
-            <label className="relative inline-flex items-center cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={isDragEnabled}
-                onChange={(e) => setIsDragEnabled(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="relative w-7 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 peer-checked:after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-clocktower-blood"></div>
-              <span className="ml-1.5 text-[9px] font-bold text-gray-500 uppercase tracking-wider">Drag to Reorder</span>
-            </label>
           </div>
           <div className="grid grid-cols-1 gap-1.5 text-xs">
             {players.map((p, index) => {
               const rObj = (rolesData as Role[]).find(r => r.id === p.roleId);
               return (
-                <div
+                 <div
                   id={`ledger-player-${p.id}`}
                   key={p.id}
                   data-drag-index={index}
-                  draggable={isDragEnabled}
-                  onDragStart={isDragEnabled ? (e) => handleDragStart(e, index) : undefined}
-                  onDragOver={isDragEnabled ? (e) => handleDragOver(e, index) : undefined}
-                  onDragLeave={isDragEnabled ? handleDragLeave : undefined}
-                  onDrop={isDragEnabled ? (e) => handleDrop(e, index) : undefined}
-                  onDragEnd={isDragEnabled ? handleDragEnd : undefined}
-                  onTouchStart={isDragEnabled ? (e) => handleTouchStart(e, index) : undefined}
-                  onTouchMove={isDragEnabled ? handleTouchMove : undefined}
-                  onTouchEnd={isDragEnabled ? handleTouchEnd : undefined}
+                  draggable={true}
+                  onMouseDown={handleMouseDown}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
                   onClick={() => setSelectedPlayerId(p.id)}
                   className={cn(
-                    'flex items-center gap-1.5 py-2.5 px-1.5 rounded border transition-all duration-200 min-w-0 hover:ring-1 hover:ring-gray-500/50 select-none',
-                    isDragEnabled ? 'cursor-move touch-none' : 'cursor-pointer touch-auto',
+                    'flex items-center gap-1.5 py-2.5 px-1.5 rounded border transition-all duration-200 min-w-0 hover:ring-1 hover:ring-gray-500/50 select-none cursor-pointer touch-auto',
                     p.isDead && 'opacity-45',
-                    isDragEnabled && draggedIndex === index && 'opacity-20 border-2 border-dashed border-clocktower-blood bg-black/40 scale-[0.96]',
-                    isDragEnabled && dragOverIndex === index && draggedIndex !== index && 'border-t-4 border-t-clocktower-blood bg-clocktower-blood/10 shadow-[0_4px_12px_rgba(139,0,0,0.15)] translate-y-0.5',
+                    draggedIndex === index && 'opacity-20 border-2 border-dashed border-clocktower-blood bg-black/40 scale-[0.96]',
+                    dragOverIndex === index && draggedIndex !== index && 'border-t-4 border-t-clocktower-blood bg-clocktower-blood/10 shadow-[0_4px_12px_rgba(139,0,0,0.15)] translate-y-0.5',
                     isLightModeActive
                       ? 'bg-white/40 border-gray-200 hover:bg-white/70'
                       : 'bg-gray-955/20 border-gray-900/40 hover:bg-gray-900/60'
                   )}
                 >
-                  <div className={cn(
-                    "text-gray-500 p-0.5 shrink-0 flex items-center transition-opacity duration-200",
-                    isDragEnabled ? "opacity-100" : "opacity-25"
-                  )}>
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => handleTouchStart(e, index)}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    className="text-gray-500 p-0.5 shrink-0 flex items-center transition-opacity duration-200 drag-handle opacity-60 hover:opacity-100 cursor-move touch-none"
+                  >
                     <GripVertical size={10} />
                   </div>
                   <span className={cn('text-[9px] font-mono w-4 shrink-0', isLightModeActive ? 'text-gray-505' : 'text-gray-600')}>{index + 1}</span>
@@ -203,26 +197,41 @@ export default function StandardGamePhase({
                       return hasAlignmentShift ? (isEvil ? '👿' : '😇') : null;
                     })()}
                   </span>
-                  <span className={cn(
-                    'font-semibold text-[10px] flex items-center gap-1 shrink-0 max-w-[45%] min-w-0',
-                    rObj?.team === 'townsfolk' && 'text-clocktower-townsfolk',
-                    rObj?.team === 'outsider' && 'text-clocktower-outsider',
-                    rObj?.team === 'minion' && 'text-clocktower-minion',
-                    rObj?.team === 'demon' && 'text-clocktower-demon',
-                    rObj?.team === 'traveler' && 'text-clocktower-traveler',
-                  )}>
-                    {rObj && (
-                      <span className="w-4.5 h-4.5 bg-white rounded-full flex items-center justify-center shrink-0">
-                        <img src={`/icons/${rObj.id}.svg`} alt={rObj.name} className="w-3.5 h-3.5 object-contain"
-                          onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
-                      </span>
-                    )}
-                    <span className="truncate">{rObj?.name ?? '—'}</span>
+                  <div className="flex items-center gap-1.5 shrink-0 max-w-[55%] min-w-0 ml-auto justify-end flex-wrap">
+                    {(() => {
+                      const displayRoles = p.roleIds && p.roleIds.length > 0 ? p.roleIds : (p.roleId ? [p.roleId] : []);
+                      if (displayRoles.length === 0) {
+                        return <span className="text-gray-500 font-semibold text-[10px]">—</span>;
+                      }
+                      return displayRoles.map((roleId) => {
+                        const rObj = (rolesData as Role[]).find(r => r.id === roleId);
+                        if (!rObj) return null;
+                        return (
+                          <span
+                            key={roleId}
+                            className={cn(
+                              'font-semibold text-[10px] flex items-center gap-1 shrink-0',
+                              rObj.team === 'townsfolk' && 'text-clocktower-townsfolk',
+                              rObj.team === 'outsider' && 'text-clocktower-outsider',
+                              rObj.team === 'minion' && 'text-clocktower-minion',
+                              rObj.team === 'demon' && 'text-clocktower-demon',
+                              rObj.team === 'traveler' && 'text-clocktower-traveler',
+                            )}
+                          >
+                            <span className="w-4.5 h-4.5 bg-white rounded-full flex items-center justify-center shrink-0">
+                              <img src={`/icons/${rObj.id}.svg`} alt={rObj.name} className="w-3.5 h-3.5 object-contain"
+                                onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
+                            </span>
+                            <span className="truncate">{rObj.name}</span>
+                          </span>
+                        );
+                      });
+                    })()}
                     {p.isTheDrunk && <span className="text-[8px] bg-yellow-600 text-black px-0.5 rounded leading-none shrink-0">DK</span>}
                     {p.isTheMarionette && <span className="text-[8px] bg-clocktower-minion text-white px-0.5 rounded leading-none shrink-0">MN</span>}
                     {p.isTheLunatic && <span className="text-[8px] bg-clocktower-outsider text-white px-0.5 rounded leading-none shrink-0">LN</span>}
                     {p.isTheLilMonsta && <span className="text-[8px] bg-clocktower-demon text-white px-0.5 rounded leading-none shrink-0">LM</span>}
-                  </span>
+                  </div>
                 </div>
               );
             })}

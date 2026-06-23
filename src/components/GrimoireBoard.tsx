@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import type { Player, Role } from '../types';
 import { cn } from '../utils/cn';
@@ -25,6 +25,42 @@ export default function GrimoireBoard({
   onResetTime,
 }: GrimoireBoardProps) {
   const [hoveredOrder, setHoveredOrder] = useState<string[]>([]);
+  const [playerTopIndex, setPlayerTopIndex] = useState<Record<string, number>>({});
+  const [fannedPlayerId, setFannedPlayerId] = useState<string | null>(null);
+  const [boardAspect, setBoardAspect] = useState<number>(1.3);
+  const boardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const boardElement = boardRef.current;
+    if (!boardElement) return;
+
+    const updateAspect = () => {
+      const rect = boardElement.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        setBoardAspect(rect.height / rect.width);
+      }
+    };
+
+    updateAspect();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateAspect);
+      return () => {
+        window.removeEventListener('resize', updateAspect);
+      };
+    }
+
+    const observer = new ResizeObserver(() => {
+      updateAspect();
+    });
+    observer.observe(boardElement);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const touchStartedFannedRef = useRef<boolean>(false);
+  const touchStartTimeRef = useRef<number>(0);
 
   const teamFill = (team: Role['team']) => ({
     townsfolk: 'fill-clocktower-townsfolk',
@@ -36,53 +72,163 @@ export default function GrimoireBoard({
 
   const grimoireConfig = useMemo(() => {
     const count = players.length;
+    const isDesktop = boardAspect < 1.15;
+
     if (count <= 6) {
       return {
-        boardClass: "w-[88vw] h-[84vw] max-w-[560px] max-h-[620px] md:max-h-[500px] landscape:max-h-[500px] rounded-[28px]",
+        boardClass: "w-[88vw] h-[112vw] max-w-[560px] max-h-[700px] md:w-[560px] md:h-[500px] landscape:max-h-[500px] rounded-[28px]",
         radiusX: 38,
         radiusY: 36,
-        btnStyle: { width: '25cqw', height: '25cqw' } as CSSProperties,
+        btnStyle: isDesktop
+          ? { width: '140px', height: '140px' } as CSSProperties
+          : { width: '30cqw', height: '30cqw' } as CSSProperties,
         dotStyle: { top: '6%', width: '1.8cqw', height: '1.8cqw' } as CSSProperties,
-        nameStyle: { fontSize: '4.2cqw', maxWidth: '23cqw', marginTop: '0.5cqw' } as CSSProperties,
-        roleStyle: { fontSize: '3.3cqw', maxWidth: '23cqw', marginTop: '0cqw' } as CSSProperties,
+        nameStyle: isDesktop
+          ? { fontSize: '23.5px', maxWidth: '130px', marginTop: '2.8px' } as CSSProperties
+          : { fontSize: '4.8cqw', maxWidth: '28cqw', marginTop: '0.5cqw' } as CSSProperties,
+        roleStyle: isDesktop
+          ? { fontSize: '18.5px', maxWidth: '130px', marginTop: '0px' } as CSSProperties
+          : { fontSize: '3.8cqw', maxWidth: '28cqw', marginTop: '0cqw' } as CSSProperties,
         charLimit: 16,
         tooltipClass: "top-18",
-        centerBtnStyle: { width: '25cqw', height: '25cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '4.2cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '3.4cqw', marginTop: '0.2cqw' } as CSSProperties,
+        centerBtnStyle: isDesktop
+          ? { width: '140px', height: '140px' } as CSSProperties
+          : { width: '30cqw', height: '30cqw' } as CSSProperties,
+        centerText1Style: isDesktop
+          ? { fontSize: '23.5px' } as CSSProperties
+          : { fontSize: '4.8cqw' } as CSSProperties,
+        centerText2Style: isDesktop
+          ? { fontSize: '18.5px', marginTop: '1px' } as CSSProperties
+          : { fontSize: '3.8cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     } else if (count <= 10) {
       return {
-        boardClass: "w-[90vw] h-[86vw] max-w-[620px] max-h-[680px] md:max-h-[500px] landscape:max-h-[500px] rounded-[34px]",
+        boardClass: "w-[90vw] h-[118vw] max-w-[680px] max-h-[760px] md:w-[680px] md:h-[500px] landscape:max-h-[500px] rounded-[34px]",
         radiusX: 40,
-        radiusY: 37,
-        btnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
+        radiusY: 38,
+        btnStyle: isDesktop
+          ? { width: '130px', height: '130px' } as CSSProperties
+          : { width: '26cqw', height: '26cqw' } as CSSProperties,
         dotStyle: { top: '6%', width: '1.5cqw', height: '1.5cqw' } as CSSProperties,
-        nameStyle: { fontSize: '3.6cqw', maxWidth: '19cqw', marginTop: '0.4cqw' } as CSSProperties,
-        roleStyle: { fontSize: '2.8cqw', maxWidth: '19cqw', marginTop: '0cqw' } as CSSProperties,
+        nameStyle: isDesktop
+          ? { fontSize: '22.3px', maxWidth: '118px', marginTop: '2.5px' } as CSSProperties
+          : { fontSize: '4.3cqw', maxWidth: '24cqw', marginTop: '0.4cqw' } as CSSProperties,
+        roleStyle: isDesktop
+          ? { fontSize: '17.3px', maxWidth: '118px', marginTop: '0px' } as CSSProperties
+          : { fontSize: '3.4cqw', maxWidth: '24cqw', marginTop: '0cqw' } as CSSProperties,
         charLimit: 14,
         tooltipClass: "top-16",
-        centerBtnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '3.5cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '2.8cqw', marginTop: '0.2cqw' } as CSSProperties,
+        centerBtnStyle: isDesktop
+          ? { width: '130px', height: '130px' } as CSSProperties
+          : { width: '26cqw', height: '26cqw' } as CSSProperties,
+        centerText1Style: isDesktop
+          ? { fontSize: '22.3px' } as CSSProperties
+          : { fontSize: '4.0cqw' } as CSSProperties,
+        centerText2Style: isDesktop
+          ? { fontSize: '17.8px', marginTop: '1px' } as CSSProperties
+          : { fontSize: '3.2cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     } else {
       return {
-        boardClass: "w-[92vw] h-[88vw] max-w-[680px] max-h-[740px] md:max-h-[500px] landscape:max-h-[500px] rounded-[40px]",
+        boardClass: "w-[92vw] h-[124vw] max-w-[680px] max-h-[820px] md:w-[680px] md:h-[500px] landscape:max-h-[500px] rounded-[40px]",
         radiusX: 42,
-        radiusY: 38,
-        btnStyle: { width: '16.5cqw', height: '16.5cqw' } as CSSProperties,
+        radiusY: 40,
+        btnStyle: isDesktop
+          ? { width: '112px', height: '112px' } as CSSProperties
+          : { width: '21cqw', height: '21cqw' } as CSSProperties,
         dotStyle: { top: '6%', width: '1.2cqw', height: '1.2cqw' } as CSSProperties,
-        nameStyle: { fontSize: '3.0cqw', maxWidth: '15cqw', marginTop: '0.3cqw' } as CSSProperties,
-        roleStyle: { fontSize: '2.3cqw', maxWidth: '15cqw', marginTop: '0cqw' } as CSSProperties,
+        nameStyle: isDesktop
+          ? { fontSize: '20.4px', maxWidth: '102px', marginTop: '2.0px' } as CSSProperties
+          : { fontSize: '3.7cqw', maxWidth: '19cqw', marginTop: '0.3cqw' } as CSSProperties,
+        roleStyle: isDesktop
+          ? { fontSize: '15.6px', maxWidth: '102px', marginTop: '0px' } as CSSProperties
+          : { fontSize: '2.8cqw', maxWidth: '19cqw', marginTop: '0cqw' } as CSSProperties,
         charLimit: 12,
         tooltipClass: "top-14",
-        centerBtnStyle: { width: '17cqw', height: '17cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '2.8cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '2.2cqw', marginTop: '0.2cqw' } as CSSProperties,
+        centerBtnStyle: isDesktop
+          ? { width: '115px', height: '115px' } as CSSProperties
+          : { width: '21cqw', height: '21cqw' } as CSSProperties,
+        centerText1Style: isDesktop
+          ? { fontSize: '21.0px' } as CSSProperties
+          : { fontSize: '3.1cqw' } as CSSProperties,
+        centerText2Style: isDesktop
+          ? { fontSize: '17.0px', marginTop: '1px' } as CSSProperties
+          : { fontSize: '2.5cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     }
-  }, [players.length]);
+  }, [players.length, boardAspect]);
+
+  const dynamicRadiusX = useMemo(() => {
+    return grimoireConfig.radiusX;
+  }, [grimoireConfig.radiusX]);
+
+  const dynamicRadiusY = useMemo(() => {
+    if (boardAspect < 1.15) {
+      return grimoireConfig.radiusY * 0.92; // Gentle vertical reduction to avoid overflowing top/bottom
+    }
+    return grimoireConfig.radiusY;
+  }, [grimoireConfig.radiusY, boardAspect]);
+
+  const evenAngles = useMemo(() => {
+    const total = players.length;
+    if (total <= 1) return [0];
+
+    const rx = dynamicRadiusX;
+    const ry = dynamicRadiusY * boardAspect;
+
+    const n = 3.6;
+    const p = 2 / n;
+
+    const steps = 360;
+    const arcLengths = new Float32Array(steps + 1);
+    let totalLength = 0;
+    arcLengths[0] = 0;
+
+    for (let i = 1; i <= steps; i++) {
+      const theta1 = ((i - 1) * (360 / steps)) * (Math.PI / 180);
+      const theta2 = (i * (360 / steps)) * (Math.PI / 180);
+      const midTheta = (theta1 + theta2) / 2;
+      
+      const dt = 0.0001;
+      const tA = midTheta - dt / 2;
+      const tB = midTheta + dt / 2;
+      
+      const xA = rx * Math.sign(Math.cos(tA)) * Math.pow(Math.abs(Math.cos(tA)), p);
+      const yA = ry * Math.sign(Math.sin(tA)) * Math.pow(Math.abs(Math.sin(tA)), p);
+      
+      const xB = rx * Math.sign(Math.cos(tB)) * Math.pow(Math.abs(Math.cos(tB)), p);
+      const yB = ry * Math.sign(Math.sin(tB)) * Math.pow(Math.abs(Math.sin(tB)), p);
+      
+      const dx = (xB - xA) / dt;
+      const dy = (yB - yA) / dt;
+      const ds = Math.sqrt(dx * dx + dy * dy) * (2 * Math.PI / steps);
+      totalLength += ds;
+      arcLengths[i] = totalLength;
+    }
+
+    const startIdx = Math.round(steps / 4);
+    const startLength = arcLengths[startIdx];
+
+    const angles: number[] = [];
+    const targetStep = totalLength / total;
+
+    for (let i = 0; i < total; i++) {
+      const targetLength = (startLength + i * targetStep) % totalLength;
+      let idx = 0;
+      while (idx < steps && arcLengths[idx + 1] < targetLength) {
+        idx++;
+      }
+      const l1 = arcLengths[idx];
+      const l2 = arcLengths[idx + 1];
+      const fraction = (l2 - l1) > 0 ? (targetLength - l1) / (l2 - l1) : 0;
+      const t1 = (idx * (360 / steps)) * (Math.PI / 180);
+      const t2 = ((idx + 1) * (360 / steps)) * (Math.PI / 180);
+      const angle = t1 + fraction * (t2 - t1);
+      angles.push(angle);
+    }
+
+    return angles;
+  }, [players.length, dynamicRadiusX, dynamicRadiusY, boardAspect]);
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -121,6 +267,7 @@ export default function GrimoireBoard({
 
       <div
         id="grimoire-circle-board"
+        ref={boardRef}
         className={cn(
           "relative border shadow-inner flex items-center justify-center overflow-visible my-4 mx-auto transition-colors duration-300",
           timeOfDay === 'day'
@@ -186,15 +333,16 @@ export default function GrimoireBoard({
         </button>
 
         {players.map((p, index) => {
-          const total = players.length;
-          const angle = (index * (360 / total) - 90) * (Math.PI / 180);
+          const angle = evenAngles[index] !== undefined ? evenAngles[index] : 0;
 
-          const leftPos = 50 + grimoireConfig.radiusX * Math.cos(angle);
-          const topPos = 50 + grimoireConfig.radiusY * Math.sin(angle);
+          const cosVal = Math.cos(angle);
+          const sinVal = Math.sin(angle);
+          
+          const n = 3.6;
+          const pExponent = 2 / n;
 
-          const roleObj = rolesData.find((r) => r.id === p.roleId);
-          const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
-          const isEvil = p.isEvil !== undefined ? p.isEvil : defaultEvil;
+          const leftPos = 50 + dynamicRadiusX * Math.sign(cosVal) * Math.pow(Math.abs(cosVal), pExponent);
+          const topPos = 50 + dynamicRadiusY * Math.sign(sinVal) * Math.pow(Math.abs(sinVal), pExponent);
 
           // Calculate dynamic font size and split name by space to prevent overflow
           const baseFontSizeVal = parseFloat(grimoireConfig.nameStyle.fontSize as string);
@@ -221,6 +369,8 @@ export default function GrimoireBoard({
           const orderIndex = hoveredOrder.indexOf(p.id);
           const zIndex = orderIndex !== -1 ? 10 + orderIndex : 10;
 
+          const isFanned = fannedPlayerId === p.id;
+
           return (
             <div
               key={p.id}
@@ -232,88 +382,161 @@ export default function GrimoireBoard({
                 zIndex: zIndex,
               }}
               onMouseEnter={() => {
+                setFannedPlayerId(p.id);
                 setHoveredOrder((prev) => {
                   const filtered = prev.filter((id) => id !== p.id);
                   return [...filtered, p.id];
                 });
+              }}
+              onMouseLeave={() => {
+                setFannedPlayerId(null);
+              }}
+              onTouchStart={() => {
+                touchStartTimeRef.current = Date.now();
+                touchStartedFannedRef.current = (fannedPlayerId === p.id);
+                if (fannedPlayerId !== p.id) {
+                  setFannedPlayerId(p.id);
+                }
               }}
               className="hover:z-50 group"
             >
               <div className="relative flex flex-col items-center">
                 <button
                   id={`grimoire-player-${p.id}`}
-                  onClick={() => onSelectPlayer(p.id)}
+                  onClick={(e) => {
+                    if (touchStartTimeRef.current > 0) {
+                      const duration = Date.now() - touchStartTimeRef.current;
+                      touchStartTimeRef.current = 0;
+                      if (duration > 200) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                      }
+                    }
+                    onSelectPlayer(p.id);
+                  }}
                   style={grimoireConfig.btnStyle}
                   className={cn(
-                    "rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-md relative group-hover:scale-125 group-hover:shadow-lg select-none",
+                    "rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-md relative select-none",
+                    isFanned ? "group-hover:scale-125 group-hover:shadow-lg" : "",
                     p.isDead ? "scale-95" : "hover:bg-[#fafafa]"
                   )}
                 >
-                  {/* SVG representing the token */}
-                  <svg viewBox="0 0 200 200" className={cn("w-full h-full absolute inset-0 z-0 select-none pointer-events-none", p.isDead && "opacity-60")}>
-                    <defs>
-                      <path id={`topTextPath-${p.id}`} d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
-                      <path id={`bottomTextPath-${p.id}`} d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
-                    </defs>
-                    
-                    {/* Token background circle */}
-                    <circle
-                      cx="100"
-                      cy="100"
-                      r="90"
-                      fill={p.isDead ? "#e4e4e7" : "#ffffff"}
-                      className={cn(
-                        "stroke-[6px]",
-                        isEvil ? "stroke-clocktower-minion" : "stroke-clocktower-townsfolk"
-                      )}
-                    />
-                    
-                    {/* Inner ring */}
-                    <circle
-                      cx="100"
-                      cy="100"
-                      r="58"
-                      fill="none"
-                      stroke="#e4e4e7"
-                      strokeWidth="1"
-                      strokeDasharray="3 3"
-                    />
-                    
-                    {roleObj && (
-                      <>
-                        {/* Curved Character Name */}
-                        <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(roleObj.team))}>
-                          <textPath href={`#topTextPath-${p.id}`} startOffset="50%" textAnchor="middle">
-                            {roleObj.name}
-                          </textPath>
-                        </text>
-                        
-                        {/* Curved Character Type */}
-                        <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(roleObj.team))}>
-                          <textPath href={`#bottomTextPath-${p.id}`} startOffset="50%" textAnchor="middle">
-                            {roleObj.team}
-                          </textPath>
-                        </text>
-                      </>
-                    )}
-                  </svg>
+                  {/* Render fanned character tokens */}
+                  {(() => {
+                    const displayRoles = p.roleIds && p.roleIds.length > 0 ? p.roleIds : (p.roleId ? [p.roleId] : [null]);
+                    return displayRoles.map((roleId, idx) => {
+                      const roleObj = roleId ? rolesData.find((r) => r.id === roleId) : null;
+                      const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
+                      const isEvil = p.isEvil !== undefined ? p.isEvil : defaultEvil;
 
-                  {/* Centered character icon */}
-                  {roleObj && (
-                    <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none">
-                      <div className="w-[50%] h-[50%] flex items-center justify-center">
-                        <img
-                          src={`/icons/${roleObj.id}.svg`}
-                          alt={roleObj.name}
-                          className={cn(
-                            "w-full h-full object-contain transition-all duration-200 select-none",
-                            p.isDead ? "grayscale opacity-15" : "opacity-35"
+                      let transformClass = "absolute inset-0 transition-all duration-300 ease-out hover:z-20";
+                      if (displayRoles.length > 1) {
+                        if (displayRoles.length === 2) {
+                          transformClass += idx === 0 
+                            ? ` -rotate-3 -translate-x-1 ${isFanned ? "group-hover:-translate-x-6 group-hover:-rotate-12" : ""}` 
+                            : ` rotate-3 translate-x-1 ${isFanned ? "group-hover:translate-x-6 group-hover:rotate-12" : ""}`;
+                        } else if (displayRoles.length === 3) {
+                          if (idx === 0) {
+                            transformClass += ` -rotate-6 -translate-x-2 translate-y-0.5 ${isFanned ? "group-hover:-translate-x-10 group-hover:translate-y-1.5 group-hover:-rotate-12" : ""}`;
+                          } else if (idx === 1) {
+                            transformClass += ` translate-y-[-1px] ${isFanned ? "group-hover:-translate-y-8 group-hover:scale-105" : ""}`;
+                          } else if (idx === 2) {
+                            transformClass += ` rotate-6 translate-x-2 translate-y-0.5 ${isFanned ? "group-hover:translate-x-10 group-hover:translate-y-1.5 group-hover:rotate-12" : ""}`;
+                          }
+                        }
+                      }
+
+                      const isTop = playerTopIndex[p.id] !== undefined
+                        ? playerTopIndex[p.id] === idx
+                        : idx === displayRoles.length - 1;
+
+                      return (
+                        <div
+                          key={idx}
+                          className={transformClass}
+                          style={{ zIndex: isTop ? 10 : idx }}
+                          onMouseEnter={() => {
+                            setPlayerTopIndex((prev) => ({ ...prev, [p.id]: idx }));
+                          }}
+                          onClick={(e) => {
+                            if (touchStartedFannedRef.current) {
+                              e.stopPropagation();
+                            }
+                            setPlayerTopIndex((prev) => ({ ...prev, [p.id]: idx }));
+                            setFannedPlayerId(null);
+                            touchStartedFannedRef.current = false;
+                          }}
+                        >
+                          {/* SVG representing the token */}
+                          <svg viewBox="0 0 200 200" className={cn("w-full h-full absolute inset-0 z-0 select-none pointer-events-none", p.isDead && "opacity-60")}>
+                            <defs>
+                              <path id={`topTextPath-${p.id}-${idx}`} d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
+                              <path id={`bottomTextPath-${p.id}-${idx}`} d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
+                            </defs>
+                            
+                            {/* Token background circle */}
+                            <circle
+                              cx="100"
+                              cy="100"
+                              r="90"
+                              fill={p.isDead ? "#e4e4e7" : "#ffffff"}
+                              className={cn(
+                                "stroke-[6px]",
+                                isEvil ? "stroke-clocktower-minion" : "stroke-clocktower-townsfolk"
+                              )}
+                            />
+                            
+                            {/* Inner ring */}
+                            <circle
+                              cx="100"
+                              cy="100"
+                              r="58"
+                              fill="none"
+                              stroke="#e4e4e7"
+                              strokeWidth="1"
+                              strokeDasharray="3 3"
+                            />
+                            
+                            {roleObj && (
+                              <>
+                                {/* Curved Character Name */}
+                                <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(roleObj.team))}>
+                                  <textPath href={`#topTextPath-${p.id}-${idx}`} startOffset="50%" textAnchor="middle">
+                                    {roleObj.name}
+                                  </textPath>
+                                </text>
+                                
+                                {/* Curved Character Type */}
+                                <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(roleObj.team))}>
+                                  <textPath href={`#bottomTextPath-${p.id}-${idx}`} startOffset="50%" textAnchor="middle">
+                                    {roleObj.team}
+                                  </textPath>
+                                </text>
+                              </>
+                            )}
+                          </svg>
+
+                          {/* Centered character icon */}
+                          {roleObj && (
+                            <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none">
+                              <div className="w-[50%] h-[50%] flex items-center justify-center">
+                                <img
+                                  src={`/icons/${roleObj.id}.svg`}
+                                  alt={roleObj.name}
+                                  className={cn(
+                                    "w-full h-full object-contain transition-all duration-200 select-none",
+                                    p.isDead ? "grayscale opacity-15" : "opacity-35"
+                                  )}
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                              </div>
+                            </div>
                           )}
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                        />
-                      </div>
-                    </div>
-                  )}
+                        </div>
+                      );
+                    });
+                  })()}
 
                   {/* Player Name Overlay */}
                   <span

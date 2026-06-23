@@ -86,15 +86,22 @@ export function assignCharacters(
   if (!baseAssignments) return null;
 
   const finalAssignments = [...baseAssignments, ...travelerAssignments];
-  const hasBountyHunter = finalAssignments.some(a => a.role.id === 'bountyhunter');
-  if (hasBountyHunter) {
-    const townsfolkAssignments = finalAssignments.filter(a => 
-      a.role.team === 'townsfolk' &&
-      a.player.isEvil !== true
-    );
-    if (townsfolkAssignments.length > 0) {
-      const chosen = townsfolkAssignments[Math.floor(Math.random() * townsfolkAssignments.length)];
-      chosen.player = { ...chosen.player, isEvil: true };
+  const hasAtheist = finalAssignments.some(a => a.role.id === 'atheist' && !a.player.isTheDrunk && !a.player.isTheMarionette && !a.player.isTheLunatic);
+  if (hasAtheist) {
+    finalAssignments.forEach(a => {
+      a.player.isEvil = undefined;
+    });
+  } else {
+    const hasBountyHunter = finalAssignments.some(a => a.role.id === 'bountyhunter');
+    if (hasBountyHunter) {
+      const townsfolkAssignments = finalAssignments.filter(a => 
+        a.role.team === 'townsfolk' &&
+        a.player.isEvil !== true
+      );
+      if (townsfolkAssignments.length > 0) {
+        const chosen = townsfolkAssignments[Math.floor(Math.random() * townsfolkAssignments.length)];
+        chosen.player = { ...chosen.player, isEvil: true };
+      }
     }
   }
 

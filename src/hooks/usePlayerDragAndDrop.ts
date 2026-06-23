@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 export function usePlayerDragAndDrop<T>(items: T[], setItems: (items: T[]) => void) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const dragStartFromHandleRef = useRef(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const target = e?.target as HTMLElement;
+    dragStartFromHandleRef.current = !!(target && target.closest && target.closest('.drag-handle'));
+  };
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
+    if (!dragStartFromHandleRef.current) {
+      e.preventDefault();
+      return;
+    }
     setDraggedIndex(index);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", index.toString());
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", index.toString());
+    }
   };
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
@@ -23,7 +35,7 @@ export function usePlayerDragAndDrop<T>(items: T[], setItems: (items: T[]) => vo
 
   const handleDrop = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault();
-    const sourceIndexStr = e.dataTransfer.getData("text/plain");
+    const sourceIndexStr = e.dataTransfer ? e.dataTransfer.getData("text/plain") : null;
     const sourceIndex = sourceIndexStr ? parseInt(sourceIndexStr, 10) : draggedIndex;
     if (sourceIndex !== null && sourceIndex !== undefined && !isNaN(sourceIndex)) {
       if (sourceIndex !== targetIndex) {
@@ -42,7 +54,11 @@ export function usePlayerDragAndDrop<T>(items: T[], setItems: (items: T[]) => vo
     setDragOverIndex(null);
   };
 
-  const handleTouchStart = (_e: React.TouchEvent, index: number) => {
+  const handleTouchStart = (e: React.TouchEvent, index: number) => {
+    const target = e?.target as HTMLElement;
+    if (target && target.closest && !target.closest('.drag-handle')) {
+      return;
+    }
     setDraggedIndex(index);
   };
 
@@ -99,6 +115,7 @@ export function usePlayerDragAndDrop<T>(items: T[], setItems: (items: T[]) => vo
   return {
     draggedIndex,
     dragOverIndex,
+    handleMouseDown,
     handleDragStart,
     handleDragOver,
     handleDragLeave,

@@ -5,12 +5,9 @@ import officialRoles from './official_roles.json';
 import { cn } from './utils/cn';
 import type { Player, Role } from './types';
 
-import { performStandardAssignment } from './utils/standardAssignment';
-import { getValidationSummary } from './utils/whaleBucketValidation';
 import PlayerDetailsModal from './components/PlayerDetailsModal';
 import StandardGamePhase from './components/StandardGamePhase';
-import StandardSetupPhase from './components/StandardSetupPhase';
-import StandardRoleSelectionModal from './components/StandardRoleSelectionModal';
+import PlayerTrackerSetupPhase from './components/PlayerTrackerSetupPhase';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 
 type Phase = 'setup' | 'game';
@@ -20,9 +17,9 @@ interface SetupProps {
   toggleTheme: () => void;
 }
 
-export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
+export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
   const [players, setPlayers] = useState<Player[]>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
+    const saved = localStorage.getItem('player-tracker-botc-game');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -33,20 +30,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     }
     return [];
   });
-  const [isLilMonstaGame, setIsLilMonstaGame] = useState<boolean>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.isLilMonstaGame || false;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return false;
-  });
   const [phase, setPhase] = useState<Phase>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
+    const saved = localStorage.getItem('player-tracker-botc-game');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -58,10 +43,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     return 'setup';
   });
   const [newPlayerName, setNewPlayerName] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activePlayerId, setActivePlayerId] = useState<string | null>(null);
   const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
+    const saved = localStorage.getItem('player-tracker-botc-game');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -73,7 +56,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     return 'night';
   });
   const [dayNumber, setDayNumber] = useState<number>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
+    const saved = localStorage.getItem('player-tracker-botc-game');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -96,7 +79,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
 
   // Script states
   const [scriptName, setScriptName] = useState<string>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
+    const saved = localStorage.getItem('player-tracker-botc-game');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -108,7 +91,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     return "All Roles (Default)";
   });
   const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
+    const saved = localStorage.getItem('player-tracker-botc-game');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -128,16 +111,14 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   };
 
   const resetGame = () => {
-    if (confirm('Are you sure you want to reset the game? This clears all players and settings.')) {
+    if (confirm('Are you sure you want to reset the tracker? This clears all players and settings.')) {
       setPlayers([]);
       setPhase('setup');
-      setSearchTerm('');
       setTimeOfDay('night');
       setDayNumber(1);
-      setIsLilMonstaGame(false);
       setScriptName("All Roles (Default)");
       setCustomScriptRoles(null);
-      localStorage.removeItem('standard-botc-game');
+      localStorage.removeItem('player-tracker-botc-game');
     }
   };
 
@@ -170,29 +151,28 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     movePlayer,
   } = usePlayerDragAndDrop(players, setPlayers);
 
-  // Save to localStorage and update document theme
+  // Save to localStorage
   useEffect(() => {
-    localStorage.setItem('standard-botc-game', JSON.stringify({ 
+    localStorage.setItem('player-tracker-botc-game', JSON.stringify({ 
       players, 
       phase, 
       timeOfDay, 
       dayNumber,
       customScriptRoles,
       scriptName,
-      isLilMonstaGame
     }));
-    
+
     const isLightMode = theme === 'light';
     if (isLightMode) {
       document.documentElement.classList.add('theme-light');
     } else {
       document.documentElement.classList.remove('theme-light');
     }
-    
+
     return () => {
       document.documentElement.classList.remove('theme-light');
     };
-  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, theme, isLilMonstaGame]);
+  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, theme]);
 
   const toggleTimeOfDay = () => {
     if (timeOfDay === 'night') {
@@ -210,9 +190,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       id: Math.random().toString(36).substr(2, 9),
       name,
       isDead: false,
-      isTheDrunk: false,
-      isTheMarionette: false,
-      isTheLilMonsta: false,
     };
     setPlayers([...players, newPlayer]);
     setNewPlayerName('');
@@ -236,9 +213,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       name: newTravelerName.trim(),
       roleId: newTravelerRoleId,
       isDead: false,
-      isTheDrunk: false,
-      isTheMarionette: false,
-      isTheLilMonsta: false,
     };
     setPlayers([newPlayer, ...players]);
     setNewTravelerName('');
@@ -252,16 +226,13 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     setPlayers(players.map(p => p.id === id ? { ...p, name } : p));
   };
 
-  const updatePlayerRoles = (id: string, roleIds: string[]) => {
-    setPlayers(players.map(p => p.id === id ? { ...p, roleIds } : p));
-  };
-
   const updatePlayerRole = (id: string, roleId: string) => {
-    let newPlayers = players.map(p => {
+    setPlayers(players.map(p => {
       if (p.id === id) {
         return {
           ...p,
           roleId: roleId || undefined,
+          roleIds: roleId ? [roleId] : [],
           isEvil: undefined,
           isTheDrunk: false,
           isTheMarionette: false,
@@ -270,29 +241,25 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         };
       }
       return p;
-    });
+    }));
+  };
 
-    if (roleId === 'choirboy') {
-      const hasKing = newPlayers.some(p => p.roleId === 'king');
-      if (!hasKing) {
-        const candidate = newPlayers.find(p => p.id !== id && !p.roleId) ||
-                          newPlayers.find(p => p.id !== id && p.roleId !== 'choirboy');
-        if (candidate) {
-          newPlayers = newPlayers.map(p => p.id === candidate.id ? { ...p, roleId: 'king' } : p);
-        }
+  const updatePlayerRoles = (id: string, roleIds: string[]) => {
+    setPlayers(players.map(p => {
+      if (p.id === id) {
+        return {
+          ...p,
+          roleId: roleIds[0] || undefined,
+          roleIds: roleIds,
+          isEvil: undefined,
+          isTheDrunk: false,
+          isTheMarionette: false,
+          isTheLunatic: false,
+          isTheLilMonsta: false,
+        };
       }
-    } else if (roleId === 'huntsman') {
-      const hasDamsel = newPlayers.some(p => p.roleId === 'damsel');
-      if (!hasDamsel) {
-        const candidate = newPlayers.find(p => p.id !== id && !p.roleId) ||
-                          newPlayers.find(p => p.id !== id && p.roleId !== 'huntsman');
-        if (candidate) {
-          newPlayers = newPlayers.map(p => p.id === candidate.id ? { ...p, roleId: 'damsel' } : p);
-        }
-      }
-    }
-
-    setPlayers(newPlayers);
+      return p;
+    }));
   };
 
   const togglePlayerDead = (id: string) => {
@@ -327,79 +294,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
 
   const togglePlayerDrunkOrPoisoned = (id: string) => {
     setPlayers(players.map(p => p.id === id ? { ...p, isDrunkOrPoisoned: !p.isDrunkOrPoisoned } : p));
-  };
-
-  const togglePlayerTheDrunk = (id: string) => {
-    setPlayers(players.map(p => {
-      if (p.id === id) {
-        const nextVal = !p.isTheDrunk;
-        return {
-          ...p,
-          isTheDrunk: nextVal,
-          isTheMarionette: nextVal ? false : p.isTheMarionette,
-          isTheLilMonsta: nextVal ? false : p.isTheLilMonsta,
-        };
-      }
-      return p;
-    }));
-  };
-
-  const togglePlayerTheMarionette = (id: string) => {
-    setPlayers(players.map(p => {
-      if (p.id === id) {
-        const nextVal = !p.isTheMarionette;
-        return {
-          ...p,
-          isTheMarionette: nextVal,
-          isTheDrunk: nextVal ? false : p.isTheDrunk,
-          isTheLilMonsta: nextVal ? false : p.isTheLilMonsta,
-          isEvil: nextVal ? true : undefined,
-        };
-      }
-      return p;
-    }));
-  };
-
-  const togglePlayerTheLunatic = (id: string) => {
-    setPlayers(players.map(p => {
-      if (p.id === id) {
-        const nextVal = !p.isTheLunatic;
-        return {
-          ...p,
-          isTheLunatic: nextVal,
-          isTheDrunk: nextVal ? false : p.isTheDrunk,
-          isTheMarionette: nextVal ? false : p.isTheMarionette,
-          isTheLilMonsta: nextVal ? false : p.isTheLilMonsta,
-        };
-      }
-      return p;
-    }));
-  };
-
-  const togglePlayerTheLilMonsta = (id: string) => {
-    const isTurningOn = !players.find(x => x.id === id)?.isTheLilMonsta;
-    if (isTurningOn) {
-      setIsLilMonstaGame(true);
-    }
-    setPlayers(players.map(p => {
-      if (p.id === id) {
-        const nextVal = !p.isTheLilMonsta;
-        return {
-          ...p,
-          isTheLilMonsta: nextVal,
-          isTheDrunk: nextVal ? false : p.isTheDrunk,
-          isTheMarionette: nextVal ? false : p.isTheMarionette,
-          isTheLunatic: nextVal ? false : p.isTheLunatic,
-        };
-      }
-      if (isTurningOn) {
-        return {
-          ...p,
-          isTheLilMonsta: false,
-        };
-      }
-      return p;
-    }));
   };
 
   const handleScriptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -493,33 +387,15 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     return roles;
   }, [currentScriptRoles]);
 
-  const randomlyAssignRoles = () => {
-    const assignedPlayers = performStandardAssignment(players, currentScriptRoles, selectionRoles);
-    if (!assignedPlayers) {
-      const N = players.length;
-      if (N < 5) {
-        alert("Please add at least 5 players to assign roles.");
-      } else {
-        alert("The active script must contain at least some Townsfolk, Minions, and Demons.");
-      }
-      return;
-    }
-    setPlayers(assignedPlayers);
-    setIsLilMonstaGame(assignedPlayers.some(p => p.isTheLilMonsta));
-  };
-
-
-
-  const validationSummary = useMemo(() => {
-    return getValidationSummary(players);
-  }, [players]);
-
-  const allAssigned = players.length >= 5 && players.every(p => p.roleId);
   const isLightModeActive = theme === 'light';
 
-  // Modal logic details
-  const modalPlayer = selectedPlayerId ? players.find(x => x.id === selectedPlayerId) : null;
-  const modalRoleObj = modalPlayer ? (rolesData as Role[]).find(r => r.id === modalPlayer.roleId) : undefined;
+  // Details Modal helpers
+  const modalPlayer = selectedPlayerId ? players.find(p => p.id === selectedPlayerId) : null;
+  const modalRoleObj = modalPlayer ? ((rolesData as Role[]).find(r => r.id === modalPlayer.roleId) || undefined) : undefined;
+  const currentIndex = selectedPlayerId ? players.findIndex(p => p.id === selectedPlayerId) : -1;
+  const prevPlayerId = currentIndex > 0 ? players[currentIndex - 1].id : null;
+  const nextPlayerId = currentIndex >= 0 && currentIndex < players.length - 1 ? players[currentIndex + 1].id : null;
+
   const filteredModalRoles = selectionRoles
     .filter(r =>
       r.name.toLowerCase().includes(modalRoleSearch.toLowerCase()) ||
@@ -543,9 +419,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       if (orderA !== orderB) return orderA - orderB;
       return a.name.localeCompare(b.name);
     });
-  const currentIndex = selectedPlayerId ? players.findIndex(x => x.id === selectedPlayerId) : -1;
-  const prevPlayerId = selectedPlayerId && currentIndex !== -1 ? players[(currentIndex - 1 + players.length) % players.length].id : null;
-  const nextPlayerId = selectedPlayerId && currentIndex !== -1 ? players[(currentIndex + 1) % players.length].id : null;
 
   return (
     <div className={cn(
@@ -554,6 +427,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         ? "bg-clocktower-parchment text-clocktower-night"
         : "bg-clocktower-night text-clocktower-parchment"
     )}>
+      {/* Header */}
       <header className={cn(
         "relative flex flex-col items-center justify-center mb-6 border-b pb-3 gap-2.5 w-full",
         isLightModeActive ? "border-clocktower-blood/20" : "border-clocktower-blood"
@@ -588,8 +462,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
             </button>
           )}
           
-          <h1 className="text-2xl font-bold text-clocktower-blood tracking-wide text-center">
-            Standard
+          <h1 className="text-xl md:text-2xl font-bold text-clocktower-blood tracking-wide text-center pr-20 pl-10 flex-1 min-w-0 truncate">
+            Character Tracker
           </h1>
 
           <div className="absolute right-0 flex items-center gap-1">
@@ -613,7 +487,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       </header>
 
       {phase === 'setup' && (
-        <StandardSetupPhase
+        <PlayerTrackerSetupPhase
           players={players}
           customScriptRoles={customScriptRoles}
           scriptName={scriptName}
@@ -625,16 +499,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           fileInputRef={fileInputRef}
           handleScriptUpload={handleScriptUpload}
           clearCustomScript={clearCustomScript}
-          randomlyAssignRoles={randomlyAssignRoles}
-          setActivePlayerId={setActivePlayerId}
-          setSearchTerm={setSearchTerm}
-          togglePlayerTheDrunk={togglePlayerTheDrunk}
-          togglePlayerTheMarionette={togglePlayerTheMarionette}
-          togglePlayerTheLunatic={togglePlayerTheLunatic}
-          togglePlayerTheLilMonsta={togglePlayerTheLilMonsta}
-          validationSummary={validationSummary}
-          isLightModeActive={isLightModeActive}
-          allAssigned={allAssigned}
           setPhase={setPhase}
           draggedIndex={draggedIndex}
           dragOverIndex={dragOverIndex}
@@ -678,20 +542,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           handleTouchEnd={handleTouchEnd}
           onResetDead={resetDead}
           onResetTime={resetTime}
-        />
-      )}
-
-      {/* Role Selection Modal */}
-      {activePlayerId && (
-        <StandardRoleSelectionModal
-          activePlayerId={activePlayerId}
-          players={players}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          updatePlayerRole={updatePlayerRole}
-          setActivePlayerId={setActivePlayerId}
-          isLightModeActive={isLightModeActive}
-          selectionRoles={selectionRoles}
+          showNightOrder={false}
         />
       )}
 
@@ -711,15 +562,16 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           onNextPlayer={() => nextPlayerId && setSelectedPlayerId(nextPlayerId)}
           onUpdateName={updatePlayerName}
           onUpdateRole={updatePlayerRole}
-          onUpdateRoles={updatePlayerRoles}
           onToggleDead={togglePlayerDead}
           onToggleDeadVote={togglePlayerDeadVote}
           onToggleDrunkOrPoisoned={togglePlayerDrunkOrPoisoned}
           onToggleEvil={togglePlayerEvil}
-          onToggleLilMonsta={togglePlayerTheLilMonsta}
-          isLilMonstaGame={isLilMonstaGame}
+          onToggleLilMonsta={() => {}}
+          isLilMonstaGame={false}
           onSetSearchingRole={setIsSearchingRole}
           onSetModalRoleSearch={setModalRoleSearch}
+          allowMultipleRoles={true}
+          onUpdateRoles={updatePlayerRoles}
         />
       )}
     </div>

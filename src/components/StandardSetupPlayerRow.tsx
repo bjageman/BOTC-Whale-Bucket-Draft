@@ -11,6 +11,7 @@ interface StandardSetupPlayerRowProps {
   customScriptRoles: Role[] | null;
   draggedIndex: number | null;
   dragOverIndex: number | null;
+  handleMouseDown: (e: React.MouseEvent) => void;
   handleDragStart: (e: React.DragEvent, index: number) => void;
   handleDragOver: (e: React.DragEvent, index: number) => void;
   handleDragLeave: () => void;
@@ -37,6 +38,7 @@ export default function StandardSetupPlayerRow({
   customScriptRoles,
   draggedIndex,
   dragOverIndex,
+  handleMouseDown,
   handleDragStart,
   handleDragOver,
   handleDragLeave,
@@ -91,6 +93,7 @@ export default function StandardSetupPlayerRow({
     <div
       data-drag-index={index}
       draggable={true}
+      onMouseDown={handleMouseDown}
       onDragStart={(e) => handleDragStart(e, index)}
       onDragOver={(e) => handleDragOver(e, index)}
       onDragLeave={handleDragLeave}
@@ -107,7 +110,7 @@ export default function StandardSetupPlayerRow({
           onTouchStart={(e) => handleTouchStart(e, index)}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="text-gray-600 cursor-grab active:cursor-grabbing hover:text-gray-400 p-0.5 shrink-0 flex items-center select-none touch-none"
+          className="text-gray-600 cursor-grab active:cursor-grabbing hover:text-gray-400 p-0.5 shrink-0 flex items-center select-none touch-none drag-handle"
         >
           <GripVertical size={14} />
         </div>

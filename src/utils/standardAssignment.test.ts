@@ -393,5 +393,34 @@ describe('performStandardAssignment', () => {
 
     expect(targetTrialFound).toBe(true);
   });
+
+  it('should ensure there are no evil players in play when Atheist is in play', () => {
+    const scriptWithAtheist: Role[] = [
+      ...mockScriptRoles,
+      { id: 'atheist', name: 'Atheist', team: 'townsfolk' },
+      { id: 'bountyhunter', name: 'Bounty Hunter', team: 'townsfolk' },
+    ];
+
+    for (let trial = 0; trial < 20; trial++) {
+      const players: Player[] = [
+        { id: '1', name: 'Alice', isDead: false },
+        { id: '2', name: 'Bob', isDead: false },
+        { id: '3', name: 'Charlie', isDead: false },
+        { id: '4', name: 'David', isDead: false },
+        { id: '5', name: 'Eve', isDead: false },
+        { id: '6', name: 'Frank', isDead: false },
+      ];
+
+      const result = performStandardAssignment(players, scriptWithAtheist, []);
+      expect(result).not.toBeNull();
+      if (!result) return;
+
+      const hasAtheist = result.some(p => p.roleId === 'atheist' && !p.isTheDrunk && !p.isTheMarionette && !p.isTheLunatic);
+      if (hasAtheist) {
+        const evilPlayers = result.filter(p => p.isEvil === true);
+        expect(evilPlayers.length).toBe(0);
+      }
+    }
+  });
 });
 

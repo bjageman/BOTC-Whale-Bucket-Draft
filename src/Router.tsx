@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import HomePage from './HomePage';
 import WhaleBucket from './WhaleBucket';
 import StandardSetup from './StandardSetup';
+import PlayerTracker from './PlayerTracker';
 
-type Route = 'home' | 'whale-bucket' | 'standard';
+type Route = 'home' | 'whale-bucket' | 'standard' | 'tracker';
 
 function getRouteFromHash(): Route {
   const hash = window.location.hash;
   if (hash === '#/whale-bucket') return 'whale-bucket';
   if (hash === '#/standard') return 'standard';
+  if (hash === '#/tracker') return 'tracker';
   return 'home';
 }
 
@@ -38,6 +40,8 @@ export default function Router() {
       return <WhaleBucket theme={theme} toggleTheme={toggleTheme} />;
     case 'standard':
       return <StandardSetup theme={theme} toggleTheme={toggleTheme} />;
+    case 'tracker':
+      return <PlayerTracker theme={theme} toggleTheme={toggleTheme} />;
     default:
       return <HomePage theme={theme} toggleTheme={toggleTheme} />;
   }

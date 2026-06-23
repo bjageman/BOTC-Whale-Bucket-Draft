@@ -301,4 +301,36 @@ describe('assignCharacters', () => {
       expect(evilTownsfolk.length).toBe(1);
     }
   });
+
+  it('should ensure there are no evil players in play when Atheist is in play', () => {
+    const roles: Role[] = [
+      { id: 'atheist', name: 'Atheist', team: 'townsfolk' },
+      { id: 'bountyhunter', name: 'Bounty Hunter', team: 'townsfolk' },
+      { id: 'chef', name: 'Chef', team: 'townsfolk' },
+      { id: 'librarian', name: 'Librarian', team: 'townsfolk' },
+      { id: 'investigator', name: 'Investigator', team: 'townsfolk' },
+      { id: 'poisoner', name: 'Poisoner', team: 'minion' },
+      { id: 'imp', name: 'Imp', team: 'demon' },
+    ];
+
+    const players: Player[] = [
+      { id: '1', name: 'Alice', isDead: false, preferences: { townsfolk: ['atheist'], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '2', name: 'Bob', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '3', name: 'Charlie', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '4', name: 'David', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] } },
+      { id: '5', name: 'Eve', isDead: false, preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] } },
+    ];
+
+    for (let trial = 0; trial < 10; trial++) {
+      const result = assignCharacters(players, roles);
+      expect(result).not.toBeNull();
+      if (!result) return;
+
+      const hasAtheist = result.some(r => r.role.id === 'atheist' && !r.player.isTheDrunk && !r.player.isTheMarionette && !r.player.isTheLunatic);
+      if (hasAtheist) {
+        const evilPlayers = result.filter(r => r.player.isEvil === true);
+        expect(evilPlayers.length).toBe(0);
+      }
+    }
+  });
 });

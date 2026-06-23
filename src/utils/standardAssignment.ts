@@ -449,17 +449,24 @@ export function performStandardAssignment(
     }
   }
 
-  const hasBountyHunter = assignedPlayers.some(p => p.roleId === 'bountyhunter' && !p.isTheDrunk && !p.isTheMarionette && !p.isTheLunatic);
-  if (hasBountyHunter) {
-    const townsfolkPlayers = assignedPlayers.filter(p => 
-      p.roleId && 
-      !travelerRoleIds.has(p.roleId) &&
-      tfs.some(t => t.id === p.roleId) &&
-      !p.isTheMarionette
-    );
-    if (townsfolkPlayers.length > 0) {
-      const chosen = townsfolkPlayers[Math.floor(Math.random() * townsfolkPlayers.length)];
-      chosen.isEvil = true;
+  const hasAtheist = assignedPlayers.some(p => p.roleId === 'atheist' && !p.isTheDrunk && !p.isTheMarionette && !p.isTheLunatic);
+  if (hasAtheist) {
+    assignedPlayers.forEach(p => {
+      p.isEvil = undefined;
+    });
+  } else {
+    const hasBountyHunter = assignedPlayers.some(p => p.roleId === 'bountyhunter' && !p.isTheDrunk && !p.isTheMarionette && !p.isTheLunatic);
+    if (hasBountyHunter) {
+      const townsfolkPlayers = assignedPlayers.filter(p => 
+        p.roleId && 
+        !travelerRoleIds.has(p.roleId) &&
+        tfs.some(t => t.id === p.roleId) &&
+        !p.isTheMarionette
+      );
+      if (townsfolkPlayers.length > 0) {
+        const chosen = townsfolkPlayers[Math.floor(Math.random() * townsfolkPlayers.length)];
+        chosen.isEvil = true;
+      }
     }
   }
 
