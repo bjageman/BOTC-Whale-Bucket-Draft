@@ -55,6 +55,41 @@ export default function HomePage({ theme, toggleTheme }: HomeProps) {
         {/* Mode Cards */}
         <div className="space-y-4">
           <a
+            href="#/tracker"
+            className={cn(
+              "block border rounded-lg p-6 transition-all group cursor-pointer text-left",
+              isLightModeActive
+                ? "bg-white border-gray-250 text-clocktower-night shadow-sm hover:border-clocktower-traveler/60 hover:bg-gray-50/80"
+                : "bg-gray-900/60 border-gray-800 text-gray-200 hover:border-clocktower-traveler/60 hover:bg-gray-900/80"
+            )}
+          >
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-lg bg-clocktower-traveler/10 border border-clocktower-traveler/20 group-hover:bg-clocktower-traveler/20 transition-colors">
+                <Users size={24} className="text-clocktower-traveler" />
+              </div>
+              <div className="flex-1">
+                <h2 className={cn(
+                  "text-lg font-bold transition-colors",
+                  isLightModeActive ? "text-clocktower-night group-hover:text-clocktower-traveler" : "text-gray-200 group-hover:text-white"
+                )}>
+                  Game Tracker
+                </h2>
+                <p className={cn("text-sm mt-1 leading-relaxed", isLightModeActive ? "text-gray-600" : "text-gray-500")}>
+                  Keep track of character claims and player statuses as a player.
+                </p>
+                <div className="flex gap-2 mt-3">
+                  <span className="text-[10px] font-semibold bg-clocktower-traveler/10 text-clocktower-traveler/80 border border-clocktower-traveler/20 px-2 py-0.5 rounded">Player View</span>
+                  <span className={cn(
+                    "text-[10px] font-semibold border px-2 py-0.5 rounded",
+                    isLightModeActive ? "bg-gray-100 text-gray-600 border-gray-200" : "bg-gray-800 text-gray-400 border-gray-700"
+                  )}>
+                    Blank Setup
+                  </span>
+                </div>
+              </div>
+            </div>
+          </a>
+          <a
             href="#/standard"
             className={cn(
               "block border rounded-lg p-6 transition-all group cursor-pointer text-left",
@@ -89,7 +124,7 @@ export default function HomePage({ theme, toggleTheme }: HomeProps) {
               </div>
             </div>
           </a>
-
+          
           <a
             href="#/whale-bucket"
             className={cn(
@@ -126,41 +161,7 @@ export default function HomePage({ theme, toggleTheme }: HomeProps) {
             </div>
           </a>
 
-          <a
-            href="#/tracker"
-            className={cn(
-              "block border rounded-lg p-6 transition-all group cursor-pointer text-left",
-              isLightModeActive
-                ? "bg-white border-gray-250 text-clocktower-night shadow-sm hover:border-clocktower-traveler/60 hover:bg-gray-50/80"
-                : "bg-gray-900/60 border-gray-800 text-gray-200 hover:border-clocktower-traveler/60 hover:bg-gray-900/80"
-            )}
-          >
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-lg bg-clocktower-traveler/10 border border-clocktower-traveler/20 group-hover:bg-clocktower-traveler/20 transition-colors">
-                <Users size={24} className="text-clocktower-traveler" />
-              </div>
-              <div className="flex-1">
-                <h2 className={cn(
-                  "text-lg font-bold transition-colors",
-                  isLightModeActive ? "text-clocktower-night group-hover:text-clocktower-traveler" : "text-gray-200 group-hover:text-white"
-                )}>
-                  Character Tracker
-                </h2>
-                <p className={cn("text-sm mt-1 leading-relaxed", isLightModeActive ? "text-gray-600" : "text-gray-500")}>
-                  Keep track of character assignments and player statuses dynamically as a player.
-                </p>
-                <div className="flex gap-2 mt-3">
-                  <span className="text-[10px] font-semibold bg-clocktower-traveler/10 text-clocktower-traveler/80 border border-clocktower-traveler/20 px-2 py-0.5 rounded">Player View</span>
-                  <span className={cn(
-                    "text-[10px] font-semibold border px-2 py-0.5 rounded",
-                    isLightModeActive ? "bg-gray-100 text-gray-600 border-gray-200" : "bg-gray-800 text-gray-400 border-gray-700"
-                  )}>
-                    Blank Setup
-                  </span>
-                </div>
-              </div>
-            </div>
-          </a>
+          
         </div>
 
         <p className={cn("text-xs transition-colors", isLightModeActive ? "text-gray-500" : "text-gray-600")}>

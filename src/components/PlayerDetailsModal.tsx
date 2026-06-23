@@ -432,14 +432,21 @@ export default function PlayerDetailsModal({
                  const rObj = (rolesData as Role[]).find(r => r.id === roleId);
                  if (!rObj) return null;
                  return (
-                   <span
+                   <button
                      key={roleId}
+                     type="button"
+                     onClick={() => {
+                       if (onUpdateRoles) {
+                         onUpdateRoles(p.id, displayRoles.filter(id => id !== roleId));
+                       }
+                     }}
                      className={cn(
-                       "inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-1 rounded border shadow-sm transition-all",
+                       "inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-1 rounded border shadow-sm transition-all cursor-pointer select-none",
                        isLightModeActive
-                         ? "bg-gray-100 border-gray-300 text-clocktower-night hover:bg-gray-200"
-                         : "bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-750"
+                         ? "bg-gray-100 border-gray-300 text-clocktower-night hover:bg-red-50 hover:text-red-600 hover:border-red-300"
+                         : "bg-gray-800 border-gray-700 text-gray-200 hover:bg-red-950/30 hover:text-red-400 hover:border-red-900/50"
                      )}
+                     title="Remove character"
                    >
                      <span className="w-3.5 h-3.5 bg-white rounded-full flex items-center justify-center shrink-0">
                        <img
@@ -450,20 +457,8 @@ export default function PlayerDetailsModal({
                        />
                      </span>
                      <span>{rObj.name}</span>
-                     <button
-                       type="button"
-                       onClick={(e) => {
-                         e.stopPropagation();
-                         if (onUpdateRoles) {
-                           onUpdateRoles(p.id, displayRoles.filter(id => id !== roleId));
-                         }
-                       }}
-                       className="text-red-500 hover:text-red-600 font-black text-xs shrink-0 select-none ml-1 hover:scale-125"
-                       title="Remove character"
-                     >
-                       ×
-                     </button>
-                   </span>
+                     <span className="text-red-500 font-black ml-0.5 text-xs">×</span>
+                   </button>
                  );
                })}
              </div>

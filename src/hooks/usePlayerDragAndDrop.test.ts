@@ -61,6 +61,12 @@ describe('usePlayerDragAndDrop', () => {
 
     // Start dragging Bob (index 1)
     act(() => {
+      const mockMouseDownEvent = {
+        target: {
+          closest: (selector: string) => selector === '.drag-handle' ? {} : null
+        }
+      } as unknown as React.MouseEvent;
+      result.current.handleMouseDown(mockMouseDownEvent);
       result.current.handleDragStart(mockDragStartEvent, 1);
     });
     expect(result.current.draggedIndex).toBe(1);
@@ -115,6 +121,12 @@ describe('usePlayerDragAndDrop', () => {
     } as unknown as React.DragEvent;
 
     act(() => {
+      const mockMouseDownEvent = {
+        target: {
+          closest: (selector: string) => selector === '.drag-handle' ? {} : null
+        }
+      } as unknown as React.MouseEvent;
+      result.current.handleMouseDown(mockMouseDownEvent);
       result.current.handleDragStart(mockDragStartEvent, 0);
       result.current.handleDragOver(mockDragOverEvent, 1);
     });
@@ -185,4 +197,34 @@ describe('usePlayerDragAndDrop', () => {
     // Restore original DOM method
     document.elementFromPoint = originalElementFromPoint;
   });
+
+  it('should prevent drag if it did not start from drag-handle', () => {
+    const items = ['Alice', 'Bob'];
+    const setItems = vi.fn();
+    const { result } = renderHook(() => usePlayerDragAndDrop(items, setItems));
+
+    const mockPreventDefault = vi.fn();
+    const mockDragStartEvent = {
+      preventDefault: mockPreventDefault,
+      dataTransfer: {
+        effectAllowed: '',
+        setData: vi.fn(),
+      }
+    } as unknown as React.DragEvent;
+
+    act(() => {
+      // Simulate clicking on the text/background (not drag handle)
+      const mockMouseDownEvent = {
+        target: {
+          closest: () => null
+        }
+      } as unknown as React.MouseEvent;
+      result.current.handleMouseDown(mockMouseDownEvent);
+      result.current.handleDragStart(mockDragStartEvent, 0);
+    });
+
+    expect(mockPreventDefault).toHaveBeenCalled();
+    expect(result.current.draggedIndex).toBeNull();
+  });
 });
+

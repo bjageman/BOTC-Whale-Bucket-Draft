@@ -16,6 +16,7 @@ interface WhaleBucketSetupPhaseProps {
   allowTravelers: boolean;
   draggedIndex: number | null;
   dragOverIndex: number | null;
+  handleMouseDown: (e: React.MouseEvent) => void;
   handleDragStart: (e: React.DragEvent, index: number) => void;
   handleDragOver: (e: React.DragEvent, index: number) => void;
   handleDragLeave: () => void;
@@ -46,6 +47,7 @@ export default function WhaleBucketSetupPhase({
   allowTravelers,
   draggedIndex,
   dragOverIndex,
+  handleMouseDown,
   handleDragStart,
   handleDragOver,
   handleDragLeave,
@@ -147,6 +149,7 @@ export default function WhaleBucketSetupPhase({
                 key={p.id}
                 data-drag-index={index}
                 draggable={true}
+                onMouseDown={handleMouseDown}
                 onDragStart={(e) => handleDragStart(e, index)}
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDragLeave={handleDragLeave}

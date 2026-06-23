@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 export function usePlayerDragAndDrop<T>(items: T[], setItems: (items: T[]) => void) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const dragStartFromHandleRef = useRef(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const target = e?.target as HTMLElement;
+    dragStartFromHandleRef.current = !!(target && target.closest && target.closest('.drag-handle'));
+  };
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
-    const target = e?.target as HTMLElement;
-    if (target && target.closest && !target.closest('.drag-handle')) {
+    if (!dragStartFromHandleRef.current) {
       e.preventDefault();
       return;
     }
@@ -110,6 +115,7 @@ export function usePlayerDragAndDrop<T>(items: T[], setItems: (items: T[]) => vo
   return {
     draggedIndex,
     dragOverIndex,
+    handleMouseDown,
     handleDragStart,
     handleDragOver,
     handleDragLeave,

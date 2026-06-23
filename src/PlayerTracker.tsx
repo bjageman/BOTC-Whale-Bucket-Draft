@@ -139,6 +139,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
   const {
     draggedIndex,
     dragOverIndex,
+    handleMouseDown,
     handleDragStart,
     handleDragOver,
     handleDragLeave,
@@ -501,6 +502,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
           setPhase={setPhase}
           draggedIndex={draggedIndex}
           dragOverIndex={dragOverIndex}
+          handleMouseDown={handleMouseDown}
           handleDragStart={handleDragStart}
           handleDragOver={handleDragOver}
           handleDragLeave={handleDragLeave}
@@ -529,6 +531,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
           addTravelerGamePhase={addTravelerGamePhase}
           setNewTravelerName={setNewTravelerName}
           setNewTravelerRoleId={setNewTravelerRoleId}
+          handleMouseDown={handleMouseDown}
           handleDragStart={handleDragStart}
           handleDragOver={handleDragOver}
           handleDragLeave={handleDragLeave}

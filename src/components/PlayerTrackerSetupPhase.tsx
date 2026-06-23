@@ -19,6 +19,7 @@ interface PlayerTrackerSetupPhaseProps {
   setPhase: (phase: 'setup' | 'game') => void;
   draggedIndex: number | null;
   dragOverIndex: number | null;
+  handleMouseDown: (e: React.MouseEvent) => void;
   handleDragStart: (e: React.DragEvent, index: number) => void;
   handleDragOver: (e: React.DragEvent, index: number) => void;
   handleDragLeave: () => void;
@@ -45,6 +46,7 @@ export default function PlayerTrackerSetupPhase({
   setPhase,
   draggedIndex,
   dragOverIndex,
+  handleMouseDown,
   handleDragStart,
   handleDragOver,
   handleDragLeave,
@@ -154,6 +156,7 @@ export default function PlayerTrackerSetupPhase({
                 players={players}
                 draggedIndex={draggedIndex}
                 dragOverIndex={dragOverIndex}
+                handleMouseDown={handleMouseDown}
                 handleDragStart={handleDragStart}
                 handleDragOver={handleDragOver}
                 handleDragLeave={handleDragLeave}

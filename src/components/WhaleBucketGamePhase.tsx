@@ -17,6 +17,7 @@ interface WhaleBucketGamePhaseProps {
   isLightModeActive: boolean;
   draggedIndex: number | null;
   dragOverIndex: number | null;
+  handleMouseDown: (e: React.MouseEvent) => void;
   handleDragStart: (e: React.DragEvent, index: number) => void;
   handleDragOver: (e: React.DragEvent, index: number) => void;
   handleDragLeave: () => void;
@@ -43,6 +44,7 @@ export default function WhaleBucketGamePhase({
   isLightModeActive,
   draggedIndex,
   dragOverIndex,
+  handleMouseDown,
   handleDragStart,
   handleDragOver,
   handleDragLeave,
@@ -174,14 +176,12 @@ export default function WhaleBucketGamePhase({
                   key={p.id}
                   data-drag-index={index}
                   draggable={true}
+                  onMouseDown={handleMouseDown}
                   onDragStart={(e) => handleDragStart(e, index)}
                   onDragOver={(e) => handleDragOver(e, index)}
                   onDragLeave={handleDragLeave}
                   onDrop={(e) => handleDrop(e, index)}
                   onDragEnd={handleDragEnd}
-                  onTouchStart={(e) => handleTouchStart(e, index)}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
                   onClick={() => setSelectedPlayerId(p.id)}
                   className={cn(
                     "flex items-center gap-1.5 py-2.5 px-1.5 rounded border transition-all duration-200 min-w-0 hover:ring-1 hover:ring-gray-500/50 select-none cursor-pointer touch-auto",
@@ -193,7 +193,13 @@ export default function WhaleBucketGamePhase({
                       : "bg-gray-955/20 border-gray-900/40 hover:bg-gray-900/60"
                   )}
                 >
-                  <div className="text-gray-500 p-0.5 shrink-0 flex items-center transition-opacity duration-200 drag-handle opacity-60 hover:opacity-100 cursor-move touch-none">
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => handleTouchStart(e, index)}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    className="text-gray-500 p-0.5 shrink-0 flex items-center transition-opacity duration-200 drag-handle opacity-60 hover:opacity-100 cursor-move touch-none"
+                  >
                     <GripVertical size={10} />
                   </div>
                   <span className={cn("text-[9px] font-mono w-4 shrink-0", isLightModeActive ? "text-gray-550" : "text-gray-600")}>{index + 1}</span>
