@@ -50,7 +50,7 @@ export function useGameSocket(gameCode: string, onMessage: (data: any) => void) 
               credential: "openrelayproject"
             },
             {
-              urls: "turn:openrelay.metered.ca:443?transport=tcp",
+              urls: "turns:openrelay.metered.ca:443?transport=tcp",
               username: "openrelayproject",
               credential: "openrelayproject"
             }
@@ -111,7 +111,7 @@ export function useGameSocket(gameCode: string, onMessage: (data: any) => void) 
               credential: "openrelayproject"
             },
             {
-              urls: "turn:openrelay.metered.ca:443?transport=tcp",
+              urls: "turns:openrelay.metered.ca:443?transport=tcp",
               username: "openrelayproject",
               credential: "openrelayproject"
             }
