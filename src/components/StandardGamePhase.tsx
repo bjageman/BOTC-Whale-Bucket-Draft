@@ -31,6 +31,7 @@ interface Props {
   handleTouchEnd: () => void;
   onResetDead?: () => void;
   onResetTime?: () => void;
+  showNightOrder?: boolean;
 }
 
 export default function StandardGamePhase({
@@ -41,6 +42,7 @@ export default function StandardGamePhase({
   handleDragStart, handleDragOver, handleDragLeave, handleDrop, handleDragEnd,
   handleTouchStart, handleTouchMove, handleTouchEnd,
   onResetDead, onResetTime,
+  showNightOrder = true,
 }: Props) {
   const [isDragEnabled, setIsDragEnabled] = useState(false);
   return (
@@ -59,12 +61,14 @@ export default function StandardGamePhase({
             onResetTime={onResetTime}
           />
         </div>
-        <NightOrderWidget
-          players={players}
-          timeOfDay={timeOfDay}
-          dayNumber={dayNumber}
-          isLightModeActive={isLightModeActive}
-        />
+        {showNightOrder && (
+          <NightOrderWidget
+            players={players}
+            timeOfDay={timeOfDay}
+            dayNumber={dayNumber}
+            isLightModeActive={isLightModeActive}
+          />
+        )}
       </div>
 
       {/* Column 2: Controls */}

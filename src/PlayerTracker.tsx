@@ -434,6 +434,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
           handleTouchEnd={handleTouchEnd}
           onResetDead={resetDead}
           onResetTime={resetTime}
+          showNightOrder={false}
         />
       )}
 
