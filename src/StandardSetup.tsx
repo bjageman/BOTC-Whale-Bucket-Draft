@@ -21,14 +21,69 @@ interface SetupProps {
 }
 
 export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [isLilMonstaGame, setIsLilMonstaGame] = useState(false);
-  const [phase, setPhase] = useState<Phase>('setup');
+  const [players, setPlayers] = useState<Player[]>(() => {
+    const saved = localStorage.getItem('standard-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.players || [];
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [];
+  });
+  const [isLilMonstaGame, setIsLilMonstaGame] = useState<boolean>(() => {
+    const saved = localStorage.getItem('standard-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.isLilMonstaGame || false;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return false;
+  });
+  const [phase, setPhase] = useState<Phase>(() => {
+    const saved = localStorage.getItem('standard-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.phase || 'setup';
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return 'setup';
+  });
   const [newPlayerName, setNewPlayerName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [activePlayerId, setActivePlayerId] = useState<string | null>(null);
-  const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>('night');
-  const [dayNumber, setDayNumber] = useState<number>(1);
+  const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>(() => {
+    const saved = localStorage.getItem('standard-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.timeOfDay || 'night';
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return 'night';
+  });
+  const [dayNumber, setDayNumber] = useState<number>(() => {
+    const saved = localStorage.getItem('standard-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.dayNumber || 1;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return 1;
+  });
 
   // Traveler states
   const [newTravelerName, setNewTravelerName] = useState('');
@@ -40,8 +95,30 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   const [modalRoleSearch, setModalRoleSearch] = useState('');
 
   // Script states
-  const [scriptName, setScriptName] = useState<string>("All Roles (Default)");
-  const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(null);
+  const [scriptName, setScriptName] = useState<string>(() => {
+    const saved = localStorage.getItem('standard-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.scriptName || "All Roles (Default)";
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return "All Roles (Default)";
+  });
+  const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(() => {
+    const saved = localStorage.getItem('standard-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.customScriptRoles || null;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return null;
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const closeDetailsModal = () => {
@@ -91,26 +168,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     handleTouchEnd,
     movePlayer,
   } = usePlayerDragAndDrop(players, setPlayers);
-
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        const { players: p, phase: ph, timeOfDay: tod, dayNumber: dn, customScriptRoles: csr, scriptName: sn, isLilMonstaGame: lmg } = JSON.parse(saved);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setPlayers(p || []);
-        setPhase(ph || 'setup');
-        setTimeOfDay(tod || 'night');
-        setDayNumber(dn || 1);
-        if (csr) setCustomScriptRoles(csr);
-        if (sn) setScriptName(sn);
-        if (lmg !== undefined) setIsLilMonstaGame(lmg);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }, []);
 
   // Save to localStorage and update document theme
   useEffect(() => {
@@ -182,7 +239,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       isTheMarionette: false,
       isTheLilMonsta: false,
     };
-    setPlayers([...players, newPlayer]);
+    setPlayers([newPlayer, ...players]);
     setNewTravelerName('');
   };
 
@@ -192,6 +249,10 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
 
   const updatePlayerName = (id: string, name: string) => {
     setPlayers(players.map(p => p.id === id ? { ...p, name } : p));
+  };
+
+  const updatePlayerRoles = (id: string, roleIds: string[]) => {
+    setPlayers(players.map(p => p.id === id ? { ...p, roleIds } : p));
   };
 
   const updatePlayerRole = (id: string, roleId: string) => {
@@ -647,6 +708,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           onNextPlayer={() => nextPlayerId && setSelectedPlayerId(nextPlayerId)}
           onUpdateName={updatePlayerName}
           onUpdateRole={updatePlayerRole}
+          onUpdateRoles={updatePlayerRoles}
           onToggleDead={togglePlayerDead}
           onToggleDeadVote={togglePlayerDeadVote}
           onToggleDrunkOrPoisoned={togglePlayerDrunkOrPoisoned}

@@ -5,9 +5,16 @@ export function usePlayerDragAndDrop<T>(items: T[], setItems: (items: T[]) => vo
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
+    const target = e?.target as HTMLElement;
+    if (target && target.closest && !target.closest('.drag-handle')) {
+      e.preventDefault();
+      return;
+    }
     setDraggedIndex(index);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", index.toString());
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", index.toString());
+    }
   };
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
@@ -23,7 +30,7 @@ export function usePlayerDragAndDrop<T>(items: T[], setItems: (items: T[]) => vo
 
   const handleDrop = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault();
-    const sourceIndexStr = e.dataTransfer.getData("text/plain");
+    const sourceIndexStr = e.dataTransfer ? e.dataTransfer.getData("text/plain") : null;
     const sourceIndex = sourceIndexStr ? parseInt(sourceIndexStr, 10) : draggedIndex;
     if (sourceIndex !== null && sourceIndex !== undefined && !isNaN(sourceIndex)) {
       if (sourceIndex !== targetIndex) {
@@ -42,7 +49,11 @@ export function usePlayerDragAndDrop<T>(items: T[], setItems: (items: T[]) => vo
     setDragOverIndex(null);
   };
 
-  const handleTouchStart = (_e: React.TouchEvent, index: number) => {
+  const handleTouchStart = (e: React.TouchEvent, index: number) => {
+    const target = e?.target as HTMLElement;
+    if (target && target.closest && !target.closest('.drag-handle')) {
+      return;
+    }
     setDraggedIndex(index);
   };
 

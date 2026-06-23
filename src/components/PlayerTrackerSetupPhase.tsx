@@ -111,7 +111,12 @@ export default function PlayerTrackerSetupPhase({
       {/* Section B: Players list */}
       <div className="md:col-start-1 md:row-start-1 md:row-span-2 space-y-6 w-full">
         <section>
-          <h2 className="text-lg font-semibold text-gray-300 mb-4">Players List ({players.length})</h2>
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1.5 mb-4">
+            <h2 className="text-lg font-semibold text-gray-300">Players List ({players.length})</h2>
+            <span className="text-xs text-gray-500 font-medium italic">
+              Add yourself then every other player in clockwise order
+            </span>
+          </div>
 
           <div className="flex gap-2 mb-4">
             <input

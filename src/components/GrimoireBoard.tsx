@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import type { Player, Role } from '../types';
 import { cn } from '../utils/cn';
@@ -25,6 +25,10 @@ export default function GrimoireBoard({
   onResetTime,
 }: GrimoireBoardProps) {
   const [hoveredOrder, setHoveredOrder] = useState<string[]>([]);
+  const [playerTopIndex, setPlayerTopIndex] = useState<Record<string, number>>({});
+  const [fannedPlayerId, setFannedPlayerId] = useState<string | null>(null);
+  const touchStartedFannedRef = useRef<boolean>(false);
+  const touchStartTimeRef = useRef<number>(0);
 
   const teamFill = (team: Role['team']) => ({
     townsfolk: 'fill-clocktower-townsfolk',
@@ -38,51 +42,119 @@ export default function GrimoireBoard({
     const count = players.length;
     if (count <= 6) {
       return {
-        boardClass: "w-[88vw] h-[84vw] max-w-[560px] max-h-[620px] md:max-h-[500px] landscape:max-h-[500px] rounded-[28px]",
-        radiusX: 38,
+        boardClass: "w-[88vw] h-[112vw] max-w-[560px] max-h-[700px] md:max-h-[500px] landscape:max-h-[500px] rounded-[28px]",
+        radiusX: 34,
         radiusY: 36,
-        btnStyle: { width: '25cqw', height: '25cqw' } as CSSProperties,
-        dotStyle: { top: '6%', width: '1.8cqw', height: '1.8cqw' } as CSSProperties,
-        nameStyle: { fontSize: '4.2cqw', maxWidth: '23cqw', marginTop: '0.5cqw' } as CSSProperties,
-        roleStyle: { fontSize: '3.3cqw', maxWidth: '23cqw', marginTop: '0cqw' } as CSSProperties,
+        btnStyle: { width: '30cqw', height: '30cqw' } as CSSProperties,
+        dotStyle: { top: '6%', width: '2.0cqw', height: '2.0cqw' } as CSSProperties,
+        nameStyle: { fontSize: '4.8cqw', maxWidth: '28cqw', marginTop: '0.5cqw' } as CSSProperties,
+        roleStyle: { fontSize: '3.8cqw', maxWidth: '28cqw', marginTop: '0cqw' } as CSSProperties,
         charLimit: 16,
         tooltipClass: "top-18",
-        centerBtnStyle: { width: '25cqw', height: '25cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '4.2cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '3.4cqw', marginTop: '0.2cqw' } as CSSProperties,
+        centerBtnStyle: { width: '30cqw', height: '30cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '4.8cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '3.8cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     } else if (count <= 10) {
       return {
-        boardClass: "w-[90vw] h-[86vw] max-w-[620px] max-h-[680px] md:max-h-[500px] landscape:max-h-[500px] rounded-[34px]",
-        radiusX: 40,
-        radiusY: 37,
-        btnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
-        dotStyle: { top: '6%', width: '1.5cqw', height: '1.5cqw' } as CSSProperties,
-        nameStyle: { fontSize: '3.6cqw', maxWidth: '19cqw', marginTop: '0.4cqw' } as CSSProperties,
-        roleStyle: { fontSize: '2.8cqw', maxWidth: '19cqw', marginTop: '0cqw' } as CSSProperties,
+        boardClass: "w-[90vw] h-[118vw] max-w-[620px] max-h-[760px] md:max-h-[500px] landscape:max-h-[500px] rounded-[34px]",
+        radiusX: 36,
+        radiusY: 38,
+        btnStyle: { width: '26cqw', height: '26cqw' } as CSSProperties,
+        dotStyle: { top: '6%', width: '1.7cqw', height: '1.7cqw' } as CSSProperties,
+        nameStyle: { fontSize: '4.3cqw', maxWidth: '24cqw', marginTop: '0.4cqw' } as CSSProperties,
+        roleStyle: { fontSize: '3.4cqw', maxWidth: '24cqw', marginTop: '0cqw' } as CSSProperties,
         charLimit: 14,
         tooltipClass: "top-16",
-        centerBtnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '3.5cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '2.8cqw', marginTop: '0.2cqw' } as CSSProperties,
+        centerBtnStyle: { width: '26cqw', height: '26cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '4.0cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '3.2cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     } else {
       return {
-        boardClass: "w-[92vw] h-[88vw] max-w-[680px] max-h-[740px] md:max-h-[500px] landscape:max-h-[500px] rounded-[40px]",
-        radiusX: 42,
-        radiusY: 38,
-        btnStyle: { width: '16.5cqw', height: '16.5cqw' } as CSSProperties,
-        dotStyle: { top: '6%', width: '1.2cqw', height: '1.2cqw' } as CSSProperties,
-        nameStyle: { fontSize: '3.0cqw', maxWidth: '15cqw', marginTop: '0.3cqw' } as CSSProperties,
-        roleStyle: { fontSize: '2.3cqw', maxWidth: '15cqw', marginTop: '0cqw' } as CSSProperties,
+        boardClass: "w-[92vw] h-[124vw] max-w-[680px] max-h-[820px] md:max-h-[500px] landscape:max-h-[500px] rounded-[40px]",
+        radiusX: 38,
+        radiusY: 40,
+        btnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
+        dotStyle: { top: '6%', width: '1.4cqw', height: '1.4cqw' } as CSSProperties,
+        nameStyle: { fontSize: '3.7cqw', maxWidth: '19cqw', marginTop: '0.3cqw' } as CSSProperties,
+        roleStyle: { fontSize: '2.8cqw', maxWidth: '19cqw', marginTop: '0cqw' } as CSSProperties,
         charLimit: 12,
         tooltipClass: "top-14",
-        centerBtnStyle: { width: '17cqw', height: '17cqw' } as CSSProperties,
-        centerText1Style: { fontSize: '2.8cqw' } as CSSProperties,
-        centerText2Style: { fontSize: '2.2cqw', marginTop: '0.2cqw' } as CSSProperties,
+        centerBtnStyle: { width: '21cqw', height: '21cqw' } as CSSProperties,
+        centerText1Style: { fontSize: '3.1cqw' } as CSSProperties,
+        centerText2Style: { fontSize: '2.5cqw', marginTop: '0.2cqw' } as CSSProperties,
       };
     }
   }, [players.length]);
+
+  const evenAngles = useMemo(() => {
+    const total = players.length;
+    if (total <= 1) return [0];
+
+    // Account for the board aspect ratio (height / width) so that the integration
+    // calculates uniform spacing in visual screen coordinates rather than raw percentage coordinates.
+    let aspect = 1.3;
+    if (total <= 6) aspect = 112 / 88;
+    else if (total <= 10) aspect = 118 / 90;
+    else aspect = 124 / 92;
+
+    const rx = grimoireConfig.radiusX;
+    const ry = grimoireConfig.radiusY * aspect;
+
+    const n = 3.6;
+    const p = 2 / n;
+
+    const steps = 360;
+    const arcLengths = new Float32Array(steps + 1);
+    let totalLength = 0;
+    arcLengths[0] = 0;
+
+    for (let i = 1; i <= steps; i++) {
+      const theta1 = ((i - 1) * (360 / steps)) * (Math.PI / 180);
+      const theta2 = (i * (360 / steps)) * (Math.PI / 180);
+      const midTheta = (theta1 + theta2) / 2;
+      
+      const dt = 0.0001;
+      const tA = midTheta - dt / 2;
+      const tB = midTheta + dt / 2;
+      
+      const xA = rx * Math.sign(Math.cos(tA)) * Math.pow(Math.abs(Math.cos(tA)), p);
+      const yA = ry * Math.sign(Math.sin(tA)) * Math.pow(Math.abs(Math.sin(tA)), p);
+      
+      const xB = rx * Math.sign(Math.cos(tB)) * Math.pow(Math.abs(Math.cos(tB)), p);
+      const yB = ry * Math.sign(Math.sin(tB)) * Math.pow(Math.abs(Math.sin(tB)), p);
+      
+      const dx = (xB - xA) / dt;
+      const dy = (yB - yA) / dt;
+      const ds = Math.sqrt(dx * dx + dy * dy) * (2 * Math.PI / steps);
+      totalLength += ds;
+      arcLengths[i] = totalLength;
+    }
+
+    const startIdx = Math.round(steps / 4);
+    const startLength = arcLengths[startIdx];
+
+    const angles: number[] = [];
+    const targetStep = totalLength / total;
+
+    for (let i = 0; i < total; i++) {
+      const targetLength = (startLength + i * targetStep) % totalLength;
+      let idx = 0;
+      while (idx < steps && arcLengths[idx + 1] < targetLength) {
+        idx++;
+      }
+      const l1 = arcLengths[idx];
+      const l2 = arcLengths[idx + 1];
+      const fraction = (l2 - l1) > 0 ? (targetLength - l1) / (l2 - l1) : 0;
+      const t1 = (idx * (360 / steps)) * (Math.PI / 180);
+      const t2 = ((idx + 1) * (360 / steps)) * (Math.PI / 180);
+      const angle = t1 + fraction * (t2 - t1);
+      angles.push(angle);
+    }
+
+    return angles;
+  }, [players.length, grimoireConfig.radiusX, grimoireConfig.radiusY]);
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -186,11 +258,16 @@ export default function GrimoireBoard({
         </button>
 
         {players.map((p, index) => {
-          const total = players.length;
-          const angle = (index * (360 / total) + 90) * (Math.PI / 180);
+          const angle = evenAngles[index] !== undefined ? evenAngles[index] : 0;
 
-          const leftPos = 50 + grimoireConfig.radiusX * Math.cos(angle);
-          const topPos = 50 + grimoireConfig.radiusY * Math.sin(angle);
+          const cosVal = Math.cos(angle);
+          const sinVal = Math.sin(angle);
+          
+          const n = 3.6;
+          const pExponent = 2 / n;
+
+          const leftPos = 50 + grimoireConfig.radiusX * Math.sign(cosVal) * Math.pow(Math.abs(cosVal), pExponent);
+          const topPos = 50 + grimoireConfig.radiusY * Math.sign(sinVal) * Math.pow(Math.abs(sinVal), pExponent);
 
           // Calculate dynamic font size and split name by space to prevent overflow
           const baseFontSizeVal = parseFloat(grimoireConfig.nameStyle.fontSize as string);
@@ -217,6 +294,8 @@ export default function GrimoireBoard({
           const orderIndex = hoveredOrder.indexOf(p.id);
           const zIndex = orderIndex !== -1 ? 10 + orderIndex : 10;
 
+          const isFanned = fannedPlayerId === p.id;
+
           return (
             <div
               key={p.id}
@@ -228,20 +307,43 @@ export default function GrimoireBoard({
                 zIndex: zIndex,
               }}
               onMouseEnter={() => {
+                setFannedPlayerId(p.id);
                 setHoveredOrder((prev) => {
                   const filtered = prev.filter((id) => id !== p.id);
                   return [...filtered, p.id];
                 });
+              }}
+              onMouseLeave={() => {
+                setFannedPlayerId(null);
+              }}
+              onTouchStart={() => {
+                touchStartTimeRef.current = Date.now();
+                touchStartedFannedRef.current = (fannedPlayerId === p.id);
+                if (fannedPlayerId !== p.id) {
+                  setFannedPlayerId(p.id);
+                }
               }}
               className="hover:z-50 group"
             >
               <div className="relative flex flex-col items-center">
                 <button
                   id={`grimoire-player-${p.id}`}
-                  onClick={() => onSelectPlayer(p.id)}
+                  onClick={(e) => {
+                    if (touchStartTimeRef.current > 0) {
+                      const duration = Date.now() - touchStartTimeRef.current;
+                      touchStartTimeRef.current = 0;
+                      if (duration > 200) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                      }
+                    }
+                    onSelectPlayer(p.id);
+                  }}
                   style={grimoireConfig.btnStyle}
                   className={cn(
-                    "rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-md relative group-hover:scale-125 group-hover:shadow-lg select-none",
+                    "rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-md relative select-none",
+                    isFanned ? "group-hover:scale-125 group-hover:shadow-lg" : "",
                     p.isDead ? "scale-95" : "hover:bg-[#fafafa]"
                   )}
                 >
@@ -257,21 +359,40 @@ export default function GrimoireBoard({
                       if (displayRoles.length > 1) {
                         if (displayRoles.length === 2) {
                           transformClass += idx === 0 
-                            ? " -rotate-3 -translate-x-1 group-hover:-translate-x-6 group-hover:-rotate-12" 
-                            : " rotate-3 translate-x-1 group-hover:translate-x-6 group-hover:rotate-12";
+                            ? ` -rotate-3 -translate-x-1 ${isFanned ? "group-hover:-translate-x-6 group-hover:-rotate-12" : ""}` 
+                            : ` rotate-3 translate-x-1 ${isFanned ? "group-hover:translate-x-6 group-hover:rotate-12" : ""}`;
                         } else if (displayRoles.length === 3) {
                           if (idx === 0) {
-                            transformClass += " -rotate-6 -translate-x-2 translate-y-0.5 group-hover:-translate-x-10 group-hover:translate-y-1.5 group-hover:-rotate-12";
+                            transformClass += ` -rotate-6 -translate-x-2 translate-y-0.5 ${isFanned ? "group-hover:-translate-x-10 group-hover:translate-y-1.5 group-hover:-rotate-12" : ""}`;
                           } else if (idx === 1) {
-                            transformClass += " translate-y-[-1px] group-hover:-translate-y-8 group-hover:scale-105";
+                            transformClass += ` translate-y-[-1px] ${isFanned ? "group-hover:-translate-y-8 group-hover:scale-105" : ""}`;
                           } else if (idx === 2) {
-                            transformClass += " rotate-6 translate-x-2 translate-y-0.5 group-hover:translate-x-10 group-hover:translate-y-1.5 group-hover:rotate-12";
+                            transformClass += ` rotate-6 translate-x-2 translate-y-0.5 ${isFanned ? "group-hover:translate-x-10 group-hover:translate-y-1.5 group-hover:rotate-12" : ""}`;
                           }
                         }
                       }
 
+                      const isTop = playerTopIndex[p.id] !== undefined
+                        ? playerTopIndex[p.id] === idx
+                        : idx === displayRoles.length - 1;
+
                       return (
-                        <div key={idx} className={transformClass}>
+                        <div
+                          key={idx}
+                          className={transformClass}
+                          style={{ zIndex: isTop ? 10 : idx }}
+                          onMouseEnter={() => {
+                            setPlayerTopIndex((prev) => ({ ...prev, [p.id]: idx }));
+                          }}
+                          onClick={(e) => {
+                            if (touchStartedFannedRef.current) {
+                              e.stopPropagation();
+                            }
+                            setPlayerTopIndex((prev) => ({ ...prev, [p.id]: idx }));
+                            setFannedPlayerId(null);
+                            touchStartedFannedRef.current = false;
+                          }}
+                        >
                           {/* SVG representing the token */}
                           <svg viewBox="0 0 200 200" className={cn("w-full h-full absolute inset-0 z-0 select-none pointer-events-none", p.isDead && "opacity-60")}>
                             <defs>

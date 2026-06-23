@@ -144,7 +144,7 @@ export default function HomePage({ theme, toggleTheme }: HomeProps) {
                   "text-lg font-bold transition-colors",
                   isLightModeActive ? "text-clocktower-night group-hover:text-clocktower-traveler" : "text-gray-200 group-hover:text-white"
                 )}>
-                  Player Game Tracker
+                  Character Tracker
                 </h2>
                 <p className={cn("text-sm mt-1 leading-relaxed", isLightModeActive ? "text-gray-600" : "text-gray-500")}>
                   Keep track of character assignments and player statuses dynamically as a player.

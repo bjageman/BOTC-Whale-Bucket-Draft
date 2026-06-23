@@ -206,7 +206,7 @@ export default function WhaleBucketGamePhase({
                   )}
                 >
                   <div className={cn(
-                    "text-gray-500 p-0.5 shrink-0 flex items-center transition-opacity duration-200",
+                    "text-gray-500 p-0.5 shrink-0 flex items-center transition-opacity duration-200 drag-handle",
                     isDragEnabled ? "opacity-100" : "opacity-25"
                   )}>
                     <GripVertical size={10} />
@@ -225,30 +225,41 @@ export default function WhaleBucketGamePhase({
                       return hasAlignmentShift ? (isEvil ? '👿' : '😇') : null;
                     })()}
                   </span>
-                  <span className={cn(
-                    "font-semibold text-[10px] flex items-center gap-1 shrink-0 max-w-[45%] min-w-0",
-                    rObj?.team === 'townsfolk' && "text-clocktower-townsfolk",
-                    rObj?.team === 'outsider' && "text-clocktower-outsider",
-                    rObj?.team === 'minion' && "text-clocktower-minion",
-                    rObj?.team === 'demon' && "text-clocktower-demon",
-                    rObj?.team === 'traveler' && "text-clocktower-traveler",
-                  )}>
-                    {rObj && (
-                      <span className="w-4.5 h-4.5 bg-white rounded-full flex items-center justify-center shrink-0">
-                        <img
-                          src={`/icons/${rObj.id}.svg`}
-                          alt={rObj.name}
-                          className="w-3.5 h-3.5 object-contain"
-                          onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
-                        />
-                      </span>
-                    )}
-                    <span className="truncate">{rObj?.name ?? '—'}</span>
+                  <div className="flex items-center gap-1.5 shrink-0 max-w-[55%] min-w-0 ml-auto justify-end flex-wrap">
+                    {(() => {
+                      const displayRoles = p.roleIds && p.roleIds.length > 0 ? p.roleIds : (p.roleId ? [p.roleId] : []);
+                      if (displayRoles.length === 0) {
+                        return <span className="text-gray-500 font-semibold text-[10px]">—</span>;
+                      }
+                      return displayRoles.map((roleId) => {
+                        const rObj = (rolesData as Role[]).find(r => r.id === roleId);
+                        if (!rObj) return null;
+                        return (
+                          <span
+                            key={roleId}
+                            className={cn(
+                              "font-semibold text-[10px] flex items-center gap-1 shrink-0",
+                              rObj.team === 'townsfolk' && "text-clocktower-townsfolk",
+                              rObj.team === 'outsider' && "text-clocktower-outsider",
+                              rObj.team === 'minion' && "text-clocktower-minion",
+                              rObj.team === 'demon' && "text-clocktower-demon",
+                              rObj.team === 'traveler' && "text-clocktower-traveler",
+                            )}
+                          >
+                            <span className="w-4.5 h-4.5 bg-white rounded-full flex items-center justify-center shrink-0">
+                              <img src={`/icons/${rObj.id}.svg`} alt={rObj.name} className="w-3.5 h-3.5 object-contain"
+                                onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
+                            </span>
+                            <span className="truncate">{rObj.name}</span>
+                          </span>
+                        );
+                      });
+                    })()}
                     {p.isTheDrunk && <span className="text-[8px] bg-yellow-600 text-black px-0.5 rounded leading-none shrink-0">DK</span>}
                     {p.isTheMarionette && <span className="text-[8px] bg-clocktower-minion text-white px-0.5 rounded leading-none shrink-0">MN</span>}
                     {p.isTheLunatic && <span className="text-[8px] bg-clocktower-outsider text-white px-0.5 rounded leading-none shrink-0">LN</span>}
                     {p.isTheLilMonsta && <span className="text-[8px] bg-clocktower-demon text-white px-0.5 rounded leading-none shrink-0">LM</span>}
-                  </span>
+                  </div>
                 </div>
               );
             })}

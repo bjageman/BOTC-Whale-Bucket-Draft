@@ -18,11 +18,55 @@ interface SetupProps {
 }
 
 export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [phase, setPhase] = useState<Phase>('setup');
+  const [players, setPlayers] = useState<Player[]>(() => {
+    const saved = localStorage.getItem('player-tracker-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.players || [];
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [];
+  });
+  const [phase, setPhase] = useState<Phase>(() => {
+    const saved = localStorage.getItem('player-tracker-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.phase || 'setup';
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return 'setup';
+  });
   const [newPlayerName, setNewPlayerName] = useState('');
-  const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>('night');
-  const [dayNumber, setDayNumber] = useState<number>(1);
+  const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>(() => {
+    const saved = localStorage.getItem('player-tracker-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.timeOfDay || 'night';
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return 'night';
+  });
+  const [dayNumber, setDayNumber] = useState<number>(() => {
+    const saved = localStorage.getItem('player-tracker-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.dayNumber || 1;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return 1;
+  });
 
   // Traveler states
   const [newTravelerName, setNewTravelerName] = useState('');
@@ -34,8 +78,30 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
   const [modalRoleSearch, setModalRoleSearch] = useState('');
 
   // Script states
-  const [scriptName, setScriptName] = useState<string>("All Roles (Default)");
-  const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(null);
+  const [scriptName, setScriptName] = useState<string>(() => {
+    const saved = localStorage.getItem('player-tracker-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.scriptName || "All Roles (Default)";
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return "All Roles (Default)";
+  });
+  const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(() => {
+    const saved = localStorage.getItem('player-tracker-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.customScriptRoles || null;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return null;
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const closeDetailsModal = () => {
@@ -83,24 +149,6 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
     handleTouchEnd,
     movePlayer,
   } = usePlayerDragAndDrop(players, setPlayers);
-
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('player-tracker-botc-game');
-    if (saved) {
-      try {
-        const { players: p, phase: ph, timeOfDay: tod, dayNumber: dn, customScriptRoles: csr, scriptName: sn } = JSON.parse(saved);
-        setPlayers(p || []);
-        setPhase(ph || 'setup');
-        setTimeOfDay(tod || 'night');
-        setDayNumber(dn || 1);
-        if (csr) setCustomScriptRoles(csr);
-        if (sn) setScriptName(sn);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }, []);
 
   // Save to localStorage
   useEffect(() => {
@@ -165,7 +213,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
       roleId: newTravelerRoleId,
       isDead: false,
     };
-    setPlayers([...players, newPlayer]);
+    setPlayers([newPlayer, ...players]);
     setNewTravelerName('');
   };
 
@@ -413,8 +461,8 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
             </button>
           )}
           
-          <h1 className="text-2xl font-bold text-clocktower-blood tracking-wide text-center">
-            Player Game Tracker
+          <h1 className="text-xl md:text-2xl font-bold text-clocktower-blood tracking-wide text-center pr-20 pl-10 flex-1 min-w-0 truncate">
+            Character Tracker
           </h1>
 
           <div className="absolute right-0 flex items-center gap-1">

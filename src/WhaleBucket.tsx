@@ -25,22 +25,110 @@ interface SetupProps {
 }
 
 export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [isLilMonstaGame, setIsLilMonstaGame] = useState(false);
-  const [phase, setPhase] = useState<Phase>('setup');
+  const [players, setPlayers] = useState<Player[]>(() => {
+    const saved = localStorage.getItem('whale-bucket-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const p = parsed.players || [];
+        type SavedPlayer = Omit<Player, 'preferences'> & { preferences?: Partial<Player['preferences']> };
+        return p.map((player: SavedPlayer) => ({
+          ...player,
+          preferences: {
+            townsfolk: player.preferences?.townsfolk || [],
+            outsider: player.preferences?.outsider || [],
+            minion: player.preferences?.minion || [],
+            demon: player.preferences?.demon || [],
+            traveler: player.preferences?.traveler || []
+          }
+        }));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [];
+  });
+  const [isLilMonstaGame, setIsLilMonstaGame] = useState<boolean>(() => {
+    const saved = localStorage.getItem('whale-bucket-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.isLilMonstaGame || false;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return false;
+  });
+  const [phase, setPhase] = useState<Phase>(() => {
+    const saved = localStorage.getItem('whale-bucket-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.phase || 'setup';
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return 'setup';
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [activeDraftPlayerId, setActiveDraftPlayerId] = useState<string | null>(null);
   const [newPlayerName, setNewPlayerName] = useState('');
-  const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>('night');
-  const [dayNumber, setDayNumber] = useState<number>(1);
+  const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>(() => {
+    const saved = localStorage.getItem('whale-bucket-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.timeOfDay || 'night';
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return 'night';
+  });
+  const [dayNumber, setDayNumber] = useState<number>(() => {
+    const saved = localStorage.getItem('whale-bucket-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.dayNumber || 1;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return 1;
+  });
 
   // Traveler states
-  const [allowTravelers, setAllowTravelers] = useState<boolean>(false);
+  const [allowTravelers] = useState<boolean>(() => {
+    const saved = localStorage.getItem('whale-bucket-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.allowTravelers || false;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return false;
+  });
   const [newTravelerName, setNewTravelerName] = useState('');
   const [newTravelerRoleId, setNewTravelerRoleId] = useState('beggar');
 
   // Exclusion states
-  const [excludedRoleIds, setExcludedRoleIds] = useState<string[]>(['drunk', 'marionette', 'lunatic']);
+  const [excludedRoleIds, setExcludedRoleIds] = useState<string[]>(() => {
+    const saved = localStorage.getItem('whale-bucket-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.excludedRoleIds || ['drunk', 'marionette', 'lunatic'];
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return ['drunk', 'marionette', 'lunatic'];
+  });
 
   // Preference modal states
   const [activePrefModal, setActivePrefModal] = useState<{ playerId: string; team: Role['team'] } | null>(null);
@@ -63,38 +151,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     handleTouchEnd,
     movePlayer,
   } = usePlayerDragAndDrop(players, setPlayers);
-
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('whale-bucket-game');
-    if (saved) {
-      try {
-        const { players: p, phase: ph, timeOfDay: tod, dayNumber: dn, allowTravelers: at, isLilMonstaGame: lmg, excludedRoleIds: er } = JSON.parse(saved);
-        type SavedPlayer = Omit<Player, 'preferences'> & { preferences?: Partial<Player['preferences']> };
-        const validatedPlayers = (p || []).map((player: SavedPlayer) => ({
-          ...player,
-          preferences: {
-            townsfolk: player.preferences?.townsfolk || [],
-            outsider: player.preferences?.outsider || [],
-            minion: player.preferences?.minion || [],
-            demon: player.preferences?.demon || [],
-            traveler: player.preferences?.traveler || []
-          }
-        }));
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setPlayers(validatedPlayers);
-        setPhase(ph || 'setup');
-        setTimeOfDay(tod || 'night');
-        setDayNumber(dn || 1);
-        if (at !== undefined) setAllowTravelers(false); // Force traveler selection off
-        if (lmg !== undefined) setIsLilMonstaGame(lmg);
-        if (er !== undefined) setExcludedRoleIds(er);
-
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }, []);
 
   // Save to localStorage and update document theme
   useEffect(() => {
@@ -152,7 +208,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       alert("Maximum players reached (20).");
       return;
     }
-    setPlayers([...players, createNewPlayer(newTravelerName, newTravelerRoleId)]);
+    setPlayers([createNewPlayer(newTravelerName, newTravelerRoleId), ...players]);
     setNewTravelerName('');
   };
 
@@ -162,6 +218,10 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
 
   const updatePlayerName = (id: string, name: string) => {
     setPlayers(players.map(p => p.id === id ? { ...p, name } : p));
+  };
+
+  const updatePlayerRoles = (id: string, roleIds: string[]) => {
+    setPlayers(players.map(p => p.id === id ? { ...p, roleIds } : p));
   };
 
   const togglePreference = (playerId: string, team: Role['team'], roleId: string) => {
@@ -655,6 +715,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           onNextPlayer={() => nextPlayerId && setSelectedPlayerId(nextPlayerId)}
           onUpdateName={updatePlayerName}
           onUpdateRole={updatePlayerRole}
+          onUpdateRoles={updatePlayerRoles}
           onToggleDead={togglePlayerDead}
           onToggleDeadVote={togglePlayerDeadVote}
           onToggleDrunkOrPoisoned={togglePlayerDrunkOrPoisoned}

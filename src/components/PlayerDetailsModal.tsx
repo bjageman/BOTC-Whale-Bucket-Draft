@@ -1,5 +1,5 @@
-import { useRef, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, X, Search, Eye, EyeOff } from 'lucide-react';
+import { useRef, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, X, Search } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Role } from '../types';
 import rolesData from '../roles.json';
@@ -13,6 +13,7 @@ interface Player {
   isDead?: boolean;
   isDrunkOrPoisoned?: boolean;
   isEvil?: boolean;
+  isTheLunatic?: boolean;
   isTheLilMonsta?: boolean;
   hasDeadVote?: boolean;
 }
@@ -73,7 +74,6 @@ export default function PlayerDetailsModal({
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }, []);
 
-  const [isNameHidden, setIsNameHidden] = useState(false);
   const modalNameInputRef = useRef<HTMLInputElement | null>(null);
 
   const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
@@ -97,11 +97,11 @@ export default function PlayerDetailsModal({
 
   // Setup multiple roles array or single role array
   const displayRoles = useMemo(() => {
-    if (allowMultipleRoles && p.roleIds && p.roleIds.length > 0) {
+    if ((allowMultipleRoles || p.isTheLunatic) && p.roleIds && p.roleIds.length > 0) {
       return p.roleIds;
     }
     return p.roleId ? [p.roleId] : [];
-  }, [allowMultipleRoles, p.roleIds, p.roleId]);
+  }, [allowMultipleRoles, p.roleIds, p.roleId, p.isTheLunatic]);
 
   return (
     <div
@@ -145,47 +145,25 @@ export default function PlayerDetailsModal({
         {/* Top title and close */}
         <div className="flex justify-between items-start w-full">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <button
-              id="detail-hide-name-button"
-              type="button"
-              onClick={() => setIsNameHidden(!isNameHidden)}
-              className={cn(
-                'p-2 rounded-lg border transition-colors shrink-0 shadow-sm',
-                isLightModeActive
-                  ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
-                  : 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700'
-              )}
-              title={isNameHidden ? 'Show name' : 'Hide name'}
-            >
-              {isNameHidden ? <Eye size={20} /> : <EyeOff size={20} />}
-            </button>
             <div className="flex-1 min-w-0">
-              {isNameHidden ? (
-                <span className="font-bold text-xl block truncate select-none blur-[4px]">
-                  {p.name}
-                </span>
-              ) : (
-                <input
-                  id="detail-player-name-input"
-                  ref={modalNameInputRef}
-                  type="text"
-                  value={p.name}
-                  onChange={(e) => onUpdateName(p.id, e.target.value)}
-                  onFocus={(e) => e.target.select()}
-                  onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-                  autoCapitalize="words"
-                  className={cn(
-                    'font-bold text-xl bg-transparent border-b border-transparent focus:border-clocktower-blood focus:outline-none w-full transition-all duration-200',
-                    isLightModeActive ? 'text-clocktower-night' : 'text-white'
-                  )}
-                  placeholder="Player Name"
-                />
-              )}
-              {!isNameHidden && (
-                <p className={cn('text-[11px] font-medium mt-0', isLightModeActive ? 'text-gray-500' : 'text-gray-400')}>
-                  Player {currentIndex + 1} of {players.length}
-                </p>
-              )}
+              <input
+                id="detail-player-name-input"
+                ref={modalNameInputRef}
+                type="text"
+                value={p.name}
+                onChange={(e) => onUpdateName(p.id, e.target.value)}
+                onFocus={(e) => e.target.select()}
+                onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                autoCapitalize="words"
+                className={cn(
+                  'font-bold text-xl bg-transparent border-b border-transparent focus:border-clocktower-blood focus:outline-none w-full transition-all duration-200',
+                  isLightModeActive ? 'text-clocktower-night' : 'text-white'
+                )}
+                placeholder="Player Name"
+              />
+              <p className={cn('text-[11px] font-medium mt-0', isLightModeActive ? 'text-gray-500' : 'text-gray-400')}>
+                Player {currentIndex + 1} of {players.length}
+              </p>
             </div>
           </div>
           <button
@@ -243,15 +221,15 @@ export default function PlayerDetailsModal({
                 </button>
               </div>
               <RoleList
-                hasRole={allowMultipleRoles ? !!(p.roleIds && p.roleIds.length > 0) : !!p.roleId}
+                hasRole={(allowMultipleRoles || p.isTheLunatic) ? !!(p.roleIds && p.roleIds.length > 0) : !!p.roleId}
                 roles={filteredModalRoles}
                 players={players}
                 currentPlayerId={p.id}
                 isLightModeActive={isLightModeActive}
-                allowMultipleRoles={allowMultipleRoles}
+                allowMultipleRoles={allowMultipleRoles || p.isTheLunatic}
                 roleIds={p.roleIds || []}
                 onSelect={(roleId) => {
-                  if (allowMultipleRoles && onUpdateRoles) {
+                  if ((allowMultipleRoles || p.isTheLunatic) && onUpdateRoles) {
                     const currentRoles = p.roleIds || [];
                     if (currentRoles.includes(roleId)) {
                       onUpdateRoles(p.id, currentRoles.filter(id => id !== roleId));
@@ -271,7 +249,7 @@ export default function PlayerDetailsModal({
                   }
                 }}
                 onClear={() => {
-                  if (allowMultipleRoles && onUpdateRoles) {
+                  if ((allowMultipleRoles || p.isTheLunatic) && onUpdateRoles) {
                     onUpdateRoles(p.id, []);
                   } else {
                     onUpdateRole(p.id, '');
@@ -283,7 +261,7 @@ export default function PlayerDetailsModal({
             </div>
           ) : (
             /* Character display */
-            allowMultipleRoles ? (
+            (allowMultipleRoles || p.isTheLunatic) ? (
               <div className="w-full flex flex-col items-center justify-center py-4 rounded-xl border border-transparent relative">
                 {displayRoles.length > 0 ? (
                   <div className="flex flex-col items-center space-y-3 w-full">
@@ -297,11 +275,7 @@ export default function PlayerDetailsModal({
                             key={roleId}
                             type="button"
                             onClick={() => onSetSearchingRole(true)}
-                            disabled={isNameHidden}
-                            className={cn(
-                              'relative w-24 h-24 shrink-0 transition-all duration-200 hover:scale-110 active:scale-95 rounded-full shadow-md hover:shadow-lg border-2 border-transparent focus:outline-none focus:border-clocktower-blood',
-                              isNameHidden ? 'cursor-not-allowed' : 'cursor-pointer'
-                            )}
+                            className="relative w-24 h-24 shrink-0 transition-all duration-200 hover:scale-110 active:scale-95 rounded-full shadow-md hover:shadow-lg border-2 border-transparent focus:outline-none focus:border-clocktower-blood cursor-pointer"
                           >
                             <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-md absolute inset-0 z-10">
                               <defs>
@@ -338,7 +312,6 @@ export default function PlayerDetailsModal({
                         <button
                           type="button"
                           onClick={() => onSetSearchingRole(true)}
-                          disabled={isNameHidden}
                           className={cn(
                             'w-24 h-24 rounded-full border-2 border-dashed flex items-center justify-center text-2xl font-light transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm',
                             isLightModeActive
@@ -357,7 +330,6 @@ export default function PlayerDetailsModal({
                     <button
                       type="button"
                       onClick={() => onSetSearchingRole(true)}
-                      disabled={isNameHidden}
                       className={cn(
                         'w-24 h-24 rounded-full border-2 border-dashed flex items-center justify-center text-2xl font-light transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm',
                         isLightModeActive
@@ -383,22 +355,16 @@ export default function PlayerDetailsModal({
                 id="detail-change-role-button"
                 type="button"
                 onClick={() => onSetSearchingRole(true)}
-                disabled={isNameHidden}
                 className={cn(
                   'w-full flex flex-col items-center justify-center py-4 rounded-xl border border-transparent transition-all duration-200 relative',
-                  isNameHidden
-                    ? 'cursor-not-allowed'
-                    : isLightModeActive
-                      ? 'hover:scale-[1.02] hover:bg-black/5 hover:border-gray-300/40'
-                      : 'hover:scale-[1.02] hover:bg-white/5 hover:border-gray-800/40'
+                  isLightModeActive
+                    ? 'hover:scale-[1.02] hover:bg-black/5 hover:border-gray-300/40'
+                    : 'hover:scale-[1.02] hover:bg-white/5 hover:border-gray-800/40'
                 )}
               >
                 {displayRoles.length > 0 ? (
                   <div className="flex flex-col items-center space-y-3 w-full">
-                    <div className={cn(
-                      "relative flex items-center justify-center select-none transition-all duration-300",
-                      isNameHidden ? "w-48 h-48" : "w-36 h-36"
-                    )}>
+                    <div className="relative flex items-center justify-center select-none transition-all duration-300 w-36 h-36">
                       {displayRoles.map((roleId) => {
                         const rObj = (rolesData as Role[]).find(r => r.id === roleId);
                         if (!rObj) return null;
@@ -460,7 +426,7 @@ export default function PlayerDetailsModal({
           )}
 
            {/* Selected character tags with delete button (Player Tracker mode) */}
-           {allowMultipleRoles && displayRoles.length > 0 && !isSearchingRole && (
+           {(allowMultipleRoles || p.isTheLunatic) && displayRoles.length > 0 && !isSearchingRole && (
              <div className="flex flex-wrap gap-1.5 justify-center mt-4 px-4 relative z-30">
                {displayRoles.map((roleId) => {
                  const rObj = (rolesData as Role[]).find(r => r.id === roleId);
@@ -504,7 +470,7 @@ export default function PlayerDetailsModal({
            )}
 
            {/* Ability text display (only for standard single role mode) */}
-           {!allowMultipleRoles && roleObj && officialRole?.ability && !isSearchingRole && (
+           {!(allowMultipleRoles || p.isTheLunatic) && roleObj && officialRole?.ability && !isSearchingRole && (
              <div className="text-center px-4 mt-2">
                <p className={cn(
                  'text-xs leading-relaxed italic font-medium',
@@ -517,22 +483,23 @@ export default function PlayerDetailsModal({
          </div>
 
          {/* Status toggles - hidden when name is hidden */}
-         {!isNameHidden && (
-           <>
-             <div className="flex items-center gap-2">
-               <button
-                 id="detail-status-toggle-button"
-                 type="button"
-                 onClick={(e) => { e.stopPropagation(); onToggleDead(p.id); }}
-                 className={cn(
-                   'px-4 py-2 rounded text-xs font-bold border transition-all shadow-sm flex-1',
-                   !p.isDead
-                     ? 'bg-clocktower-outsider border-clocktower-outsider/40 text-white hover:bg-emerald-600'
-                     : 'bg-clocktower-blood border-clocktower-blood/40 text-white hover:bg-red-800'
-                 )}
-               >
-                 {p.isDead ? 'Dead' : 'Alive'}
-               </button>
+         {/* Status toggles */}
+         <div className="flex items-center gap-2">
+           <button
+             id="detail-status-toggle-button"
+             type="button"
+             onClick={(e) => { e.stopPropagation(); onToggleDead(p.id); }}
+             className={cn(
+               'px-4 py-2 rounded text-xs font-bold border transition-all shadow-sm flex-1',
+               !p.isDead
+                 ? 'bg-clocktower-outsider border-clocktower-outsider/40 text-white hover:bg-emerald-600'
+                 : 'bg-clocktower-blood border-clocktower-blood/40 text-white hover:bg-red-800'
+             )}
+           >
+             {p.isDead ? 'Dead' : 'Alive'}
+           </button>
+           {!allowMultipleRoles && (
+             <>
                <button
                  id="detail-alignment-toggle-button"
                  type="button"
@@ -555,54 +522,54 @@ export default function PlayerDetailsModal({
                    p.isDrunkOrPoisoned
                      ? 'bg-purple-600 border-purple-600/40 text-white hover:bg-purple-700'
                      : isLightModeActive
-                       ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-600'
-                       : 'bg-gray-955/40 border-gray-800 text-gray-550 hover:text-gray-300'
+                       ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-655'
+                       : 'bg-gray-955 border-gray-800 text-gray-555 hover:text-gray-300'
                  )}
                >
                  🤢 Drunk/Poisoned
                </button>
-             </div>
+             </>
+           )}
+         </div>
 
-             {(p.isDead || isLilMonstaGame) && (
-               <div className="flex items-center gap-2">
-                 {p.isDead && (
-                   <button
-                     id="detail-vote-token-toggle"
-                     type="button"
-                     onClick={(e) => { e.stopPropagation(); onToggleDeadVote?.(p.id); }}
-                     className={cn(
-                       'px-3 py-2 rounded text-[11px] font-bold border transition-all shadow-sm flex-1 flex items-center justify-center gap-1',
-                       p.hasDeadVote
-                         ? 'bg-amber-600 border-amber-600/40 text-white hover:bg-amber-700'
-                         : isLightModeActive
-                           ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-655'
-                           : 'bg-gray-955 border-gray-800 text-gray-555 hover:text-gray-300'
-                     )}
-                   >
-                     🗳️ {p.hasDeadVote ? 'Vote: Active' : 'Vote: Spent'}
-                   </button>
+         {(p.isDead || isLilMonstaGame) && (
+           <div className="flex items-center gap-2">
+             {p.isDead && (
+               <button
+                 id="detail-vote-token-toggle"
+                 type="button"
+                 onClick={(e) => { e.stopPropagation(); onToggleDeadVote?.(p.id); }}
+                 className={cn(
+                   'px-3 py-2 rounded text-[11px] font-bold border transition-all shadow-sm flex-1 flex items-center justify-center gap-1',
+                   p.hasDeadVote
+                     ? 'bg-amber-600 border-amber-600/40 text-white hover:bg-amber-700'
+                     : isLightModeActive
+                       ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-655'
+                       : 'bg-gray-955 border-gray-800 text-gray-555 hover:text-gray-300'
                  )}
-
-                 {isLilMonstaGame && (
-                   <button
-                     id="detail-lilmonsta-toggle-button"
-                     type="button"
-                     onClick={(e) => { e.stopPropagation(); onToggleLilMonsta?.(p.id); }}
-                     className={cn(
-                       'px-3 py-2 rounded text-[11px] font-bold border transition-all shadow-sm flex-1 flex items-center justify-center gap-1',
-                       p.isTheLilMonsta
-                         ? 'bg-clocktower-demon border-clocktower-demon/40 text-white font-black hover:bg-red-800'
-                         : isLightModeActive
-                           ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-600'
-                           : 'bg-gray-955/40 border-gray-800 text-gray-550 hover:text-gray-300'
-                     )}
-                   >
-                     😈 Lil' Monsta
-                   </button>
-                 )}
-               </div>
+               >
+                 🗳️ {p.hasDeadVote ? 'Vote: Active' : 'Vote: Spent'}
+               </button>
              )}
-           </>
+
+             {isLilMonstaGame && (
+               <button
+                 id="detail-lilmonsta-toggle-button"
+                 type="button"
+                 onClick={(e) => { e.stopPropagation(); onToggleLilMonsta?.(p.id); }}
+                 className={cn(
+                   'px-3 py-2 rounded text-[11px] font-bold border transition-all shadow-sm flex-1 flex items-center justify-center gap-1',
+                   p.isTheLilMonsta
+                     ? 'bg-clocktower-demon border-clocktower-demon/40 text-white font-black hover:bg-red-800'
+                     : isLightModeActive
+                       ? 'bg-white border-gray-300 text-gray-400 hover:text-gray-600'
+                       : 'bg-gray-955/40 border-gray-800 text-gray-550 hover:text-gray-300'
+                 )}
+               >
+                 😈 Lil' Monsta
+               </button>
+             )}
+           </div>
          )}
        </div>
      </div>

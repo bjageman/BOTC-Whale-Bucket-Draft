@@ -61,7 +61,7 @@ export default function PlayerTrackerSetupPlayerRow({
           onTouchStart={(e) => handleTouchStart(e, index)}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="text-gray-600 cursor-grab active:cursor-grabbing hover:text-gray-400 p-0.5 shrink-0 flex items-center select-none touch-none"
+          className="text-gray-600 cursor-grab active:cursor-grabbing hover:text-gray-400 p-0.5 shrink-0 flex items-center select-none touch-none drag-handle"
           title="Drag to seat player"
         >
           <GripVertical size={14} />
