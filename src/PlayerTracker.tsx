@@ -183,6 +183,25 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
         return {
           ...p,
           roleId: roleId || undefined,
+          roleIds: roleId ? [roleId] : [],
+          isEvil: undefined,
+          isTheDrunk: false,
+          isTheMarionette: false,
+          isTheLunatic: false,
+          isTheLilMonsta: false,
+        };
+      }
+      return p;
+    }));
+  };
+
+  const updatePlayerRoles = (id: string, roleIds: string[]) => {
+    setPlayers(players.map(p => {
+      if (p.id === id) {
+        return {
+          ...p,
+          roleId: roleIds[0] || undefined,
+          roleIds: roleIds,
           isEvil: undefined,
           isTheDrunk: false,
           isTheMarionette: false,
@@ -500,6 +519,8 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
           isLilMonstaGame={false}
           onSetSearchingRole={setIsSearchingRole}
           onSetModalRoleSearch={setModalRoleSearch}
+          allowMultipleRoles={true}
+          onUpdateRoles={updatePlayerRoles}
         />
       )}
     </div>

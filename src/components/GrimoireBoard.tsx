@@ -192,10 +192,6 @@ export default function GrimoireBoard({
           const leftPos = 50 + grimoireConfig.radiusX * Math.cos(angle);
           const topPos = 50 + grimoireConfig.radiusY * Math.sin(angle);
 
-          const roleObj = rolesData.find((r) => r.id === p.roleId);
-          const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
-          const isEvil = p.isEvil !== undefined ? p.isEvil : defaultEvil;
-
           // Calculate dynamic font size and split name by space to prevent overflow
           const baseFontSizeVal = parseFloat(grimoireConfig.nameStyle.fontSize as string);
           const baseFontSizeUnit = (grimoireConfig.nameStyle.fontSize as string).replace(/[0-9.]/g, '');
@@ -249,71 +245,102 @@ export default function GrimoireBoard({
                     p.isDead ? "scale-95" : "hover:bg-[#fafafa]"
                   )}
                 >
-                  {/* SVG representing the token */}
-                  <svg viewBox="0 0 200 200" className={cn("w-full h-full absolute inset-0 z-0 select-none pointer-events-none", p.isDead && "opacity-60")}>
-                    <defs>
-                      <path id={`topTextPath-${p.id}`} d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
-                      <path id={`bottomTextPath-${p.id}`} d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
-                    </defs>
-                    
-                    {/* Token background circle */}
-                    <circle
-                      cx="100"
-                      cy="100"
-                      r="90"
-                      fill={p.isDead ? "#e4e4e7" : "#ffffff"}
-                      className={cn(
-                        "stroke-[6px]",
-                        isEvil ? "stroke-clocktower-minion" : "stroke-clocktower-townsfolk"
-                      )}
-                    />
-                    
-                    {/* Inner ring */}
-                    <circle
-                      cx="100"
-                      cy="100"
-                      r="58"
-                      fill="none"
-                      stroke="#e4e4e7"
-                      strokeWidth="1"
-                      strokeDasharray="3 3"
-                    />
-                    
-                    {roleObj && (
-                      <>
-                        {/* Curved Character Name */}
-                        <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(roleObj.team))}>
-                          <textPath href={`#topTextPath-${p.id}`} startOffset="50%" textAnchor="middle">
-                            {roleObj.name}
-                          </textPath>
-                        </text>
-                        
-                        {/* Curved Character Type */}
-                        <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(roleObj.team))}>
-                          <textPath href={`#bottomTextPath-${p.id}`} startOffset="50%" textAnchor="middle">
-                            {roleObj.team}
-                          </textPath>
-                        </text>
-                      </>
-                    )}
-                  </svg>
+                  {/* Render fanned character tokens */}
+                  {(() => {
+                    const displayRoles = p.roleIds && p.roleIds.length > 0 ? p.roleIds : (p.roleId ? [p.roleId] : [null]);
+                    return displayRoles.map((roleId, idx) => {
+                      const roleObj = roleId ? rolesData.find((r) => r.id === roleId) : null;
+                      const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
+                      const isEvil = p.isEvil !== undefined ? p.isEvil : defaultEvil;
 
-                  {/* Centered character icon */}
-                  {roleObj && (
-                    <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none">
-                      <div className="w-[50%] h-[50%] flex items-center justify-center">
-                        <img
-                          src={`/icons/${roleObj.id}.svg`}
-                          alt={roleObj.name}
-                          className={cn(
-                            "w-full h-full object-contain transition-all duration-200 select-none",
-                            p.isDead ? "grayscale opacity-15" : "opacity-35"
+                      let transformClass = "absolute inset-0 transition-all duration-300 ease-out";
+                      if (displayRoles.length > 1) {
+                        if (displayRoles.length === 2) {
+                          transformClass += idx === 0 
+                            ? " -rotate-3 -translate-x-1 group-hover:-translate-x-6 group-hover:-rotate-12" 
+                            : " rotate-3 translate-x-1 group-hover:translate-x-6 group-hover:rotate-12";
+                        } else if (displayRoles.length === 3) {
+                          if (idx === 0) {
+                            transformClass += " -rotate-6 -translate-x-2 translate-y-0.5 group-hover:-translate-x-10 group-hover:translate-y-1.5 group-hover:-rotate-12";
+                          } else if (idx === 1) {
+                            transformClass += " translate-y-[-1px] group-hover:-translate-y-8 group-hover:scale-105";
+                          } else if (idx === 2) {
+                            transformClass += " rotate-6 translate-x-2 translate-y-0.5 group-hover:translate-x-10 group-hover:translate-y-1.5 group-hover:rotate-12";
+                          }
+                        }
+                      }
+
+                      return (
+                        <div key={idx} className={transformClass}>
+                          {/* SVG representing the token */}
+                          <svg viewBox="0 0 200 200" className={cn("w-full h-full absolute inset-0 z-0 select-none pointer-events-none", p.isDead && "opacity-60")}>
+                            <defs>
+                              <path id={`topTextPath-${p.id}-${idx}`} d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
+                              <path id={`bottomTextPath-${p.id}-${idx}`} d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
+                            </defs>
+                            
+                            {/* Token background circle */}
+                            <circle
+                              cx="100"
+                              cy="100"
+                              r="90"
+                              fill={p.isDead ? "#e4e4e7" : "#ffffff"}
+                              className={cn(
+                                "stroke-[6px]",
+                                isEvil ? "stroke-clocktower-minion" : "stroke-clocktower-townsfolk"
+                              )}
+                            />
+                            
+                            {/* Inner ring */}
+                            <circle
+                              cx="100"
+                              cy="100"
+                              r="58"
+                              fill="none"
+                              stroke="#e4e4e7"
+                              strokeWidth="1"
+                              strokeDasharray="3 3"
+                            />
+                            
+                            {roleObj && (
+                              <>
+                                {/* Curved Character Name */}
+                                <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(roleObj.team))}>
+                                  <textPath href={`#topTextPath-${p.id}-${idx}`} startOffset="50%" textAnchor="middle">
+                                    {roleObj.name}
+                                  </textPath>
+                                </text>
+                                
+                                {/* Curved Character Type */}
+                                <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(roleObj.team))}>
+                                  <textPath href={`#bottomTextPath-${p.id}-${idx}`} startOffset="50%" textAnchor="middle">
+                                    {roleObj.team}
+                                  </textPath>
+                                </text>
+                              </>
+                            )}
+                          </svg>
+
+                          {/* Centered character icon */}
+                          {roleObj && (
+                            <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none">
+                              <div className="w-[50%] h-[50%] flex items-center justify-center">
+                                <img
+                                  src={`/icons/${roleObj.id}.svg`}
+                                  alt={roleObj.name}
+                                  className={cn(
+                                    "w-full h-full object-contain transition-all duration-200 select-none",
+                                    p.isDead ? "grayscale opacity-15" : "opacity-35"
+                                  )}
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                              </div>
+                            </div>
                           )}
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                        />
-                      </div>
-                    </div>
-                  )}
+                        </div>
+                      );
+                    });
+                  })()}
 
                   {/* Player Name Overlay */}
                   <span

@@ -17,6 +17,7 @@ export interface Player {
   name: string;
   preferences?: PlayerPreferences;
   roleId?: string;
+  roleIds?: string[];
   assignedFromPref?: boolean;
   isDead: boolean;
   isEvil?: boolean;
