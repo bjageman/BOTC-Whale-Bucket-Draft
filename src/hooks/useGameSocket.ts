@@ -6,10 +6,25 @@ const NTFY_SERVER_URL = import.meta.env.VITE_NTFY_SERVER_URL || 'ntfy.sh';
 const NTFY_USERNAME = import.meta.env.VITE_NTFY_ADMIN_USERNAME || '';
 const NTFY_PASSWORD = import.meta.env.VITE_NTFY_ADMIN_PASSWORD || '';
 
-/** Build the Basic auth header value from env credentials, or empty string. */
-function buildAuthHeader(): string {
+/**
+ * Build the ?auth= query parameter string for ntfy.
+ *
+ * ntfy expects the ?auth= value to be the *base64url-encoded* form of the
+ * entire Authorization header value (e.g. base64url("Basic <base64(u:p)>")).
+ * Standard URL-encoding ("Basic%20...") is NOT accepted and returns a 500.
+ * Using ?auth= for both the WebSocket URL and the POST URL avoids sending an
+ * Authorization header, which would otherwise trigger a CORS preflight that
+ * ntfy cannot satisfy when Access-Control-Allow-Origin is set to '*'.
+ */
+function buildAuthParam(): string {
   if (!NTFY_USERNAME || !NTFY_PASSWORD) return '';
-  return 'Basic ' + btoa(`${NTFY_USERNAME}:${NTFY_PASSWORD}`);
+  const headerValue = `Basic ${btoa(`${NTFY_USERNAME}:${NTFY_PASSWORD}`)}`;
+  // base64url-encode the full header value (no padding, url-safe chars)
+  const encoded = btoa(headerValue)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+  return `?auth=${encoded}`;
 }
 
 export function useGameSocket(gameCode: string, onMessage: (data: unknown) => void) {
@@ -34,13 +49,7 @@ export function useGameSocket(gameCode: string, onMessage: (data: unknown) => vo
       // Clean domain name string (strip protocol prefix if provided in env)
       const domain = NTFY_SERVER_URL.replace(/^(https?:\/\/|wss?:\/\/)/, '');
       
-      // Browsers cannot set custom headers on WebSocket connections, so pass
-      // credentials via the ?auth= query param that ntfy supports natively.
-      const authHeader = buildAuthHeader();
-      const authParam = authHeader
-        ? `?auth=${encodeURIComponent(authHeader)}`
-        : '';
-      const wsUrl = `${protocol}://${domain}/${topic}/ws${authParam}`;
+      const wsUrl = `${protocol}://${domain}/${topic}/ws${buildAuthParam()}`;
       console.log(`[ntfy] Connecting to: ${protocol}://${domain}/${topic}/ws`);
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
@@ -96,16 +105,13 @@ export function useGameSocket(gameCode: string, onMessage: (data: unknown) => vo
     const topic = `botc-companion-${gameCode.toLowerCase()}`;
     const cleanDomain = NTFY_SERVER_URL.replace(/^(https?:\/\/|wss?:\/\/)/, '');
     const protocol = cleanDomain.startsWith('localhost') || cleanDomain.startsWith('127.0.0.1') ? 'http' : 'https';
-    const publishUrl = `${protocol}://${cleanDomain}/${topic}`;
+    // Use ?auth= query param instead of Authorization header to avoid CORS preflight.
+    const publishUrl = `${protocol}://${cleanDomain}/${topic}${buildAuthParam()}`;
 
-    console.log(`[ntfy] Publishing message to: ${publishUrl}`, payload);
-    const authHeader = buildAuthHeader();
-    const headers: Record<string, string> = {};
-    if (authHeader) headers['Authorization'] = authHeader;
+    console.log(`[ntfy] Publishing message to: ${protocol}://${cleanDomain}/${topic}`, payload);
     try {
       const response = await fetch(publishUrl, {
         method: 'POST',
-        headers,
         body: JSON.stringify(payload),
       });
       if (!response.ok) {

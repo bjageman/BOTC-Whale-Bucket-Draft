@@ -54,8 +54,11 @@ describe('useGameSocket', () => {
     renderHook(() => useGameSocket('ABCDE', () => {}));
 
     expect(globalThis.WebSocket).toHaveBeenCalledTimes(1);
-    // URL should use the configured server and include ?auth= when credentials are set
+    // URL should use the configured server; ?auth= present when credentials set
     expect(mockWsInstances[0].url).toContain('wss://ntfy.brodin.rocks/botc-companion-abcde/ws');
+    // Verify base64url auth param is appended (no URL-encoding, no padding)
+    expect(mockWsInstances[0].url).toContain('?auth=');
+    expect(mockWsInstances[0].url).not.toContain('%20');
   });
 
   it('should set isConnected to true on open and false on close', () => {
@@ -132,22 +135,26 @@ describe('useGameSocket', () => {
     expect(closeSpy).toHaveBeenCalled();
   });
 
-  it('should publish message via fetch POST with Authorization header when credentials are set', async () => {
+  it('should publish via fetch POST with ?auth= query param and no Authorization header', async () => {
     const { result } = renderHook(() => useGameSocket('ABCDE', () => {}));
 
     await act(async () => {
       await result.current.sendMessage({ action: 'reveal' });
     });
 
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      'https://ntfy.brodin.rocks/botc-companion-abcde',
-      expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify({ action: 'reveal' }),
-      })
-    );
-    // Authorization header should be present when credentials are configured
-    const fetchArgs = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1] as RequestInit;
-    expect((fetchArgs.headers as Record<string, string>)['Authorization']).toMatch(/^Basic /);
+    const [calledUrl, calledOptions] = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0] as
+      [string, RequestInit];
+
+    // URL should contain the topic and ?auth= param (no Authorization header needed)
+    expect(calledUrl).toContain('https://ntfy.brodin.rocks/botc-companion-abcde');
+    expect(calledUrl).toContain('?auth=');
+    expect(calledUrl).not.toContain('%20');
+
+    // No Authorization header should be present in the fetch options
+    const headers = calledOptions.headers as Record<string, string> | undefined;
+    expect(headers?.['Authorization']).toBeUndefined();
+
+    expect(calledOptions.method).toBe('POST');
+    expect(calledOptions.body).toBe(JSON.stringify({ action: 'reveal' }));
   });
 });
