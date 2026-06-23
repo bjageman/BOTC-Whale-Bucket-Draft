@@ -280,146 +280,182 @@ export default function PlayerDetailsModal({
               />
             </div>
           ) : (
-            /* Character display — click to open search */
-            <button
-               id="detail-change-role-button"
-               type="button"
-               onClick={() => onSetSearchingRole(true)}
-               disabled={isNameHidden}
-               className={cn(
-                 'w-full flex flex-col items-center justify-center py-4 rounded-xl border border-transparent transition-all duration-200 relative',
-                 isNameHidden
-                   ? 'cursor-not-allowed'
-                   : isLightModeActive
-                     ? 'hover:scale-[1.02] hover:bg-black/5 hover:border-gray-300/40'
-                     : 'hover:scale-[1.02] hover:bg-white/5 hover:border-gray-800/40'
-               )}
-             >
-               {displayRoles.length > 0 ? (
-                 <div className="flex flex-col items-center space-y-3 w-full">
-                   {allowMultipleRoles ? (
-                     /* Player Tracker Row Layout */
-                     <div className="flex flex-row justify-center items-center gap-4 select-none w-full flex-wrap">
-                       {displayRoles.map((roleId) => {
-                         const rObj = (rolesData as Role[]).find(r => r.id === roleId);
-                         if (!rObj) return null;
-                         return (
-                           <div key={roleId} className="relative w-24 h-24 shrink-0">
-                             <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-md absolute inset-0 z-10">
-                               <defs>
-                                 <path id={`topTextPath-${roleId}`} d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
-                                 <path id={`bottomTextPath-${roleId}`} d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
-                               </defs>
-                               <circle cx="100" cy="100" r="90" fill="#ffffff" stroke="#d4d4d8" strokeWidth="6" />
-                               <circle cx="100" cy="100" r="58" fill="none" stroke="#e4e4e7" strokeWidth="1" strokeDasharray="3 3" />
-                               <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(rObj.team))}>
-                                 <textPath href={`#topTextPath-${roleId}`} startOffset="50%" textAnchor="middle">
-                                   {rObj.name}
-                                 </textPath>
-                               </text>
-                               <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(rObj.team))}>
-                                 <textPath href={`#bottomTextPath-${roleId}`} startOffset="50%" textAnchor="middle">
-                                   {rObj.team}
-                                 </textPath>
-                               </text>
-                             </svg>
-                             <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                               <div className="w-[47%] h-[47%] flex items-center justify-center">
-                                 <img
-                                   src={`/icons/${rObj.id}.svg`}
-                                   alt={rObj.name}
-                                   className="w-full h-full object-contain"
-                                   onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                 />
-                               </div>
-                             </div>
-                           </div>
-                         );
-                       })}
-                     </div>
-                   ) : (
-                     /* Standard Grimoire Stack/Fanning Layout (fallback/standard mode) */
-                     <div className={cn(
-                       "relative flex items-center justify-center select-none transition-all duration-300",
-                       isNameHidden ? "w-48 h-48" : "w-36 h-36"
-                     )}>
-                       {displayRoles.map((roleId, idx) => {
-                         const rObj = (rolesData as Role[]).find(r => r.id === roleId);
-                         if (!rObj) return null;
-                         
-                         let transformClass = "absolute inset-0 transition-all duration-300 ease-out";
-                         if (displayRoles.length > 1) {
-                           if (displayRoles.length === 2) {
-                             transformClass += idx === 0 
-                               ? " -rotate-3 -translate-x-1 group-hover:-translate-x-8 group-hover:-rotate-12" 
-                               : " rotate-3 translate-x-1 group-hover:translate-x-8 group-hover:rotate-12";
-                           } else if (displayRoles.length === 3) {
-                             if (idx === 0) {
-                               transformClass += " -rotate-6 -translate-x-2 translate-y-0.5 group-hover:-translate-x-12 group-hover:translate-y-2 group-hover:-rotate-12";
-                             } else if (idx === 1) {
-                               transformClass += " translate-y-[-1px] group-hover:-translate-y-10 group-hover:scale-105";
-                             } else if (idx === 2) {
-                               transformClass += " rotate-6 translate-x-2 translate-y-0.5 group-hover:translate-x-12 group-hover:translate-y-2 group-hover:rotate-12";
-                             }
-                           }
-                         }
-
-                         return (
-                           <div key={roleId} className={transformClass}>
-                              <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl absolute inset-0 z-10">
-                                <defs>
-                                  <path id={`topTextPath-${roleId}`} d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
-                                  <path id={`bottomTextPath-${roleId}`} d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
-                                </defs>
-                                <circle cx="100" cy="100" r="90" fill="#ffffff" stroke="#d4d4d8" strokeWidth="6" />
-                                <circle cx="100" cy="100" r="58" fill="none" stroke="#e4e4e7" strokeWidth="1" strokeDasharray="3 3" />
-                                <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(rObj.team))}>
-                                  <textPath href={`#topTextPath-${roleId}`} startOffset="50%" textAnchor="middle">
-                                    {rObj.name}
-                                  </textPath>
-                                </text>
-                                <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(rObj.team))}>
-                                  <textPath href={`#bottomTextPath-${roleId}`} startOffset="50%" textAnchor="middle">
-                                    {rObj.team}
-                                  </textPath>
-                                </text>
-                              </svg>
-                              <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                                <div className="w-[47%] h-[47%] flex items-center justify-center">
-                                  <img
-                                    src={`/icons/${rObj.id}.svg`}
-                                    alt={rObj.name}
-                                    className="w-full h-full object-contain"
-                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                  />
-                                </div>
+            /* Character display */
+            allowMultipleRoles ? (
+              <div className="w-full flex flex-col items-center justify-center py-4 rounded-xl border border-transparent relative">
+                {displayRoles.length > 0 ? (
+                  <div className="flex flex-col items-center space-y-3 w-full">
+                    {/* Player Tracker Row Layout with separate buttons */}
+                    <div className="flex flex-row justify-center items-center gap-4 select-none w-full flex-wrap">
+                      {displayRoles.map((roleId) => {
+                        const rObj = (rolesData as Role[]).find(r => r.id === roleId);
+                        if (!rObj) return null;
+                        return (
+                          <button
+                            key={roleId}
+                            type="button"
+                            onClick={() => onSetSearchingRole(true)}
+                            disabled={isNameHidden}
+                            className={cn(
+                              'relative w-24 h-24 shrink-0 transition-all duration-200 hover:scale-110 active:scale-95 rounded-full shadow-md hover:shadow-lg border-2 border-transparent focus:outline-none focus:border-clocktower-blood',
+                              isNameHidden ? 'cursor-not-allowed' : 'cursor-pointer'
+                            )}
+                          >
+                            <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-md absolute inset-0 z-10">
+                              <defs>
+                                <path id={`topTextPath-${roleId}`} d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
+                                <path id={`bottomTextPath-${roleId}`} d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
+                              </defs>
+                              <circle cx="100" cy="100" r="90" fill="#ffffff" stroke="#d4d4d8" strokeWidth="6" />
+                              <circle cx="100" cy="100" r="58" fill="none" stroke="#e4e4e7" strokeWidth="1" strokeDasharray="3 3" />
+                              <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(rObj.team))}>
+                                <textPath href={`#topTextPath-${roleId}`} startOffset="50%" textAnchor="middle">
+                                  {rObj.name}
+                                </textPath>
+                              </text>
+                              <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(rObj.team))}>
+                                <textPath href={`#bottomTextPath-${roleId}`} startOffset="50%" textAnchor="middle">
+                                  {rObj.team}
+                                </textPath>
+                              </text>
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                              <div className="w-[47%] h-[47%] flex items-center justify-center">
+                                <img
+                                  src={`/icons/${rObj.id}.svg`}
+                                  alt={rObj.name}
+                                  className="w-full h-full object-contain"
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
                               </div>
-                           </div>
-                         );
-                       })}
-                     </div>
-                   )}
-                 </div>
-               ) : (
-                 <div className="flex flex-col items-center space-y-2 py-1">
-                   <div className={cn(
-                     'w-32 h-32 rounded-full border-2 border-dashed flex items-center justify-center text-4xl font-light transition-colors',
-                     isLightModeActive
-                       ? 'border-gray-300 text-gray-400 bg-gray-50'
-                       : 'border-gray-800 text-gray-600 bg-gray-955/40'
-                   )}>
-                     ?
-                   </div>
-                   <div className="text-center">
-                     <p className={cn('text-lg font-semibold', isLightModeActive ? 'text-gray-500' : 'text-gray-400')}>
-                       No Character Assigned
-                     </p>
-                     <p className="text-xs opacity-50 mt-0.5">Click to select character candidates</p>
-                   </div>
-                 </div>
-               )}
-             </button>
-           )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                      {displayRoles.length < 3 && (
+                        <button
+                          type="button"
+                          onClick={() => onSetSearchingRole(true)}
+                          disabled={isNameHidden}
+                          className={cn(
+                            'w-24 h-24 rounded-full border-2 border-dashed flex items-center justify-center text-2xl font-light transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm',
+                            isLightModeActive
+                              ? 'border-gray-300 text-gray-400 bg-gray-50 hover:bg-gray-100 hover:border-gray-400'
+                              : 'border-gray-800 text-gray-600 bg-gray-955/40 hover:bg-gray-900/40 hover:border-gray-700'
+                          )}
+                          title="Add candidate character"
+                        >
+                          +
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center space-y-2 py-1">
+                    <button
+                      type="button"
+                      onClick={() => onSetSearchingRole(true)}
+                      disabled={isNameHidden}
+                      className={cn(
+                        'w-24 h-24 rounded-full border-2 border-dashed flex items-center justify-center text-2xl font-light transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm',
+                        isLightModeActive
+                          ? 'border-gray-300 text-gray-400 bg-gray-50 hover:bg-gray-100 hover:border-gray-400'
+                          : 'border-gray-800 text-gray-600 bg-gray-955/40 hover:bg-gray-900/40 hover:border-gray-700'
+                      )}
+                      title="Add candidate character"
+                    >
+                      +
+                    </button>
+                    <div className="text-center">
+                      <p className={cn('text-sm font-semibold', isLightModeActive ? 'text-gray-500' : 'text-gray-400')}>
+                        No Character Candidates Selected
+                      </p>
+                      <p className="text-[10px] opacity-50 mt-0.5">Click the slot to select characters</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Standard grimoire single button */
+              <button
+                id="detail-change-role-button"
+                type="button"
+                onClick={() => onSetSearchingRole(true)}
+                disabled={isNameHidden}
+                className={cn(
+                  'w-full flex flex-col items-center justify-center py-4 rounded-xl border border-transparent transition-all duration-200 relative',
+                  isNameHidden
+                    ? 'cursor-not-allowed'
+                    : isLightModeActive
+                      ? 'hover:scale-[1.02] hover:bg-black/5 hover:border-gray-300/40'
+                      : 'hover:scale-[1.02] hover:bg-white/5 hover:border-gray-800/40'
+                )}
+              >
+                {displayRoles.length > 0 ? (
+                  <div className="flex flex-col items-center space-y-3 w-full">
+                    <div className={cn(
+                      "relative flex items-center justify-center select-none transition-all duration-300",
+                      isNameHidden ? "w-48 h-48" : "w-36 h-36"
+                    )}>
+                      {displayRoles.map((roleId) => {
+                        const rObj = (rolesData as Role[]).find(r => r.id === roleId);
+                        if (!rObj) return null;
+                        return (
+                          <div key={roleId} className="absolute inset-0">
+                            <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl absolute inset-0 z-10">
+                              <defs>
+                                <path id={`topTextPath-${roleId}`} d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
+                                <path id={`bottomTextPath-${roleId}`} d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
+                              </defs>
+                              <circle cx="100" cy="100" r="90" fill="#ffffff" stroke="#d4d4d8" strokeWidth="6" />
+                              <circle cx="100" cy="100" r="58" fill="none" stroke="#e4e4e7" strokeWidth="1" strokeDasharray="3 3" />
+                              <text className={cn("font-bold text-[18px] tracking-wider uppercase", teamFill(rObj.team))}>
+                                <textPath href={`#topTextPath-${roleId}`} startOffset="50%" textAnchor="middle">
+                                  {rObj.name}
+                                </textPath>
+                              </text>
+                              <text className={cn("font-bold text-[11px] tracking-widest uppercase", teamFill(rObj.team))}>
+                                <textPath href={`#bottomTextPath-${roleId}`} startOffset="50%" textAnchor="middle">
+                                  {rObj.team}
+                                </textPath>
+                              </text>
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                              <div className="w-[47%] h-[47%] flex items-center justify-center">
+                                <img
+                                  src={`/icons/${rObj.id}.svg`}
+                                  alt={rObj.name}
+                                  className="w-full h-full object-contain"
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center space-y-2 py-1">
+                    <div className={cn(
+                      'w-32 h-32 rounded-full border-2 border-dashed flex items-center justify-center text-4xl font-light transition-colors',
+                      isLightModeActive
+                        ? 'border-gray-300 text-gray-400 bg-gray-50'
+                        : 'border-gray-800 text-gray-600 bg-gray-955/40'
+                    )}>
+                      ?
+                    </div>
+                    <div className="text-center">
+                      <p className={cn('text-lg font-semibold', isLightModeActive ? 'text-gray-500' : 'text-gray-400')}>
+                        No Character Assigned
+                      </p>
+                      <p className="text-xs opacity-50 mt-0.5">Click to select character</p>
+                    </div>
+                  </div>
+                )}
+              </button>
+            )
+          )}
 
            {/* Selected character tags with delete button (Player Tracker mode) */}
            {allowMultipleRoles && displayRoles.length > 0 && !isSearchingRole && (
