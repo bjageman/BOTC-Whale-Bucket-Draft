@@ -81,7 +81,7 @@ export default function PlayerTrackerSetupPlayerRow({
           value={p.name}
           onChange={(e) => updatePlayerName(p.id, e.target.value)}
           placeholder="Player Name"
-          className="bg-transparent text-sm text-gray-250 font-bold border-b border-transparent hover:border-gray-800 focus:border-clocktower-blood focus:outline-none py-0.5 px-1 flex-1 min-w-0 transition-all"
+          className="bg-transparent text-sm text-gray-200 font-bold border-b border-transparent hover:border-gray-800 focus:border-clocktower-blood focus:outline-none py-0.5 px-1 flex-1 min-w-0 transition-all"
         />
       </div>
 
