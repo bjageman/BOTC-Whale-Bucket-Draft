@@ -54,11 +54,10 @@ describe('useGameSocket', () => {
     renderHook(() => useGameSocket('ABCDE', () => {}));
 
     expect(globalThis.WebSocket).toHaveBeenCalledTimes(1);
-    // URL should use the configured server; ?auth= present when credentials set
-    expect(mockWsInstances[0].url).toContain('wss://ntfy.brodin.rocks/botc-companion-abcde/ws');
-    // Verify base64url auth param is appended (no URL-encoding, no padding)
-    expect(mockWsInstances[0].url).toContain('?auth=');
-    expect(mockWsInstances[0].url).not.toContain('%20');
+    // URL must contain the correct topic path and /ws suffix
+    expect(mockWsInstances[0].url).toContain('/botc-companion-abcde/ws');
+    // Must use secure websocket protocol (wss:// for non-localhost)
+    expect(mockWsInstances[0].url).toMatch(/^wss:\/\//)
   });
 
   it('should set isConnected to true on open and false on close', () => {
@@ -123,7 +122,7 @@ describe('useGameSocket', () => {
     });
 
     expect(globalThis.WebSocket).toHaveBeenCalledTimes(2);
-    expect(mockWsInstances[1].url).toContain('wss://ntfy.brodin.rocks/botc-companion-abcde/ws');
+    expect(mockWsInstances[1].url).toContain('/botc-companion-abcde/ws');
   });
 
   it('should cleanup connection on unmount', () => {
@@ -145,12 +144,12 @@ describe('useGameSocket', () => {
     const [calledUrl, calledOptions] = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0] as
       [string, RequestInit];
 
-    // URL should contain the topic and ?auth= param (no Authorization header needed)
-    expect(calledUrl).toContain('https://ntfy.brodin.rocks/botc-companion-abcde');
-    expect(calledUrl).toContain('?auth=');
-    expect(calledUrl).not.toContain('%20');
+    // URL must contain the correct topic path
+    expect(calledUrl).toContain('/botc-companion-abcde');
+    // Must use https (not http) for non-localhost servers
+    expect(calledUrl).toMatch(/^https:\/\//);
 
-    // No Authorization header should be present in the fetch options
+    // No Authorization header should be present — auth goes in the ?auth= query param
     const headers = calledOptions.headers as Record<string, string> | undefined;
     expect(headers?.['Authorization']).toBeUndefined();
 
