@@ -262,6 +262,8 @@ export default function PlayerDetailsModal({
                       }
                       onUpdateRoles(p.id, [...currentRoles, roleId]);
                     }
+                    onSetSearchingRole(false);
+                    onSetModalRoleSearch('');
                   } else {
                     onUpdateRole(p.id, roleId);
                     onSetSearchingRole(false);
