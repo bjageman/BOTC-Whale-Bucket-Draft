@@ -187,7 +187,7 @@ export default function GrimoireBoard({
 
         {players.map((p, index) => {
           const total = players.length;
-          const angle = (index * (360 / total) - 90) * (Math.PI / 180);
+          const angle = (index * (360 / total) + 90) * (Math.PI / 180);
 
           const leftPos = 50 + grimoireConfig.radiusX * Math.cos(angle);
           const topPos = 50 + grimoireConfig.radiusY * Math.sin(angle);
