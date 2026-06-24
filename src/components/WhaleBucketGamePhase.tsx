@@ -65,6 +65,13 @@ export default function WhaleBucketGamePhase({
   const [modalSearchTerm, setModalSearchTerm] = useState('');
   const [selectedRoleForInfo, setSelectedRoleForInfo] = useState<Role | null>(null);
 
+  const scriptName = "All Roles (Default)";
+  const customScriptRoles = null;
+
+  const getScriptStats = () => {
+    return '';
+  };
+
   // Listen for Escape key to close the script modal or details modal
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -82,32 +89,16 @@ export default function WhaleBucketGamePhase({
   }, [isScriptModalOpen, selectedRoleForInfo]);
 
   const sortedRoles = useMemo(() => {
-    const roles: Role[] = [];
+    const roles = [...(rolesData as Role[])];
+    // Include travelers that are active in the grimoire
     players.forEach(p => {
       const displayRoles = p.roleIds && p.roleIds.length > 0 ? p.roleIds : (p.roleId ? [p.roleId] : []);
       displayRoles.forEach(roleId => {
         const rObj = (rolesData as Role[]).find(r => r.id === roleId);
-        if (rObj && !roles.some(r => r.id === rObj.id)) {
+        if (rObj && rObj.team === 'traveler' && !roles.some(r => r.id === rObj.id)) {
           roles.push(rObj);
         }
       });
-      // Include special/drunk/marionette/lunatic/lilmonsta roles if flagged
-      if (p.isTheDrunk) {
-        const drunkObj = (rolesData as Role[]).find(r => r.id === 'drunk');
-        if (drunkObj && !roles.some(r => r.id === drunkObj.id)) roles.push(drunkObj);
-      }
-      if (p.isTheMarionette) {
-        const marionetteObj = (rolesData as Role[]).find(r => r.id === 'marionette');
-        if (marionetteObj && !roles.some(r => r.id === marionetteObj.id)) roles.push(marionetteObj);
-      }
-      if (p.isTheLunatic) {
-        const lunaticObj = (rolesData as Role[]).find(r => r.id === 'lunatic');
-        if (lunaticObj && !roles.some(r => r.id === lunaticObj.id)) roles.push(lunaticObj);
-      }
-      if (p.isTheLilMonsta) {
-        const lilMonstaObj = (rolesData as Role[]).find(r => r.id === 'lilmonsta');
-        if (lilMonstaObj && !roles.some(r => r.id === lilMonstaObj.id)) roles.push(lilMonstaObj);
-      }
     });
     return roles.sort((a, b) => a.name.localeCompare(b.name));
   }, [players]);
@@ -126,14 +117,6 @@ export default function WhaleBucketGamePhase({
   const minions = useMemo(() => filteredRoles.filter(r => r.team === 'minion'), [filteredRoles]);
   const demons = useMemo(() => filteredRoles.filter(r => r.team === 'demon'), [filteredRoles]);
   const travelers = useMemo(() => filteredRoles.filter(r => r.team === 'traveler'), [filteredRoles]);
-
-  const getScriptStats = () => {
-    const tf = sortedRoles.filter(r => r.team === 'townsfolk').length;
-    const o = sortedRoles.filter(r => r.team === 'outsider').length;
-    const m = sortedRoles.filter(r => r.team === 'minion').length;
-    const d = sortedRoles.filter(r => r.team === 'demon').length;
-    return `${tf} TF / ${o} O / ${m} M / ${d} D`;
-  };
 
   return (
     <div className="space-y-6 animate-fadeIn md:grid md:grid-cols-[3fr_2fr] md:gap-8 md:space-y-0 md:items-start landscape:grid landscape:grid-cols-[3fr_2fr] landscape:gap-6 landscape:space-y-0 landscape:items-start">
@@ -161,7 +144,7 @@ export default function WhaleBucketGamePhase({
 
       {/* Column 2: Ledger & Controls */}
       <div className="space-y-6 md:pt-10 landscape:pt-10">
-        {/* All Roles Display */}
+        {/* Active Script Display */}
         <button
           type="button"
           onClick={() => setIsScriptModalOpen(true)}
@@ -176,11 +159,13 @@ export default function WhaleBucketGamePhase({
             "flex items-center gap-1.5 text-base font-extrabold transition-colors",
             isLightModeActive ? "text-gray-900" : "text-white"
           )}>
-            📜 All Roles
+            {customScriptRoles ? "📜" : "🌐"} {scriptName}
           </span>
-          <span className="text-[10px] text-gray-500 font-medium">
-            {getScriptStats()}
-          </span>
+          {customScriptRoles && (
+            <span className="text-[10px] text-gray-500 font-medium">
+              {getScriptStats()}
+            </span>
+          )}
         </button>
 
         {/* Add Traveler Card (Late Arrival) */}
@@ -382,11 +367,13 @@ export default function WhaleBucketGamePhase({
                   isLightModeActive ? "text-clocktower-blood" : "text-white"
                 )}>
                   <Scroll size={20} className={isLightModeActive ? "text-clocktower-blood" : "text-clocktower-townsfolk"} />
-                  All Roles
+                  {scriptName}
                 </h3>
-                <p className="text-xs text-gray-500 font-medium mt-1">
-                  {getScriptStats()}
-                </p>
+                {customScriptRoles && (
+                  <p className="text-xs text-gray-550 font-medium mt-1">
+                    {getScriptStats()}
+                  </p>
+                )}
               </div>
               <button 
                 type="button"

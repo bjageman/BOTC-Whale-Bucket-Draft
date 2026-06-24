@@ -65,23 +65,19 @@ describe('WhaleBucketGamePhase - Script Modal Integration', () => {
   it('renders active script button with correct counts', () => {
     render(<WhaleBucketGamePhase {...defaultProps} />);
 
-    // Should display the button with "All Roles"
-    const scriptButton = screen.getByText(/All Roles/i).closest('button');
+    // Should display the button with "All Roles (Default)"
+    const scriptButton = screen.getByText(/All Roles \(Default\)/i).closest('button');
     expect(scriptButton).toBeInTheDocument();
-
-    // Since washerwoman (TF) and poisoner (Minion) are active:
-    // Should display stats: 1 TF / 0 O / 1 M / 0 D
-    expect(screen.getByText('1 TF / 0 O / 1 M / 0 D')).toBeInTheDocument();
   });
 
   it('opens modal on script button click and displays active characters sorted by team', () => {
     render(<WhaleBucketGamePhase {...defaultProps} />);
 
-    const scriptButton = screen.getByText(/All Roles/i).closest('button');
+    const scriptButton = screen.getByText(/All Roles \(Default\)/i).closest('button');
     fireEvent.click(scriptButton!);
 
     // Modal should be open
-    expect(screen.getByRole('heading', { name: /All Roles/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /All Roles \(Default\)/i })).toBeInTheDocument();
 
     const modalContainer = screen.getByPlaceholderText('Search character by name or type...').closest('.max-w-2xl') as HTMLElement;
     const modal = within(modalContainer);
@@ -96,15 +92,15 @@ describe('WhaleBucketGamePhase - Script Modal Integration', () => {
     // Poisoner should be listed
     expect(modal.getByText('Poisoner')).toBeInTheDocument();
 
-    // Demons and Outsiders should not be listed as headers (counts are 0)
-    expect(modal.queryByText(/Demons/i)).toBeNull();
-    expect(modal.queryByText(/Outsiders/i)).toBeNull();
+    // Demons and Outsiders should be listed as headers (counts are > 0)
+    expect(modal.getByText(/Demons/i)).toBeInTheDocument();
+    expect(modal.getByText(/Outsiders/i)).toBeInTheDocument();
   });
 
   it('opens character details modal when character is clicked', () => {
     render(<WhaleBucketGamePhase {...defaultProps} />);
 
-    const scriptButton = screen.getByText(/All Roles/i).closest('button');
+    const scriptButton = screen.getByText(/All Roles \(Default\)/i).closest('button');
     fireEvent.click(scriptButton!);
 
     const modalContainer = screen.getByPlaceholderText('Search character by name or type...').closest('.max-w-2xl') as HTMLElement;
@@ -125,6 +121,6 @@ describe('WhaleBucketGamePhase - Script Modal Integration', () => {
 
     // Detail overlay should be closed, but list modal should still be open
     expect(screen.queryByText('You start knowing that 1 of 2 players is a particular Townsfolk.')).toBeNull();
-    expect(screen.getByRole('heading', { name: /All Roles/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /All Roles \(Default\)/i })).toBeInTheDocument();
   });
 });
