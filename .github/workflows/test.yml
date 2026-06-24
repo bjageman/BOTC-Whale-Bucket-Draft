@@ -26,3 +26,13 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Start ntfy server (Docker)
+        run: docker run -d --name ntfy -p 8080:80 binwiederhier/ntfy serve
+
+      - name: Run scale integration test
+        env:
+          VITE_NTFY_SERVER_URL: 127.0.0.1:8080
+          VITE_NTFY_ADMIN_USERNAME: ""
+          VITE_NTFY_ADMIN_PASSWORD: ""
+        run: npm run test:scale
