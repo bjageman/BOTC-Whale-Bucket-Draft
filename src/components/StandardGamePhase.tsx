@@ -51,6 +51,15 @@ export default function StandardGamePhase({
   customScriptRoles = null,
   isSynced = false,
 }: Props) {
+  const getScriptStats = () => {
+    if (!customScriptRoles) return '';
+    const tf = customScriptRoles.filter(r => r.team === 'townsfolk').length;
+    const o = customScriptRoles.filter(r => r.team === 'outsider').length;
+    const m = customScriptRoles.filter(r => r.team === 'minion').length;
+    const d = customScriptRoles.filter(r => r.team === 'demon').length;
+    return `${tf} TF / ${o} O / ${m} M / ${d} D`;
+  };
+
   return (
     <div className="space-y-6 animate-fadeIn md:grid md:grid-cols-[3fr_2fr] md:gap-8 md:space-y-0 md:items-start landscape:grid landscape:grid-cols-[3fr_2fr] landscape:gap-6 landscape:space-y-0 landscape:items-start">
       {/* Column 1: Board & Night Order */}
@@ -83,25 +92,20 @@ export default function StandardGamePhase({
 
         {/* Active Script Display */}
         <div className={cn(
-          'rounded-lg border p-3.5 space-y-2 transition-colors duration-300',
+          "w-full border py-3.5 px-4 rounded-lg flex flex-col items-center justify-center gap-1 text-center transition-colors duration-300",
           isLightModeActive
-            ? 'bg-white/50 border-gray-300 text-clocktower-night'
-            : 'bg-gray-900/40 border-gray-800/80'
+            ? "bg-gray-100 border-gray-300 text-gray-800"
+            : "bg-gray-955 border-gray-800 text-gray-300"
         )}>
-          <h4 className={cn(
-            'text-[10px] uppercase font-bold tracking-wider',
-            isLightModeActive ? 'text-gray-600' : 'text-gray-500'
-          )}>Active Script</h4>
-          <div className="flex items-center gap-2">
-            <span className={cn(
-              "text-xs font-bold px-2.5 py-1 rounded-full border flex items-center gap-1.5",
-              isLightModeActive
-                ? "bg-gray-100 border-gray-300 text-gray-800"
-                : "bg-gray-955 border-gray-850 text-gray-300"
-            )}>
-              {customScriptRoles ? "📜" : "🌐"} {scriptName}
-            </span>
-          </div>
+          <span className={cn(
+            "flex items-center gap-1.5 text-xs font-bold transition-colors",
+            isLightModeActive ? "text-gray-900" : "text-white"
+          )}>
+            {customScriptRoles ? "📜" : "🌐"} {scriptName}
+          </span>
+          <span className="text-[10px] text-gray-500 font-medium">
+            {customScriptRoles ? `${getScriptStats()} — Active Script` : "Active Script"}
+          </span>
         </div>
 
         {/* Add Traveler */}
