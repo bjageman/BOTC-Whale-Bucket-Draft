@@ -103,9 +103,11 @@ export default function StandardGamePhase({
           )}>
             {customScriptRoles ? "📜" : "🌐"} {scriptName}
           </span>
-          <span className="text-[10px] text-gray-500 font-medium">
-            {customScriptRoles ? `${getScriptStats()} — Active Script` : "Active Script"}
-          </span>
+          {customScriptRoles && (
+            <span className="text-[10px] text-gray-500 font-medium">
+              {getScriptStats()}
+            </span>
+          )}
         </div>
 
         {/* Add Traveler */}
