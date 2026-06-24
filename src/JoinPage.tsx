@@ -170,6 +170,11 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
           }
         }
       }
+    } else if (payload.type === 'storyteller_quit') {
+      alert('The Storyteller has quit the session.');
+      sessionStorage.removeItem('joined-code');
+      sessionStorage.removeItem('joined-name');
+      setState('join');
     }
   };
 
