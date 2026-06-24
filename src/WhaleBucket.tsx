@@ -629,12 +629,16 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     setModalRoleSearch('');
   };
 
-  const resetGame = () => {
+  const resetGame = async () => {
     if (confirm('Are you sure you want to reset the game? This clears all players and settings.')) {
       if (sendMessageRef.current) {
-        sendMessageRef.current({
-          type: 'storyteller_quit'
-        });
+        try {
+          await sendMessageRef.current({
+            type: 'storyteller_quit'
+          });
+        } catch (e) {
+          console.error('Failed to notify players on reset:', e);
+        }
       }
       setPlayers([]);
       setPhase('setup');
@@ -648,6 +652,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       const newCode = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
       localStorage.setItem('whale-bucket-game-code', newCode);
       setGameCode(newCode);
+      window.location.hash = '';
     }
   };
 
@@ -751,6 +756,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
             <h1 className="text-2xl font-bold text-clocktower-blood tracking-wide text-center">
               Whale Bucket
             </h1>
+            {/* Room code inline on desktop, hidden on mobile */}
             <div 
               onClick={() => {
                 const joinUrl = `${window.location.origin}${window.location.pathname}#/join?code=${gameCode}`;
@@ -758,7 +764,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                 alert(`Copied link to clipboard: ${joinUrl}`);
               }}
               className={cn(
-                "cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none flex items-center gap-1",
+                "hidden md:flex cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none items-baseline gap-1",
                 isLightModeActive 
                   ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200" 
                   : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
@@ -786,6 +792,24 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
               <RefreshCcw size={20} />
             </button>
           </div>
+        </div>
+
+        {/* Room code below header row on mobile only */}
+        <div
+          onClick={() => {
+            const joinUrl = `${window.location.origin}${window.location.pathname}#/join?code=${gameCode}`;
+            navigator.clipboard.writeText(joinUrl);
+            alert(`Copied link to clipboard: ${joinUrl}`);
+          }}
+          className={cn(
+            "md:hidden cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none flex items-baseline gap-1",
+            isLightModeActive
+              ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
+              : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
+          )}
+          title="Click to copy join link"
+        >
+          Room: <span className="text-clocktower-blood font-mono uppercase tracking-wider">{gameCode}</span>
         </div>
       </header>
 
