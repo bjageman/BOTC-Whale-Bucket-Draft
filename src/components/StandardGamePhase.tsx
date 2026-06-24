@@ -66,9 +66,20 @@ export default function StandardGamePhase({
   const [selectedRoleForInfo, setSelectedRoleForInfo] = useState<Role | null>(null);
 
   const sortedRoles = useMemo(() => {
-    const roles = customScriptRoles || (rolesData as Role[]);
-    return [...roles].sort((a, b) => a.name.localeCompare(b.name));
-  }, [customScriptRoles]);
+    const baseRoles = customScriptRoles || (rolesData as Role[]);
+    const roles = [...baseRoles];
+    // Include travelers that are active in the grimoire
+    players.forEach(p => {
+      const displayRoles = p.roleIds && p.roleIds.length > 0 ? p.roleIds : (p.roleId ? [p.roleId] : []);
+      displayRoles.forEach(roleId => {
+        const rObj = (rolesData as Role[]).find(r => r.id === roleId);
+        if (rObj && rObj.team === 'traveler' && !roles.some(r => r.id === rObj.id)) {
+          roles.push(rObj);
+        }
+      });
+    });
+    return roles.sort((a, b) => a.name.localeCompare(b.name));
+  }, [customScriptRoles, players]);
 
   const filteredRoles = useMemo(() => {
     if (!modalSearchTerm.trim()) return sortedRoles;
