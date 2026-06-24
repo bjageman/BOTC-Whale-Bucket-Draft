@@ -33,6 +33,8 @@ interface Props {
   onResetDead?: () => void;
   onResetTime?: () => void;
   showNightOrder?: boolean;
+  scriptName?: string;
+  customScriptRoles?: Role[] | null;
 }
 
 export default function StandardGamePhase({
@@ -44,6 +46,8 @@ export default function StandardGamePhase({
   handleTouchStart, handleTouchMove, handleTouchEnd,
   onResetDead, onResetTime,
   showNightOrder = true,
+  scriptName = "All Roles (Default)",
+  customScriptRoles = null,
 }: Props) {
   return (
     <div className="space-y-6 animate-fadeIn md:grid md:grid-cols-[3fr_2fr] md:gap-8 md:space-y-0 md:items-start landscape:grid landscape:grid-cols-[3fr_2fr] landscape:gap-6 landscape:space-y-0 landscape:items-start">
@@ -73,6 +77,36 @@ export default function StandardGamePhase({
 
       {/* Column 2: Controls */}
       <div id="grimoire-controls-container" className="space-y-6 md:pt-10 landscape:pt-10">
+
+        {/* Active Script Display */}
+        <div className={cn(
+          'rounded-lg border p-3.5 space-y-2 transition-colors duration-300',
+          isLightModeActive
+            ? 'bg-white/50 border-gray-300 text-clocktower-night'
+            : 'bg-gray-900/40 border-gray-800/80'
+        )}>
+          <h4 className={cn(
+            'text-[10px] uppercase font-bold tracking-wider',
+            isLightModeActive ? 'text-gray-600' : 'text-gray-500'
+          )}>Active Script</h4>
+          <div className="flex items-center gap-2">
+            <span className={cn(
+              "text-xs font-bold px-2.5 py-1 rounded-full border flex items-center gap-1.5",
+              customScriptRoles 
+                ? "bg-clocktower-blood/10 border-clocktower-blood/40 text-clocktower-blood" 
+                : isLightModeActive
+                  ? "bg-gray-150 border-gray-300 text-gray-700"
+                  : "bg-gray-955 border-gray-800 text-gray-400"
+            )}>
+              {customScriptRoles ? "📜" : "🌐"} {scriptName}
+            </span>
+            {customScriptRoles && (
+              <span className="text-[10px] text-gray-500 font-medium">
+                ({customScriptRoles.length} roles loaded)
+              </span>
+            )}
+          </div>
+        </div>
 
         {/* Add Traveler */}
         <div className={cn(

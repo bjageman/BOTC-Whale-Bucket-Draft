@@ -543,6 +543,8 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
           onResetDead={resetDead}
           onResetTime={resetTime}
           showNightOrder={false}
+          scriptName={scriptName}
+          customScriptRoles={customScriptRoles}
         />
       )}
 

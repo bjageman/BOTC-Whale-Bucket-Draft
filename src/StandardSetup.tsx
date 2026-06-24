@@ -822,6 +822,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           handleTouchEnd={handleTouchEnd}
           onResetDead={resetDead}
           onResetTime={resetTime}
+          scriptName={scriptName}
+          customScriptRoles={customScriptRoles}
         />
       )}
 
