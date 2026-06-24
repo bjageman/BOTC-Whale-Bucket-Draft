@@ -30,6 +30,7 @@ interface PlayerTrackerSetupPhaseProps {
   handleTouchEnd: () => void;
   movePlayer: (index: number, direction: 'up' | 'down') => void;
   isSynced?: boolean;
+  isLightModeActive?: boolean;
 }
 
 export default function PlayerTrackerSetupPhase({
@@ -58,6 +59,7 @@ export default function PlayerTrackerSetupPhase({
   handleTouchEnd,
   movePlayer,
   isSynced = false,
+  isLightModeActive = false,
 }: PlayerTrackerSetupPhaseProps) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-[5fr_3fr] md:grid-rows-[auto_1fr] md:items-start animate-fadeIn">
@@ -73,8 +75,16 @@ export default function PlayerTrackerSetupPhase({
           />
 
           {isSynced ? (
-            <div className="w-full bg-gray-955 border border-gray-800 text-gray-300 py-3.5 px-4 rounded-lg flex flex-col items-center justify-center gap-1 text-center">
-              <span className="flex items-center gap-1.5 text-xs font-bold text-white">
+            <div className={cn(
+              "w-full border py-3.5 px-4 rounded-lg flex flex-col items-center justify-center gap-1 text-center",
+              isLightModeActive
+                ? "bg-gray-100 border-gray-300 text-gray-800"
+                : "bg-gray-955 border-gray-800 text-gray-300"
+            )}>
+              <span className={cn(
+                "flex items-center gap-1.5 text-xs font-bold",
+                isLightModeActive ? "text-gray-900" : "text-white"
+              )}>
                 {customScriptRoles ? "📜" : "🌐"} {scriptName}
               </span>
               <span className="text-[10px] text-gray-500 font-medium">
@@ -86,10 +96,20 @@ export default function PlayerTrackerSetupPhase({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full bg-gray-955 border border-gray-800 hover:border-clocktower-blood text-gray-300 py-3.5 px-4 rounded-lg transition-all flex flex-col items-center justify-center gap-1 group text-center cursor-pointer"
+                className={cn(
+                  "w-full border py-3.5 px-4 rounded-lg transition-all flex flex-col items-center justify-center gap-1 group text-center cursor-pointer",
+                  isLightModeActive
+                    ? "bg-gray-100/80 border-gray-300 hover:border-clocktower-blood/60 hover:bg-gray-150"
+                    : "bg-gray-955 border-gray-800 hover:border-clocktower-blood"
+                )}
                 title="Click to upload custom script JSON"
               >
-                <span className="flex items-center gap-1.5 text-xs font-bold text-white group-hover:text-clocktower-blood transition-colors">
+                <span className={cn(
+                  "flex items-center gap-1.5 text-xs font-bold transition-colors",
+                  isLightModeActive
+                    ? "text-gray-900 group-hover:text-clocktower-blood"
+                    : "text-white group-hover:text-clocktower-blood"
+                )}>
                   {customScriptRoles ? "📜" : "🌐"} {scriptName}
                 </span>
                 <span className="text-[10px] text-gray-500 font-medium flex items-center gap-1">
@@ -102,7 +122,12 @@ export default function PlayerTrackerSetupPhase({
                 <button
                   type="button"
                   onClick={clearCustomScript}
-                  className="w-full text-center bg-transparent hover:bg-gray-800 border border-gray-800 text-red-400 hover:text-red-300 py-1.5 rounded text-xs font-semibold transition-all"
+                  className={cn(
+                    "w-full text-center bg-transparent border py-1.5 rounded text-xs font-semibold transition-all",
+                    isLightModeActive
+                      ? "hover:bg-red-50 border-gray-300 text-red-600 hover:text-red-700"
+                      : "hover:bg-gray-800 border-gray-800 text-red-400 hover:text-red-300"
+                  )}
                 >
                   Clear Custom Script
                 </button>

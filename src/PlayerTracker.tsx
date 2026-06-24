@@ -577,6 +577,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
 
       {phase === 'setup' && (
         <PlayerTrackerSetupPhase
+          isLightModeActive={theme === 'light'}
           players={players}
           customScriptRoles={customScriptRoles}
           scriptName={scriptName}

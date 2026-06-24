@@ -98,10 +98,20 @@ export default function StandardSetupPhase({
             id="script-upload-button"
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full bg-gray-950 border border-gray-800/80 hover:border-clocktower-blood text-gray-300 py-3.5 px-4 rounded-lg transition-all flex flex-col items-center justify-center gap-1 group text-center cursor-pointer"
+            className={cn(
+              "w-full border py-3.5 px-4 rounded-lg transition-all flex flex-col items-center justify-center gap-1 group text-center cursor-pointer",
+              isLightModeActive
+                ? "bg-gray-100/80 border-gray-300 hover:border-clocktower-blood/60 hover:bg-gray-150"
+                : "bg-gray-950 border-gray-800/80 hover:border-clocktower-blood"
+            )}
             title="Click to upload custom script JSON"
           >
-            <span className="flex items-center gap-1.5 text-xs font-bold text-white group-hover:text-clocktower-blood transition-colors">
+            <span className={cn(
+              "flex items-center gap-1.5 text-xs font-bold transition-colors",
+              isLightModeActive
+                ? "text-gray-900 group-hover:text-clocktower-blood"
+                : "text-white group-hover:text-clocktower-blood"
+            )}>
               {customScriptRoles ? "📜" : "🌐"} {scriptName}
             </span>
             <span className="text-[10px] text-gray-500 font-medium flex items-center gap-1">
@@ -114,7 +124,12 @@ export default function StandardSetupPhase({
               id="script-reset-button"
               type="button"
               onClick={clearCustomScript}
-              className="w-full text-center bg-transparent hover:bg-gray-800 border border-gray-800 text-gray-500 hover:text-gray-400 py-1.5 rounded text-xs font-semibold transition-all"
+              className={cn(
+                "w-full text-center bg-transparent border py-1.5 rounded text-xs font-semibold transition-all",
+                isLightModeActive
+                  ? "hover:bg-gray-200/50 border-gray-300 text-gray-600 hover:text-gray-900"
+                  : "hover:bg-gray-800 border-gray-800 text-gray-500 hover:text-gray-400"
+              )}
             >
               Reset to Default
             </button>
