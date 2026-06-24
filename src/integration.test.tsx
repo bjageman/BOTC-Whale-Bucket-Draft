@@ -28,7 +28,9 @@ vi.mock('./hooks/useGameSocket', () => {
         };
       }, [gameCode, onMessage]);
 
-      const sendMessage = vi.fn((payload: unknown) => {
+      const sendMessage = vi.fn(async (payload: unknown) => {
+        // Simulate network latency
+        await new Promise((resolve) => setTimeout(resolve, 10));
         // Run callbacks in act since they update component state
         act(() => {
           activeSubscriptions.forEach((sub) => {
@@ -37,7 +39,6 @@ vi.mock('./hooks/useGameSocket', () => {
             }
           });
         });
-        return Promise.resolve();
       });
 
       return {
@@ -58,7 +59,10 @@ describe('Storyteller Reset Integration', () => {
 
   it('notifies and disconnects a joined PlayerTracker when storyteller resets the game', async () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    let codeAtAlert: string | null = null;
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {
+      codeAtAlert = localStorage.getItem('standard-botc-game-code');
+    });
 
     // 1. Render the Storyteller setup page to generate the game session
     const { container: storytellerContainer, unmount: unmountStoryteller } = render(
@@ -90,7 +94,7 @@ describe('Storyteller Reset Integration', () => {
 
     await act(async () => {
       fireEvent.click(resetButton!);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 30));
     });
 
     // Verify confirm was called
@@ -101,6 +105,8 @@ describe('Storyteller Reset Integration', () => {
     expect(alertSpy).toHaveBeenCalledWith(
       'The Storyteller has quit the session. Reverting to local tracker.'
     );
+    // Verify that the code at the alert moment was still the old code (awaited correctly)
+    expect(codeAtAlert).toBe(gameCode);
 
     // Verify the seating arrangement sync notice is gone and player list input is enabled
     expect(tracker.queryByText(/seating arrangement and player list are synced/i)).toBeNull();
@@ -114,7 +120,10 @@ describe('Storyteller Reset Integration', () => {
 
   it('notifies and disconnects a joined JoinPage client when storyteller resets the game', async () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    let codeAtAlert: string | null = null;
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {
+      codeAtAlert = localStorage.getItem('standard-botc-game-code');
+    });
 
     // 1. Render Storyteller to get game session
     const { container: storytellerContainer, unmount: unmountStoryteller } = render(
@@ -143,11 +152,13 @@ describe('Storyteller Reset Integration', () => {
 
     await act(async () => {
       fireEvent.click(resetButton!);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 30));
     });
 
     // Verify JoinPage was notified, showed alert, and reverted back to the join screen
     expect(alertSpy).toHaveBeenCalledWith('The Storyteller has quit the session.');
+    // Verify that the code at the alert moment was still the old code (awaited correctly)
+    expect(codeAtAlert).toBe(gameCode);
     expect(joinPage.getByPlaceholderText('e.g. KVTQ')).toBeInTheDocument();
 
     unmountStoryteller();
