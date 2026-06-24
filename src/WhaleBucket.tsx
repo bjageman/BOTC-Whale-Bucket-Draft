@@ -629,12 +629,16 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     setModalRoleSearch('');
   };
 
-  const resetGame = () => {
+  const resetGame = async () => {
     if (confirm('Are you sure you want to reset the game? This clears all players and settings.')) {
       if (sendMessageRef.current) {
-        sendMessageRef.current({
-          type: 'storyteller_quit'
-        });
+        try {
+          await sendMessageRef.current({
+            type: 'storyteller_quit'
+          });
+        } catch (e) {
+          console.error('Failed to notify players on reset:', e);
+        }
       }
       setPlayers([]);
       setPhase('setup');
