@@ -153,7 +153,7 @@ export default function StandardGamePhase({
           )}
         >
           <span className={cn(
-            "flex items-center gap-1.5 text-xs font-bold transition-colors",
+            "flex items-center gap-1.5 text-base font-extrabold transition-colors",
             isLightModeActive ? "text-gray-900" : "text-white"
           )}>
             {customScriptRoles ? "📜" : "🌐"} {scriptName}
@@ -356,7 +356,7 @@ export default function StandardGamePhase({
             <div className="flex justify-between items-start gap-4 mb-4">
               <div>
                 <h3 className={cn(
-                  "font-bold text-lg leading-tight flex items-center gap-2",
+                  "font-bold text-2xl leading-tight flex items-center gap-2",
                   isLightModeActive ? "text-clocktower-blood" : "text-white"
                 )}>
                   <Scroll size={20} className={isLightModeActive ? "text-clocktower-blood" : "text-clocktower-townsfolk"} />
