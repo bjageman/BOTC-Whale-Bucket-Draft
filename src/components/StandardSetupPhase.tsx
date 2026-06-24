@@ -116,7 +116,7 @@ export default function StandardSetupPhase({
             title="Click to upload custom script JSON"
           >
             <span className={cn(
-              "flex items-center gap-1.5 text-xs font-bold transition-colors",
+              "flex items-center gap-1.5 text-base font-extrabold transition-colors",
               isLightModeActive
                 ? "text-gray-900 group-hover:text-clocktower-blood"
                 : "text-white group-hover:text-clocktower-blood"
