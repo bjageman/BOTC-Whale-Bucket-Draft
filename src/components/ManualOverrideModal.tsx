@@ -2,6 +2,7 @@ import { Search } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player } from '../WhaleBucket';
 import type { Role } from '../types';
+import { TEAM_ORDER } from '../types';
 import rolesData from '../roles.json';
 
 interface ManualOverrideModalProps {
@@ -31,14 +32,6 @@ export default function ManualOverrideModal({
     ...(draftPlayer.preferences.demon || []),
   ] : [];
 
-  const TEAM_ORDER: Record<string, number> = {
-    townsfolk: 1,
-    outsider: 2,
-    minion: 3,
-    demon: 4,
-    traveler: 5
-  };
-
   const filteredRoles = (rolesData as Role[]).filter(r => 
     r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     r.team.toLowerCase().includes(searchTerm.toLowerCase())
@@ -52,8 +45,8 @@ export default function ManualOverrideModal({
       if (isCurrentA && !isCurrentB) return -1;
       if (!isCurrentA && isCurrentB) return 1;
 
-      const orderA = TEAM_ORDER[a.team] || 99;
-      const orderB = TEAM_ORDER[b.team] || 99;
+      const orderA = TEAM_ORDER[a.team] ?? 99;
+      const orderB = TEAM_ORDER[b.team] ?? 99;
       if (orderA !== orderB) return orderA - orderB;
       return a.name.localeCompare(b.name);
     });
@@ -66,8 +59,8 @@ export default function ManualOverrideModal({
       if (isCurrentA && !isCurrentB) return -1;
       if (!isCurrentA && isCurrentB) return 1;
 
-      const orderA = TEAM_ORDER[a.team] || 99;
-      const orderB = TEAM_ORDER[b.team] || 99;
+      const orderA = TEAM_ORDER[a.team] ?? 99;
+      const orderB = TEAM_ORDER[b.team] ?? 99;
       if (orderA !== orderB) return orderA - orderB;
       return a.name.localeCompare(b.name);
     });

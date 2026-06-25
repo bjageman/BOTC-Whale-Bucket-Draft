@@ -34,3 +34,11 @@ export interface AssignmentResult {
   role: Role;
   fromPref: boolean;
 }
+
+export const TEAM_ORDER: Record<string, number> = {
+  townsfolk: 1,
+  outsider: 2,
+  minion: 3,
+  demon: 4,
+  traveler: 5,
+};

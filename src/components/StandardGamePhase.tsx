@@ -4,6 +4,7 @@ import { cn } from '../utils/cn';
 import type { Player, Role } from '../types';
 import rolesData from '../roles.json';
 import officialRoles from '../official_roles.json';
+import { getScriptStats } from '../utils/scriptUtils';
 import GrimoireBoard from './GrimoireBoard';
 import NightOrderWidget from './NightOrderWidget';
 
@@ -52,14 +53,6 @@ export default function StandardGamePhase({
   customScriptRoles = null,
   isSynced = false,
 }: Props) {
-  const getScriptStats = () => {
-    if (!customScriptRoles) return '';
-    const tf = customScriptRoles.filter(r => r.team === 'townsfolk').length;
-    const o = customScriptRoles.filter(r => r.team === 'outsider').length;
-    const m = customScriptRoles.filter(r => r.team === 'minion').length;
-    const d = customScriptRoles.filter(r => r.team === 'demon').length;
-    return `${tf} TF / ${o} O / ${m} M / ${d} D`;
-  };
 
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
   const [modalSearchTerm, setModalSearchTerm] = useState('');
@@ -160,7 +153,7 @@ export default function StandardGamePhase({
           </span>
           {customScriptRoles && (
             <span className="text-[10px] text-gray-500 font-medium">
-              {getScriptStats()}
+              {getScriptStats(customScriptRoles)}
             </span>
           )}
         </button>
@@ -364,7 +357,7 @@ export default function StandardGamePhase({
                 </h3>
                 {customScriptRoles && (
                   <p className="text-xs text-gray-500 font-medium mt-1">
-                    {getScriptStats()}
+                    {getScriptStats(customScriptRoles)}
                   </p>
                 )}
               </div>

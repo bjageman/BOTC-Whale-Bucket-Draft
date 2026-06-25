@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Sun, Moon, ArrowLeft, RefreshCcw } from 'lucide-react';
 import rolesData from './roles.json';
-import officialRoles from './official_roles.json';
 import { cn } from './utils/cn';
 import type { Player, Role } from './types';
+import { TEAM_ORDER } from './types';
+import { parseScriptFile } from './utils/scriptUtils';
 
 import PlayerDetailsModal from './components/PlayerDetailsModal';
 import StandardGamePhase from './components/StandardGamePhase';
@@ -277,7 +278,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
     if (players.length >= 20) return;
     const name = newPlayerName.trim() || `Player #${players.length + 1}`;
     const newPlayer: Player = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
       name,
       isDead: false,
     };
@@ -299,7 +300,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
       return;
     }
     const newPlayer: Player = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
       name: newTravelerName.trim(),
       roleId: newTravelerRoleId,
       isDead: false,
@@ -389,71 +390,12 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
   const handleScriptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const parsed = JSON.parse(event.target?.result as string);
-        if (!Array.isArray(parsed)) {
-          alert("Invalid script format. Expected a JSON array of roles.");
-          return;
-        }
-
-        const metaObj = parsed.find((item: unknown): item is { id: string; name?: string } => 
-          !!item && typeof item === 'object' && 'id' in item && item.id === '_meta'
-        ) as { id: string; name?: string } | undefined;
-        const name = metaObj?.name || file.name.replace('.json', '');
-
-        const parsedRoles = parsed
-          .map((item: unknown) => {
-            if (typeof item === 'string') {
-              return { id: item.replace(/_/g, '') };
-            }
-            if (item && typeof item === 'object' && 'id' in item && typeof (item as { id: unknown }).id === 'string') {
-              return { 
-                ...(item as Record<string, unknown>), 
-                id: (item as { id: string }).id.replace(/_/g, '') 
-              } as { id: string };
-            }
-            return null;
-          })
-          .filter((item: { id: string } | null): item is { id: string } => {
-            if (!item || item.id === '_meta' || item.id === 'meta') return false;
-            
-            const officialMatch = (officialRoles as { id: string; name: string; team: string }[]).find(r => r.id.toLowerCase() === item.id.toLowerCase());
-            if (officialMatch && (officialMatch.team === 'fabled' || officialMatch.team === 'loric')) {
-              return false;
-            }
-
-            const itemObj = item as Record<string, unknown>;
-            if (typeof itemObj.team === 'string' && (itemObj.team.toLowerCase() === 'fabled' || itemObj.team.toLowerCase() === 'loric')) {
-              return false;
-            }
-
-            return true;
-          })
-          .map((item: { id: string }) => {
-            const matched = (rolesData as Role[]).find(r => r.id.toLowerCase() === item.id.toLowerCase());
-            if (matched) return matched;
-            return {
-              id: item.id.toLowerCase(),
-              name: item.id.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-              team: 'townsfolk'
-            } as Role;
-          });
-
-        if (parsedRoles.length === 0) {
-          alert("No valid roles found in the uploaded script.");
-          return;
-        }
-
-        setCustomScriptRoles(parsedRoles);
+    parseScriptFile(file)
+      .then(({ name, roles }) => {
+        setCustomScriptRoles(roles);
         setScriptName(name);
-      } catch {
-        alert("Failed to parse JSON script file.");
-      }
-    };
-    reader.readAsText(file);
+      })
+      .catch(err => alert((err as Error).message));
   };
 
   const clearCustomScript = () => {
@@ -497,15 +439,8 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
       if (isCurrentA && !isCurrentB) return -1;
       if (!isCurrentA && isCurrentB) return 1;
 
-      const TEAM_ORDER: Record<string, number> = {
-        townsfolk: 1,
-        outsider: 2,
-        minion: 3,
-        demon: 4,
-        traveler: 5
-      };
-      const orderA = TEAM_ORDER[a.team] || 99;
-      const orderB = TEAM_ORDER[b.team] || 99;
+      const orderA = TEAM_ORDER[a.team] ?? 99;
+      const orderB = TEAM_ORDER[b.team] ?? 99;
       if (orderA !== orderB) return orderA - orderB;
       return a.name.localeCompare(b.name);
     });
