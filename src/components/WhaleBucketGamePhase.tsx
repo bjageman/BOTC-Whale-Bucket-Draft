@@ -3,6 +3,7 @@ import { GripVertical, X, Search, Scroll } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player } from '../WhaleBucket';
 import type { Role } from '../types';
+import { getScriptStats } from '../utils/scriptUtils';
 import rolesData from '../official_roles.json';
 import allRolesData from '../roles.json';
 import GrimoireBoard from './GrimoireBoard';
@@ -68,9 +69,6 @@ export default function WhaleBucketGamePhase({
   const scriptName = "All Roles (Default)";
   const customScriptRoles = null;
 
-  const getScriptStats = () => {
-    return '';
-  };
 
   // Listen for Escape key to close the script modal or details modal
   useEffect(() => {
@@ -163,7 +161,7 @@ export default function WhaleBucketGamePhase({
           </span>
           {customScriptRoles && (
             <span className="text-[10px] text-gray-500 font-medium">
-              {getScriptStats()}
+              {getScriptStats(customScriptRoles)}
             </span>
           )}
         </button>
@@ -371,7 +369,7 @@ export default function WhaleBucketGamePhase({
                 </h3>
                 {customScriptRoles && (
                   <p className="text-xs text-gray-550 font-medium mt-1">
-                    {getScriptStats()}
+                    {getScriptStats(customScriptRoles)}
                   </p>
                 )}
               </div>

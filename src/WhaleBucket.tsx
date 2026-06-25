@@ -3,6 +3,7 @@ import { Sun, Moon, RefreshCcw, ArrowLeft } from 'lucide-react';
 import rolesData from './official_roles.json';
 import { cn } from './utils/cn';
 import type { Role, Player as BasePlayer, PlayerPreferences } from './types';
+import { TEAM_ORDER } from './types';
 import { assignCharacters } from './utils/assignment';
 import { getValidationSummary } from './utils/whaleBucketValidation';
 import PlayerDetailsModal from './components/PlayerDetailsModal';
@@ -343,7 +344,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   };
 
   const createNewPlayer = (name: string, roleId?: string): Player => ({
-    id: Math.random().toString(36).substr(2, 9),
+    id: Math.random().toString(36).substring(2, 11),
     name: name.trim(),
     roleId,
     preferences: { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] },
@@ -689,15 +690,8 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       if (isCurrentA && !isCurrentB) return -1;
       if (!isCurrentA && isCurrentB) return 1;
 
-      const TEAM_ORDER: Record<string, number> = {
-        townsfolk: 1,
-        outsider: 2,
-        minion: 3,
-        demon: 4,
-        traveler: 5
-      };
-      const orderA = TEAM_ORDER[a.team] || 99;
-      const orderB = TEAM_ORDER[b.team] || 99;
+      const orderA = TEAM_ORDER[a.team] ?? 99;
+      const orderB = TEAM_ORDER[b.team] ?? 99;
       if (orderA !== orderB) return orderA - orderB;
       return a.name.localeCompare(b.name);
     });
