@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
-import { Sun, Moon, ArrowLeft } from 'lucide-react';
+import { Sun, Moon, ArrowLeft, GitBranch, Coffee } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 interface PageLayoutProps {
@@ -91,6 +91,39 @@ export default function PageLayout({
       <div className={contentClassName ?? "flex-1 flex flex-col pt-8 px-4 pb-4"}>
         {children}
       </div>
+
+      <footer className={cn(
+        "flex justify-center items-center gap-3 py-4 px-4 border-t",
+        isLight ? "border-clocktower-blood/20" : "border-clocktower-blood/40"
+      )}>
+        <a
+          href="https://github.com/bjageman/botc-grimoire-companion"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="GitHub"
+          className={cn(
+            "p-1.5 rounded-full transition-all",
+            isLight ? "text-gray-400 hover:text-gray-700 hover:bg-black/5" : "text-gray-600 hover:text-gray-300 hover:bg-white/10"
+          )}
+        >
+          <GitBranch size={18} />
+        </a>
+        <a
+          href="https://ko-fi.com/phillybotc"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Support on Ko-fi"
+          className={cn(
+            "p-1.5 rounded-full transition-all",
+            isLight ? "text-gray-400 hover:text-gray-700 hover:bg-black/5" : "text-gray-600 hover:text-gray-300 hover:bg-white/10"
+          )}
+        >
+          <Coffee size={18} />
+        </a>
+        <p className={cn("text-xs", isLight ? "text-gray-400" : "text-gray-600")}>
+          Not affiliated with The Pandemonium Institute.
+        </p>
+      </footer>
     </div>
   );
 }

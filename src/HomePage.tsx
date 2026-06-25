@@ -69,9 +69,7 @@ export default function HomePage({ theme, toggleTheme }: HomeProps) {
           </p>
         </a>
 
-        <p className={cn("text-xs transition-colors pt-2 text-center", isLightModeActive ? "text-gray-500" : "text-gray-600")}>
-          Not affiliated with The Pandemonium Institute.
-        </p>
+
       </div>
     </PageLayout>
   );
