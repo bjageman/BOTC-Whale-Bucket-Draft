@@ -123,6 +123,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
   });
 
   const isSynced = !!gameCode;
+  const { dialogProps, showAlert, showConfirm } = useDialog();
 
   const handleIncomingMessage = (data: unknown) => {
     const payload = data as {
@@ -412,7 +413,6 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
   }, [currentScriptRoles]);
 
   const isLightModeActive = theme === 'light';
-  const { dialogProps, showAlert, showConfirm } = useDialog();
 
   // Details Modal helpers
   const modalPlayer = selectedPlayerId ? players.find(p => p.id === selectedPlayerId) : null;

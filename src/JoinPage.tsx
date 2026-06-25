@@ -60,6 +60,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
   const [prefSearchTerm, setPrefSearchTerm] = useState('');
   const [excludedRoleIds, setExcludedRoleIds] = useState<string[]>([]);
   const [scriptName, setScriptName] = useState("All Roles (Default)");
+  const { dialogProps, showAlert } = useDialog();
   const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(null);
 
   const connectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -277,7 +278,6 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
   };
 
   const isLight = theme === 'light';
-  const { dialogProps, showAlert } = useDialog();
 
   return (
     <>

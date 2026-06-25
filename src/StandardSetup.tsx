@@ -366,7 +366,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       return;
     }
     const newPlayer: Player = {
-      id: Math.random().toString(36).substring(2, 11),
+      id: crypto.randomUUID(),
       name: newTravelerName.trim(),
       roleId: newTravelerRoleId,
       isDead: false,
