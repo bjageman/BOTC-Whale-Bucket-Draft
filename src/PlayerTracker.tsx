@@ -521,6 +521,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
           scriptName={scriptName}
           customScriptRoles={customScriptRoles}
           isSynced={isSynced}
+          enableReminders={false}
         />
       )}
 

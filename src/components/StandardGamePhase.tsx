@@ -38,6 +38,7 @@ interface Props {
   scriptName?: string;
   customScriptRoles?: Role[] | null;
   isSynced?: boolean;
+  enableReminders?: boolean;
 }
 
 export default function StandardGamePhase({
@@ -52,6 +53,7 @@ export default function StandardGamePhase({
   scriptName = "All Roles (Default)",
   customScriptRoles = null,
   isSynced = false,
+  enableReminders = true,
 }: Props) {
 
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
@@ -138,10 +140,10 @@ export default function StandardGamePhase({
             onResetTime={onResetTime}
             isSynced={isSynced}
             isLightModeActive={isLightModeActive}
-            reminderTokens={reminderTokens}
-            onAddReminder={isSynced ? undefined : handleAddReminder}
-            onRemoveReminder={isSynced ? undefined : handleRemoveReminder}
-            onRemoveAllReminders={isSynced ? undefined : handleRemoveAllReminders}
+            reminderTokens={enableReminders ? reminderTokens : []}
+            onAddReminder={enableReminders && !isSynced ? handleAddReminder : undefined}
+            onRemoveReminder={enableReminders && !isSynced ? handleRemoveReminder : undefined}
+            onRemoveAllReminders={enableReminders && !isSynced ? handleRemoveAllReminders : undefined}
           />
         </div>
         <div className="!mt-0 space-y-2">
