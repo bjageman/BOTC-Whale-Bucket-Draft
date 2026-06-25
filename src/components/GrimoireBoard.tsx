@@ -237,9 +237,10 @@ export default function GrimoireBoard({
   return (
     <div className="w-full flex flex-col items-center">
       {/* Controls row — above the grimoire on all screen sizes */}
-      <div className="flex justify-between items-center w-full px-4 mb-2 max-w-[450px] md:max-w-none">
+      <div id="grimoire-controls-row" className="flex justify-between items-center w-full px-4 mb-2 max-w-[450px] md:max-w-none">
         {onResetTime ? (
           <button
+            id="grimoire-reset-time-button"
             onClick={onResetTime}
             className={cn(
               "px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
@@ -270,6 +271,7 @@ export default function GrimoireBoard({
 
         {onResetDead ? (
           <button
+            id="grimoire-reset-dead-button"
             onClick={onResetDead}
             className={cn(
               "px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
@@ -298,10 +300,11 @@ export default function GrimoireBoard({
       >
         {/* Night/Day count — upper left, changes color with day/night */}
         <div
+          id="grimoire-time-badge"
           className={cn(
             "absolute top-4 left-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-bold tracking-wider uppercase select-none border min-w-[90px] justify-center",
             timeOfDay === 'day'
-              ? "bg-[#f4e4bc] border-[#d4bc88] text-[#5a3e10]"
+              ? "bg-white border-[#d4d4d8] text-[#3f3f46]"
               : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa]"
           )}
         >
@@ -310,7 +313,7 @@ export default function GrimoireBoard({
         </div>
 
         {/* Alive count — upper right */}
-        <div className={cn(
+        <div id="grimoire-alive-badge" className={cn(
           "absolute top-4 right-4 z-30 px-3 py-1.5 rounded-md text-[10px] font-bold tracking-wider uppercase select-none border",
           isLightModeActive
             ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46]"
