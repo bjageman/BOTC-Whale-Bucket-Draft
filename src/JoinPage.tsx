@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useGameSocket } from './hooks/useGameSocket';
 import rolesData from './official_roles.json';
 import { cn } from './utils/cn';
-import { ShieldAlert, Sparkles, Moon, Sun, ArrowRight, Eye, EyeOff, Settings, CheckCircle2, RotateCcw, Plus, Search } from 'lucide-react';
+import { ShieldAlert, Sparkles, ArrowRight, Eye, EyeOff, Settings, CheckCircle2, RotateCcw, Plus, Search, Moon } from 'lucide-react';
 import type { Role, Player } from './types';
 import GrimoireBoard from './components/GrimoireBoard';
+import PageLayout from './components/PageLayout';
 
 export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: () => void }) {
   const [code, setCode] = useState(() => {
@@ -276,44 +277,16 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
   const isLight = theme === 'light';
 
   return (
-    <div className={cn(
-      "min-h-screen transition-colors duration-300 font-sans p-4 flex flex-col items-center justify-center",
-      isLight ? "bg-[#fcfbf9] text-[#1c1c1e]" : "bg-gray-950 text-gray-100"
-    )}>
-      {/* Top Header Controls */}
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <button
-          onClick={toggleTheme}
-          className={cn(
-            "p-2.5 rounded-full border transition-all duration-300 hover:scale-105 shadow-sm",
-            isLight ? "bg-white border-gray-250 text-clocktower-night hover:bg-gray-50" : "bg-gray-900 border-gray-800 text-amber-400 hover:bg-gray-850"
-          )}
-        >
-          {isLight ? <Moon size={18} /> : <Sun size={18} />}
-        </button>
-      </div>
-
-      <div className="w-full max-w-md">
-        {/* Main Brand Logo */}
-        <div className="text-center mb-6">
-          <h1 className={cn(
-            "text-3xl font-extrabold tracking-wide uppercase font-serif",
-            isLight ? "text-clocktower-night" : "text-white"
-          )}>
-            Grimoire <span className="text-clocktower-blood">Join</span>
-          </h1>
-          <p className="text-xs text-gray-500 font-semibold mt-1">
-            Connect to the Storyteller's Grimoire Room
-          </p>
-        </div>
+    <PageLayout theme={theme} toggleTheme={toggleTheme} title="Join Game" backHref="#/">
+      <div className="w-full max-w-md mx-auto">
 
         {/* 1. JOIN SCREEN */}
         {state === 'join' && (
           <form onSubmit={handleJoinSubmit} className={cn(
-            "border rounded-2xl p-6 space-y-4 shadow-xl transition-all duration-300",
-            isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-850"
+            "border rounded-lg p-6 space-y-4 shadow-xl transition-all duration-300",
+            isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-800"
           )}>
-            <h2 className="text-center font-serif text-lg font-bold">Enter Game Room Details</h2>
+            <h2 className="text-center text-lg font-bold">Enter Game Room Details</h2>
 
             {errorMsg && (
               <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-semibold flex items-center gap-2">
@@ -331,7 +304,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
                 onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 4))}
                 className={cn(
                   "w-full text-center text-xl font-bold rounded-lg border py-2.5 focus:outline-none tracking-widest uppercase",
-                  isLight ? "bg-gray-50 border-gray-300 focus:border-clocktower-blood" : "bg-gray-950 border-gray-800 focus:border-clocktower-blood text-white"
+                  isLight ? "bg-gray-50 border-gray-300 focus:border-clocktower-blood" : "bg-gray-900 border-gray-700 focus:border-clocktower-blood text-white"
                 )}
                 required
               />
@@ -346,7 +319,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
                 onChange={(e) => setName(e.target.value)}
                 className={cn(
                   "w-full rounded-lg border px-4 py-2.5 focus:outline-none text-center font-semibold",
-                  isLight ? "bg-gray-50 border-gray-300 focus:border-clocktower-blood" : "bg-gray-950 border-gray-800 focus:border-clocktower-blood text-white"
+                  isLight ? "bg-gray-50 border-gray-300 focus:border-clocktower-blood" : "bg-gray-900 border-gray-700 focus:border-clocktower-blood text-white"
                 )}
                 required
               />
@@ -365,8 +338,8 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
         {/* 2. CHECKING SCREEN */}
         {state === 'checking' && (
           <div className={cn(
-            "border rounded-2xl p-8 text-center space-y-4 shadow-xl",
-            isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-850"
+            "border rounded-lg p-8 text-center space-y-4 shadow-xl",
+            isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-800"
           )}>
             <div className="w-12 h-12 border-4 border-clocktower-blood border-t-transparent rounded-full animate-spin mx-auto"></div>
             <h3 className="font-semibold text-lg">Connecting to Room {code}...</h3>
@@ -377,11 +350,11 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
         {/* 3. PREFERENCES SCREEN (Whale Bucket only) */}
         {state === 'preferences' && (
           <div className={cn(
-            "border rounded-2xl p-6 space-y-5 shadow-xl w-full max-w-md",
-            isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-850"
+            "border rounded-lg p-6 space-y-5 shadow-xl w-full max-w-md",
+            isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-800"
           )}>
             <div>
-              <h2 className="font-serif text-lg font-bold text-center">Submit Your Role Preferences</h2>
+              <h2 className="text-lg font-bold text-center">Submit Your Role Preferences</h2>
               <p className="text-xs text-gray-500 text-center mt-0.5">Select one character in each category (optional)</p>
             </div>
 
@@ -467,7 +440,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
         {activePrefSelect && (
           <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
             <div className={cn(
-              "border w-full max-w-sm rounded-2xl p-4 space-y-4 max-h-[80vh] flex flex-col shadow-2xl transition-all duration-300",
+              "border w-full max-w-sm rounded-lg p-4 space-y-4 max-h-[80vh] flex flex-col shadow-2xl transition-all duration-300",
               isLight ? "bg-white border-gray-250 text-gray-800" : "bg-gray-900 border-gray-800 text-gray-100"
             )}>
               <div className="flex justify-between items-center">
@@ -492,7 +465,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
 
               <div className={cn(
                 "flex items-center border rounded-lg px-2.5 text-xs py-1",
-                isLight ? "bg-gray-50 border-gray-300 focus-within:border-clocktower-blood" : "bg-gray-950 border-gray-850 focus-within:border-clocktower-blood"
+                isLight ? "bg-gray-50 border-gray-300 focus-within:border-clocktower-blood" : "bg-gray-950 border-gray-800 focus-within:border-clocktower-blood"
               )}>
                 <Search size={14} className="text-gray-500 mr-2 flex-shrink-0" />
                 <input
@@ -593,16 +566,16 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
         {/* 4. WAITING SCREEN */}
         {state === 'waiting' && (
           <div className={cn(
-            "border rounded-2xl p-6 text-center space-y-6 shadow-xl",
-            isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-850"
+            "border rounded-lg p-6 text-center space-y-6 shadow-xl",
+            isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-800"
           )}>
             <div className="flex flex-col items-center space-y-2">
               <CheckCircle2 size={42} className="text-emerald-500 animate-pulse" />
-              <h3 className="font-serif text-lg font-bold">Joined Room {code}</h3>
+              <h3 className="text-lg font-bold">Joined Room {code}</h3>
               <p className="text-sm font-semibold text-gray-500">Registered as <span className="text-clocktower-blood">{name}</span></p>
             </div>
 
-            <div className={cn("p-4 rounded-xl border text-xs leading-relaxed", isLight ? "bg-gray-50 border-gray-200" : "bg-gray-950 border-gray-850")}>
+            <div className={cn("p-4 rounded-xl border text-xs leading-relaxed", isLight ? "bg-gray-50 border-gray-200" : "bg-gray-950 border-gray-800")}>
               {gameType === 'whale-bucket' ? (
                 <p>Your character preferences have been successfully sent to the Storyteller. Wait until everyone has joined and the Storyteller starts the game.</p>
               ) : (
@@ -627,13 +600,13 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
             <div
               onClick={() => setRevealed(!revealed)}
               className={cn(
-                "w-full h-80 rounded-2xl border cursor-pointer perspective-1000 transform-style-3d transition-all duration-700 relative shadow-2xl border-clocktower-blood/50",
+                "w-full h-80 rounded-lg border cursor-pointer perspective-1000 transform-style-3d transition-all duration-700 relative shadow-2xl border-clocktower-blood/50",
                 revealed ? "rotate-y-180" : ""
               )}
             >
               {/* Card Front: Mystery Shroud */}
               <div className={cn(
-                "absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 backface-hidden",
+                "absolute inset-0 rounded-lg flex flex-col items-center justify-center p-6 backface-hidden",
                 isLight ? "bg-gray-100 text-clocktower-night" : "bg-gray-900 text-gray-200"
               )}>
                 <div className="w-20 h-20 bg-clocktower-blood/10 border border-clocktower-blood/30 rounded-full flex items-center justify-center mb-4 text-clocktower-blood animate-pulse shadow-[0_0_15px_rgba(139,0,0,0.3)]">
@@ -648,7 +621,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
 
               {/* Card Back: Assigned Character Token */}
               <div className={cn(
-                "absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 rotate-y-180 backface-hidden",
+                "absolute inset-0 rounded-lg flex flex-col items-center justify-center p-6 rotate-y-180 backface-hidden",
                 isLight ? "bg-white" : "bg-gray-950"
               )}>
                 {/* Character Color Rim */}
@@ -729,7 +702,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
             {/* Header info */}
             <div className={cn(
               "border rounded-xl p-3 flex justify-between items-center text-xs shadow-sm font-semibold",
-              isLight ? "bg-white border-gray-250" : "bg-gray-900/60 border-gray-850"
+              isLight ? "bg-white border-gray-250" : "bg-gray-900/60 border-gray-800"
             )}>
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
@@ -748,8 +721,8 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
 
             {/* Circular Grimoire Board (without role tokens) */}
             <div className={cn(
-              "border rounded-2xl p-4 shadow-xl",
-              isLight ? "bg-white border-gray-200" : "bg-gray-900/40 border-gray-850"
+              "border rounded-lg p-4 shadow-xl",
+              isLight ? "bg-white border-gray-200" : "bg-gray-900/40 border-gray-800"
             )}>
               <h4 className="text-[10px] uppercase font-bold tracking-wider text-gray-500 text-center mb-3">Grimoire Board Layout</h4>
               <GrimoireBoard
@@ -773,8 +746,8 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
 
             {/* Players status list */}
             <div className={cn(
-              "border rounded-2xl p-4 space-y-2 shadow-xl",
-              isLight ? "bg-white border-gray-200" : "bg-gray-900/40 border-gray-850"
+              "border rounded-lg p-4 space-y-2 shadow-xl",
+              isLight ? "bg-white border-gray-200" : "bg-gray-900/40 border-gray-800"
             )}>
               <h4 className="text-[10px] uppercase font-bold tracking-wider text-gray-500 mb-2">Players Status List</h4>
               <div className="divide-y divide-gray-800/40 space-y-1.5">
@@ -816,6 +789,6 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 }

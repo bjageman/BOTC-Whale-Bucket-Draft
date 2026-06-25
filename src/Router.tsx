@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import HomePage from './HomePage';
+import HostPage from './HostPage';
 import WhaleBucket from './WhaleBucket';
 import StandardSetup from './StandardSetup';
 import PlayerTracker from './PlayerTracker';
 import JoinPage from './JoinPage';
 
-type Route = 'home' | 'whale-bucket' | 'standard' | 'tracker' | 'join';
+type Route = 'home' | 'host' | 'whale-bucket' | 'standard' | 'tracker' | 'join';
 
 function getRouteFromHash(): Route {
   const hash = window.location.hash;
   const path = window.location.pathname;
   if (path === '/join' || hash === '#/join' || hash.startsWith('#/join?')) return 'join';
+  if (hash === '#/host') return 'host';
   if (hash === '#/whale-bucket') return 'whale-bucket';
   if (hash === '#/standard') return 'standard';
   if (hash === '#/tracker') return 'tracker';
@@ -39,6 +41,8 @@ export default function Router() {
   }, []);
 
   switch (route) {
+    case 'host':
+      return <HostPage theme={theme} toggleTheme={toggleTheme} />;
     case 'whale-bucket':
       return <WhaleBucket theme={theme} toggleTheme={toggleTheme} />;
     case 'standard':

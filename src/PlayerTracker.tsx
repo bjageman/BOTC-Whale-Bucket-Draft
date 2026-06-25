@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Sun, Moon, ArrowLeft, RefreshCcw } from 'lucide-react';
+import { RefreshCcw } from 'lucide-react';
 import rolesData from './roles.json';
 import { cn } from './utils/cn';
 import type { Player, Role } from './types';
@@ -11,6 +11,7 @@ import StandardGamePhase from './components/StandardGamePhase';
 import PlayerTrackerSetupPhase from './components/PlayerTrackerSetupPhase';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
+import PageLayout from './components/PageLayout';
 
 type Phase = 'setup' | 'game';
 
@@ -243,27 +244,16 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
 
   // Save to localStorage
   useEffect(() => {
-    localStorage.setItem('player-tracker-botc-game', JSON.stringify({ 
-      players, 
-      phase, 
-      timeOfDay, 
+    localStorage.setItem('player-tracker-botc-game', JSON.stringify({
+      players,
+      phase,
+      timeOfDay,
       dayNumber,
       customScriptRoles,
       scriptName,
       code: gameCode || undefined,
     }));
-
-    const isLightMode = theme === 'light';
-    if (isLightMode) {
-      document.documentElement.classList.add('theme-light');
-    } else {
-      document.documentElement.classList.remove('theme-light');
-    }
-
-    return () => {
-      document.documentElement.classList.remove('theme-light');
-    };
-  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, theme, gameCode]);
+  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, gameCode]);
 
   const toggleTimeOfDay = () => {
     if (timeOfDay === 'night') {
@@ -446,70 +436,24 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
     });
 
   return (
-    <div className={cn(
-      "min-h-screen p-4 font-sans mx-auto transition-colors duration-300 max-w-xl md:max-w-5xl landscape:max-w-5xl",
-      isLightModeActive
-        ? "bg-clocktower-parchment text-clocktower-night"
-        : "bg-clocktower-night text-clocktower-parchment"
-    )}>
-      {/* Header */}
-      <header className={cn(
-        "relative flex flex-col items-center justify-center mb-6 border-b pb-3 gap-2.5 w-full",
-        isLightModeActive ? "border-clocktower-blood/20" : "border-clocktower-blood"
-      )}>
-        {/* Navigation & Controls Row */}
-        <div className="relative flex justify-center items-center w-full min-h-[36px]">
-          {phase === 'setup' ? (
-            <a
-              href="#/"
-              className={cn(
-                "absolute left-0 transition-all p-1.5 rounded-full flex items-center justify-center",
-                isLightModeActive 
-                  ? "text-gray-700 hover:text-gray-900 hover:bg-black/5" 
-                  : "text-gray-400 hover:text-white hover:bg-white/10"
-              )}
-              title="Back to home"
-            >
-              <ArrowLeft size={24} />
-            </a>
-          ) : (
-            <button
-              onClick={() => setPhase('setup')}
-              className={cn(
-                "absolute left-0 transition-all p-1.5 rounded-full flex items-center justify-center",
-                isLightModeActive 
-                  ? "text-gray-700 hover:text-gray-900 hover:bg-black/5" 
-                  : "text-gray-400 hover:text-white hover:bg-white/10"
-              )}
-              title="Back to setup"
-            >
-              <ArrowLeft size={24} />
-            </button>
-          )}
-          
-          <h1 className="text-xl md:text-2xl font-bold text-clocktower-blood tracking-wide text-center pr-20 pl-10 flex-1 min-w-0 truncate">
-            Character Tracker
-          </h1>
-
-          <div className="absolute right-0 flex items-center gap-1">
-            <button
-              onClick={toggleTheme}
-              className={cn("p-2 transition-colors", isLightModeActive ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")}
-              title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-            <button
-              id="reset-game-button"
-              onClick={resetGame}
-              className={cn("p-2 transition-colors", isLightModeActive ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")}
-              title="Reset game"
-            >
-              <RefreshCcw size={20} />
-            </button>
-          </div>
-        </div>
-      </header>
+    <PageLayout
+      theme={theme}
+      toggleTheme={toggleTheme}
+      backHref={phase === 'setup' ? "#/" : undefined}
+      onBack={phase !== 'setup' ? () => setPhase('setup') : undefined}
+      title="Character Tracker"
+      extraControls={
+        <button
+          id="reset-game-button"
+          onClick={resetGame}
+          className={cn("p-2 transition-colors", isLightModeActive ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")}
+          title="Reset game"
+        >
+          <RefreshCcw size={20} />
+        </button>
+      }
+      contentClassName="px-4 pt-6 pb-4"
+    >
 
       {phase === 'setup' && (
         <PlayerTrackerSetupPhase
@@ -605,6 +549,6 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
           isSynced={isSynced}
         />
       )}
-    </div>
+    </PageLayout>
   );
 }
