@@ -783,7 +783,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         <PlayerDetailsModal
           player={modalPlayer}
           players={players}
-          currentIndex={currentIndex}
           roleObj={modalRoleObj}
           filteredModalRoles={filteredModalRoles}
           isSearchingRole={isSearchingRole}

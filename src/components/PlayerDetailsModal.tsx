@@ -19,12 +19,12 @@ interface Player {
   isTheLilMonsta?: boolean;
   hasDeadVote?: boolean;
   notes?: string;
+  pronouns?: string;
 }
 
 interface PlayerDetailsModalProps {
   player: Player;
   players: Player[];
-  currentIndex: number;
   roleObj: Role | undefined;
   filteredModalRoles: Role[];
   isSearchingRole: boolean;
@@ -52,7 +52,6 @@ interface PlayerDetailsModalProps {
 export default function PlayerDetailsModal({
   player: p,
   players,
-  currentIndex,
   roleObj,
   filteredModalRoles,
   isSearchingRole,

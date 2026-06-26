@@ -3,6 +3,7 @@ import { GripVertical } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player, Role, PlacedReminder } from '../types';
 import rolesData from '../roles.json';
+import officialRoles from '../official_roles.json';
 import { getScriptStats } from '../utils/scriptUtils';
 import GrimoireBoard from './GrimoireBoard';
 import NightOrderWidget from './NightOrderWidget';

@@ -869,7 +869,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         <PlayerDetailsModal
           player={modalPlayer}
           players={players}
-          currentIndex={currentIndex}
           roleObj={modalRoleObj}
           filteredModalRoles={filteredModalRoles}
           isSearchingRole={isSearchingRole}

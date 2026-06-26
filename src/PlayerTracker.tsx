@@ -562,7 +562,6 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
         <PlayerDetailsModal
           player={modalPlayer}
           players={players}
-          currentIndex={currentIndex}
           roleObj={modalRoleObj}
           filteredModalRoles={filteredModalRoles}
           isSearchingRole={isSearchingRole}
