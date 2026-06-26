@@ -66,7 +66,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
   const { dialogProps, showAlert } = useDialog();
   const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(null);
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
-  const [pronouns, setPronouns] = useState(() => sessionStorage.getItem('joined-pronouns') || '');
+  const [pronouns, setPronouns] = useState(() => localStorage.getItem('joined-pronouns') || '');
 
   const sortedRoles = useMemo(() => {
     const baseRoles = customScriptRoles || (rolesData as Role[]);
@@ -269,7 +269,6 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
   const handleLeaveGame = () => {
     sessionStorage.removeItem('joined-code');
     sessionStorage.removeItem('joined-name');
-    sessionStorage.removeItem('joined-pronouns');
     setCode('');
     setName('');
     setState('join');
@@ -625,7 +624,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
                     onClick={() => {
                       const next = pronouns === p ? '' : p;
                       setPronouns(next);
-                      sessionStorage.setItem('joined-pronouns', next);
+                      localStorage.setItem('joined-pronouns', next);
                       sendMessage({ type: 'player_join', name, id: playerId, pronouns: next || undefined });
                     }}
                     className={cn(
