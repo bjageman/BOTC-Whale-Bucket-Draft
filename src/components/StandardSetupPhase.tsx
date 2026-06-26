@@ -154,7 +154,7 @@ export default function StandardSetupPhase({
             </span>
             <span className="text-[10px] text-gray-500 font-medium flex items-center gap-1">
               <Upload size={12} />
-              {customScriptRoles ? `${getScriptStats(customScriptRoles)} — Click to change` : "Default Script — Click to upload .json"}
+              {customScriptRoles ? `${getScriptStats(customScriptRoles)} — Click to change` : "Click to upload .json"}
             </span>
           </button>
           {customScriptRoles && (
@@ -169,7 +169,7 @@ export default function StandardSetupPhase({
                   : "hover:bg-gray-800 border-gray-800 text-gray-500 hover:text-gray-400"
               )}
             >
-              Reset to Default
+              Reset to All Roles
             </button>
           )}
           <button

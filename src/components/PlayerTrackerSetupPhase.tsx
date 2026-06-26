@@ -238,7 +238,7 @@ export default function PlayerTrackerSetupPhase({
           }}
           className="w-full bg-clocktower-blood hover:bg-red-800 text-white py-3 rounded-lg font-display font-bold tracking-widest uppercase transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-black/40 flex items-center justify-center gap-2"
         >
-          Start Game Tracker
+          Start Game
         </button>
       </div>
     </div>

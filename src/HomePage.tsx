@@ -121,6 +121,15 @@ export default function HomePage({ theme, toggleTheme }: HomeProps) {
         </a>
 
       </div>
+
+      <div className="w-full max-w-md mx-auto text-center mt-6">
+        <p className={cn(
+          "text-sm italic leading-relaxed",
+          isLightModeActive ? "text-gray-400" : "text-clocktower-gold/60"
+        )}>
+          A comprehensive web app for running Blood on the Clocktower <span className="whitespace-nowrap">in-person.</span> Storytellers manage the full game through an interactive digital grimoire, while players join live sessions from their own devices by syncing with the town square in real time.
+        </p>
+      </div>
     </PageLayout>
   );
 }

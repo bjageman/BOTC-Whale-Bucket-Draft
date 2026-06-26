@@ -150,7 +150,7 @@ export default function NightOrderWidget({
 
   const getCharacterColorClass = (item: NightOrderItem, isLight: boolean) => {
     if (item.type === 'info') {
-      return isLight ? 'text-gray-600' : 'text-gray-400';
+      return isLight ? 'text-gray-600' : 'text-white';
     }
     switch (item.team) {
       case 'townsfolk':
