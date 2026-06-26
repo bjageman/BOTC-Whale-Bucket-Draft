@@ -206,19 +206,11 @@ export default function GamePhase({
           )}
         </button>
 
-        {/* Demon Bluffs */}
+        {/* Demon Bluffs — always dark, unaffected by theme */}
         {!isSynced && onUpdateDemonBluffs && (
-          <div className={cn(
-            'rounded-lg border p-3.5 space-y-2.5 transition-colors duration-300',
-            isLightModeActive
-              ? 'bg-white/50 border-gray-300 text-clocktower-night'
-              : 'bg-gray-900/40 border-gray-800/80'
-          )}>
+          <div className="rounded-lg border p-3.5 space-y-2.5 bg-gray-900 border-gray-700">
             <div className="flex items-center justify-between">
-              <h4 className={cn(
-                'text-[10px] uppercase font-bold tracking-wider',
-                isLightModeActive ? 'text-gray-600' : 'text-gray-500'
-              )}>Demon Bluffs</h4>
+              <h4 className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Demon Bluffs</h4>
               {demonBluffs.some(b => b) && (
                 <button
                   type="button"
@@ -236,10 +228,7 @@ export default function GamePhase({
                 return (
                   <div key={slot} className="relative">
                     {bluffPickerSlot === slot ? (
-                      <div className={cn(
-                        'rounded border p-2 space-y-1.5',
-                        isLightModeActive ? 'bg-white border-gray-300' : 'bg-gray-900 border-gray-700'
-                      )}>
+                      <div className="rounded border p-2 space-y-1.5 bg-gray-950 border-gray-700">
                         <div className="flex items-center gap-1.5">
                           <Search size={11} className="text-gray-400 shrink-0" />
                           <input
@@ -248,10 +237,7 @@ export default function GamePhase({
                             placeholder="Search roles..."
                             value={bluffSearch}
                             onChange={e => setBluffSearch(e.target.value)}
-                            className={cn(
-                              'flex-1 text-xs bg-transparent focus:outline-none',
-                              isLightModeActive ? 'text-clocktower-night placeholder-gray-400' : 'text-white placeholder-gray-500'
-                            )}
+                            className="flex-1 text-xs bg-transparent focus:outline-none text-white placeholder-gray-500"
                           />
                           <button type="button" onClick={() => { setBluffPickerSlot(null); setBluffSearch(''); }}>
                             <X size={12} className="text-gray-400 hover:text-gray-200" />
@@ -263,15 +249,10 @@ export default function GamePhase({
                               key={r.id}
                               type="button"
                               onClick={() => setBluff(slot, r.id)}
-                              className={cn(
-                                'w-full text-left text-xs px-2 py-1 rounded transition-colors',
-                                isLightModeActive
-                                  ? 'hover:bg-gray-100 text-clocktower-night'
-                                  : 'hover:bg-gray-800 text-gray-200'
-                              )}
+                              className="w-full text-left text-xs px-2 py-1 rounded transition-colors hover:bg-gray-800 text-gray-200"
                             >
                               <span className="font-medium">{r.name}</span>
-                              <span className={cn('ml-1 text-[10px] font-semibold', r.team === 'outsider' ? 'text-emerald-500' : 'text-blue-500')}>
+                              <span className={cn('ml-1 text-[10px] font-semibold', r.team === 'outsider' ? 'text-emerald-400' : 'text-blue-400')}>
                                 {r.team === 'outsider' ? 'Outsider' : 'Townsfolk'}
                               </span>
                             </button>
@@ -289,19 +270,17 @@ export default function GamePhase({
                           className={cn(
                             'flex-1 text-left text-xs px-2.5 py-1.5 rounded border transition-colors',
                             role
-                              ? isLightModeActive
-                                ? 'border-gray-300 bg-white text-clocktower-night font-medium'
-                                : 'border-gray-700 bg-gray-800 text-white font-medium'
-                              : isLightModeActive
-                                ? 'border-dashed border-gray-300 text-gray-400 hover:border-gray-400'
-                                : 'border-dashed border-gray-700 text-gray-500 hover:border-gray-500'
+                              ? 'border-gray-700 bg-gray-800 text-white font-medium'
+                              : 'border-dashed border-gray-700 text-gray-500 hover:border-gray-500'
                           )}
                         >
                           {role ? (
                             <span className="flex items-center gap-1.5">
-                              <img src={`/icons/${role.id}.svg`} alt={role.name} className="w-5 h-5 object-contain shrink-0" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                              <div className="w-5 h-5 shrink-0 rounded-full bg-white flex items-center justify-center p-0.5">
+                                <img src={`/icons/${role.id}.svg`} alt={role.name} className="w-full h-full object-contain" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                              </div>
                               <span>{role.name}</span>
-                              <span className={cn('text-[10px] font-semibold', role.team === 'outsider' ? 'text-emerald-500' : 'text-blue-500')}>
+                              <span className={cn('text-[10px] font-semibold', role.team === 'outsider' ? 'text-emerald-400' : 'text-blue-400')}>
                                 {role.team === 'outsider' ? 'Outsider' : 'Townsfolk'}
                               </span>
                             </span>
@@ -532,12 +511,14 @@ export default function GamePhase({
                 >
                   {role ? (
                     <>
-                      <img
-                        src={`/icons/${role.id}.svg`}
-                        alt={role.name}
-                        className="w-16 h-16 shrink-0 object-contain"
-                        onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                      />
+                      <div className="w-16 h-16 shrink-0 rounded-full bg-white flex items-center justify-center p-1">
+                        <img
+                          src={`/icons/${role.id}.svg`}
+                          alt={role.name}
+                          className="w-full h-full object-contain"
+                          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className={cn(
                           'text-2xl font-extrabold',
