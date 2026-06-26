@@ -499,8 +499,9 @@ export default function GamePhase({
       {/* Demon Bluffs full-screen overlay — portalled to body to escape CSS containment */}
       {isBluffOverlayOpen && createPortal(
         <div
+          id="demon-bluffs-overlay"
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-8 p-8 cursor-pointer overscroll-none touch-none"
-          style={{ backgroundColor: '#020610', minHeight: '100dvh' }}
+          style={{ backgroundColor: '#020610', color: 'white', minHeight: '100dvh' }}
           onClick={() => setIsBluffOverlayOpen(false)}
         >
           <p className="text-gray-400 text-xs uppercase tracking-widest font-bold select-none">Demon Bluffs — tap to close</p>
