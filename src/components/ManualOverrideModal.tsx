@@ -67,7 +67,7 @@ export default function ManualOverrideModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4 backdrop-blur-xs">
-      <div className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[80vh] flex flex-col shadow-2xl">
+      <div id="manual-override-modal" className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[80vh] flex flex-col shadow-2xl">
         <div className="flex justify-between items-center">
           <h3 className="font-bold text-sm text-gray-300">
             Change Role for {draftPlayer?.name}
