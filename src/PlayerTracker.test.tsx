@@ -23,7 +23,7 @@ describe('PlayerTracker', () => {
   it('renders setup phase and allows adding players', () => {
     render(<PlayerTracker theme="dark" toggleTheme={vi.fn()} />);
 
-    expect(screen.getByText('Character Tracker')).toBeInTheDocument();
+    expect(screen.getByText('Game Notes')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Enter player name in seating order...')).toBeInTheDocument();
     expect(screen.getByText('Start Game Tracker').closest('button')).toBeDisabled();
 
