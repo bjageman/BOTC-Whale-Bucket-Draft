@@ -1,19 +1,27 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { ChevronRight } from 'lucide-react';
 import type { CSSProperties } from 'react';
-import type { Player, Role } from '../types';
+import type { Player, Role, PlacedReminder } from '../types';
 import { cn } from '../utils/cn';
+import ReminderPickerModal from './ReminderPickerModal';
+import ReminderTokenModal from './ReminderTokenModal';
 
 interface GrimoireBoardProps {
   players: Player[];
   timeOfDay: 'night' | 'day';
   dayNumber: number;
-  toggleTimeOfDay: () => void;
+  toggleTimeOfDay?: () => void;
   onSelectPlayer: (playerId: string) => void;
   rolesData: Role[];
   onResetDead?: () => void;
   onResetTime?: () => void;
   isSynced?: boolean;
   isLightModeActive?: boolean;
+  reminderTokens?: PlacedReminder[];
+  onAddReminder?: (targetPlayerId: string, sourceCharId: string, text: string) => void;
+  onRemoveReminder?: (reminderId: string) => void;
+  onRemoveAllReminders?: () => void;
 }
 
 export default function GrimoireBoard({
@@ -27,11 +35,17 @@ export default function GrimoireBoard({
   onResetTime,
   isSynced = false,
   isLightModeActive = false,
+  reminderTokens = [],
+  onAddReminder,
+  onRemoveReminder,
+  onRemoveAllReminders,
 }: GrimoireBoardProps) {
   const [hoveredOrder, setHoveredOrder] = useState<string[]>([]);
   const [playerTopIndex, setPlayerTopIndex] = useState<Record<string, number>>({});
   const [fannedPlayerId, setFannedPlayerId] = useState<string | null>(null);
   const [boardAspect, setBoardAspect] = useState<number>(1.3);
+  const [pickerPlayerId, setPickerPlayerId] = useState<string | null>(null);
+  const [selectedReminder, setSelectedReminder] = useState<PlacedReminder | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,6 +76,22 @@ export default function GrimoireBoard({
       observer.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    if (pickerPlayerId !== null || selectedReminder !== null) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [pickerPlayerId, selectedReminder]);
+
+  const activeCharIds = useMemo(() => {
+    const ids = new Set<string>();
+    players.forEach(p => {
+      if (p.roleId) ids.add(p.roleId);
+      p.roleIds?.forEach(id => ids.add(id));
+    });
+    return [...ids];
+  }, [players]);
 
   const touchStartedFannedRef = useRef<boolean>(false);
   const touchStartTimeRef = useRef<number>(0);
@@ -235,6 +265,7 @@ export default function GrimoireBoard({
   }, [players.length, dynamicRadiusX, dynamicRadiusY, boardAspect]);
 
   return (
+    <>
     <div className="w-full flex flex-col items-center">
       {/* Controls + info rows share a 3-column grid so badges align under buttons */}
       <div className="w-full px-4 mb-2 max-w-[450px] md:max-w-none grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-1.5">
@@ -244,7 +275,7 @@ export default function GrimoireBoard({
             id="grimoire-reset-time-button"
             onClick={onResetTime}
             className={cn(
-              "w-full px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
+              "w-full px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none whitespace-nowrap",
               isLightModeActive
                 ? "bg-white border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100"
                 : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850 active:bg-gray-800"
@@ -256,18 +287,18 @@ export default function GrimoireBoard({
         ) : <div />}
 
         <div className="flex justify-center">
-          {!isSynced && (
+          {!isSynced && onRemoveAllReminders && reminderTokens.length > 0 && (
             <button
-              id="grimoire-time-toggle-button"
-              onClick={toggleTimeOfDay}
+              id="grimoire-reset-reminders-button"
+              onClick={onRemoveAllReminders}
               className={cn(
-                "px-4 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
+                "px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
                 isLightModeActive
-                  ? "bg-gray-200 border-gray-400 text-gray-900 hover:bg-gray-300 active:bg-gray-350"
-                  : "bg-gray-700 border-gray-600 text-gray-100 hover:bg-gray-650 active:bg-gray-600"
+                  ? "bg-white border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100"
+                  : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850 active:bg-gray-800"
               )}
             >
-              {timeOfDay === 'day' ? 'End Day' : 'End Night'}
+              Reset Reminders
             </button>
           )}
         </div>
@@ -277,7 +308,7 @@ export default function GrimoireBoard({
             id="grimoire-reset-dead-button"
             onClick={onResetDead}
             className={cn(
-              "w-full px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none",
+              "w-full px-3.5 py-1.5 rounded-md text-[10px] md:text-xs font-bold tracking-wider uppercase transition-all shadow-sm border cursor-pointer select-none whitespace-nowrap",
               isLightModeActive
                 ? "bg-white border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100"
                 : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850 active:bg-gray-800"
@@ -291,8 +322,10 @@ export default function GrimoireBoard({
         {/* Row 2: info badges — mobile only */}
         <div
           id="grimoire-info-row"
+          onClick={!isSynced && toggleTimeOfDay ? toggleTimeOfDay : undefined}
           className={cn(
-            "md:hidden w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-bold tracking-wider uppercase select-none border",
+            "group md:hidden w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-bold tracking-wider uppercase select-none border",
+            !isSynced && toggleTimeOfDay ? "cursor-pointer active:opacity-60" : "",
             timeOfDay === 'day'
               ? "bg-white border-[#d4d4d8] text-[#3f3f46]"
               : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa]"
@@ -300,16 +333,24 @@ export default function GrimoireBoard({
         >
           <span>{timeOfDay === 'day' ? '☀️' : '🌙'}</span>
           <span>{timeOfDay === 'day' ? 'Day' : 'Night'} {dayNumber}</span>
+          {!isSynced && toggleTimeOfDay && (
+            <ChevronRight size={10} className="opacity-0 group-hover:opacity-60 transition-opacity shrink-0" />
+          )}
         </div>
 
         <div className="md:hidden" /> {/* keep center column empty */}
 
-        <div id="grimoire-alive-badge-mobile" className={cn(
-          "md:hidden w-full flex items-center justify-center px-3 py-1.5 rounded-md text-[10px] font-bold tracking-wider uppercase select-none border",
-          isLightModeActive
-            ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46]"
-            : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa]"
-        )}>
+        <div
+          id="grimoire-alive-badge-mobile"
+          onClick={onResetDead}
+          className={cn(
+            "md:hidden w-full flex items-center justify-center px-3 py-1.5 rounded-md text-[10px] font-bold tracking-wider uppercase select-none border transition-opacity",
+            onResetDead ? "cursor-pointer hover:opacity-70 active:opacity-50" : "",
+            isLightModeActive
+              ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46]"
+              : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa]"
+          )}
+        >
           {players.filter(p => !p.isDead).length} Alive
         </div>
       </div>
@@ -329,8 +370,10 @@ export default function GrimoireBoard({
         {/* Night/Day count — upper left, desktop only */}
         <div
           id="grimoire-time-badge"
+          onClick={!isSynced && toggleTimeOfDay ? toggleTimeOfDay : undefined}
           className={cn(
-            "hidden md:flex absolute top-4 left-4 z-30 items-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-bold tracking-wider uppercase select-none border min-w-[90px] justify-center",
+            "group hidden md:flex absolute top-4 left-4 z-30 items-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-bold tracking-wider uppercase select-none border min-w-[90px] justify-center",
+            !isSynced && toggleTimeOfDay ? "cursor-pointer active:opacity-60" : "",
             timeOfDay === 'day'
               ? "bg-white border-[#d4d4d8] text-[#3f3f46]"
               : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa]"
@@ -338,15 +381,23 @@ export default function GrimoireBoard({
         >
           <span>{timeOfDay === 'day' ? '☀️' : '🌙'}</span>
           <span>{timeOfDay === 'day' ? 'Day' : 'Night'} {dayNumber}</span>
+          {!isSynced && toggleTimeOfDay && (
+            <ChevronRight size={10} className="opacity-0 group-hover:opacity-60 transition-opacity shrink-0" />
+          )}
         </div>
 
         {/* Alive count — upper right, desktop only */}
-        <div id="grimoire-alive-badge" className={cn(
-          "hidden md:block absolute top-4 right-4 z-30 px-3 py-1.5 rounded-md text-[10px] font-bold tracking-wider uppercase select-none border",
-          isLightModeActive
-            ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46]"
-            : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa]"
-        )}>
+        <div
+          id="grimoire-alive-badge"
+          onClick={onResetDead}
+          className={cn(
+            "hidden md:block absolute top-4 right-4 z-30 px-3 py-1.5 rounded-md text-[10px] font-bold tracking-wider uppercase select-none border transition-opacity",
+            onResetDead ? "cursor-pointer hover:opacity-70 active:opacity-50" : "",
+            isLightModeActive
+              ? "bg-[#ffffff]/80 border-[#d4d4d8] text-[#3f3f46]"
+              : "bg-[#1f1f23]/80 border-[#27272a] text-[#a1a1aa]"
+          )}
+        >
           {players.filter(p => !p.isDead).length} Alive
         </div>
 
@@ -390,6 +441,13 @@ export default function GrimoireBoard({
 
           const isFanned = fannedPlayerId === p.id;
 
+          const dx = 50 - leftPos;
+          const dy = 50 - topPos;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const inwardDx = dist > 0 ? dx / dist : 0;
+          const inwardDy = dist > 0 ? dy / dist : 0;
+          const playerReminders = reminderTokens.filter(r => r.targetPlayerId === p.id);
+
           return (
             <div
               key={p.id}
@@ -419,7 +477,83 @@ export default function GrimoireBoard({
               }}
               className="hover:z-50 group"
             >
+              {/* "+" add-reminder — at anchor when empty, shifted inward when reminders exist */}
+              {!isSynced && onAddReminder && playerReminders.length < 5 && (
+                <button
+                  style={{
+                    position: 'absolute',
+                    left: `calc(50% + ${(inwardDx * (playerReminders.length > 0 ? 100 : 70)).toFixed(1)}%)`,
+                    top: `calc(50% + ${(inwardDy * (playerReminders.length > 0 ? 100 : 70)).toFixed(1)}%)`,
+                    transform: 'translate(-50%, -50%)',
+                    width: '23%',
+                    height: '23%',
+                    zIndex: 55,
+                  }}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPickerPlayerId(p.id);
+                  }}
+                  className="rounded-full bg-gray-400/70 text-white font-bold flex items-center justify-center border border-gray-500/50 shadow hover:bg-gray-500/80 active:bg-gray-600 transition-colors leading-none text-[10px]"
+                  title={`Add reminder to ${p.name}`}
+                >
+                  +
+                </button>
+              )}
+
+              {/* Placed reminder token circles — last at anchor, earlier ones arc around it */}
+              {playerReminders.map((reminder, ri) => {
+                const n = playerReminders.length;
+                const isLast = ri === n - 1;
+                const arcN = n - 1;
+                const totalAngle = Math.PI;
+                const startAngle = -totalAngle / 2;
+                const theta = startAngle + (arcN > 1 ? (ri / (arcN - 1)) * totalAngle : 0);
+                const arcRadius = 30;
+                const rx = inwardDx * Math.cos(theta) - inwardDy * Math.sin(theta);
+                const ry = inwardDx * Math.sin(theta) + inwardDy * Math.cos(theta);
+                const reminderLeft = isLast ? inwardDx * 70 : inwardDx * 70 + rx * arcRadius;
+                const reminderTop = isLast ? inwardDy * 70 : inwardDy * 70 + ry * arcRadius;
+
+                return (
+                <div
+                  key={reminder.id}
+                  style={{
+                    position: 'absolute',
+                    left: `calc(50% + ${reminderLeft.toFixed(1)}%)`,
+                    top: `calc(50% + ${reminderTop.toFixed(1)}%)`,
+                    transform: 'translate(-50%, -50%)',
+                    width: '23%',
+                    height: '23%',
+                    zIndex: 55,
+                  }}
+                >
+                <button
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedReminder(reminder);
+                  }}
+                  className="w-full h-full rounded-full bg-gray-200 border-2 border-gray-400 overflow-hidden flex items-center justify-center shadow-sm hover:bg-gray-300 active:bg-gray-400 transition-all duration-150 hover:scale-125 hover:shadow-md"
+                  title={reminder.text}
+                >
+                  <img
+                    src={`/icons/${reminder.sourceCharId}.svg`}
+                    alt={reminder.text}
+                    className="w-full h-full object-contain opacity-80"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                  />
+                </button>
+                </div>
+                );
+              })}
+
               <div className="relative flex flex-col items-center">
+                {p.notes && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 invisible group-hover:visible pointer-events-none z-[200] bg-gray-900/95 text-white text-[9px] font-medium rounded-lg px-2.5 py-1.5 shadow-xl max-w-[140px] text-center leading-relaxed break-words whitespace-pre-wrap border border-white/10">
+                    {p.notes}
+                  </div>
+                )}
                 <button
                   id={`grimoire-player-${p.id}`}
                   onClick={(e) => {
@@ -643,6 +777,37 @@ export default function GrimoireBoard({
           );
         })}
       </div>
+
     </div>
+
+    {pickerPlayerId && createPortal(
+      <ReminderPickerModal
+        targetPlayerName={players.find(p => p.id === pickerPlayerId)?.name ?? ''}
+        activeRoleIds={activeCharIds}
+        rolesData={rolesData}
+        onSelect={(sourceCharId, text) => {
+          onAddReminder?.(pickerPlayerId, sourceCharId, text);
+          setPickerPlayerId(null);
+        }}
+        onClose={() => setPickerPlayerId(null)}
+        isLightModeActive={isLightModeActive}
+      />,
+      document.body
+    )}
+
+    {selectedReminder && createPortal(
+      <ReminderTokenModal
+        reminder={selectedReminder}
+        rolesData={rolesData}
+        onRemove={() => {
+          onRemoveReminder?.(selectedReminder.id);
+          setSelectedReminder(null);
+        }}
+        onClose={() => setSelectedReminder(null)}
+        isLightModeActive={isLightModeActive}
+      />,
+      document.body
+    )}
+    </>
   );
 }

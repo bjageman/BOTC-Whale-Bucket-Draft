@@ -9,7 +9,7 @@ import { parseScriptFile } from './utils/scriptUtils';
 import { performStandardAssignment } from './utils/standardAssignment';
 import { getValidationSummary } from './utils/whaleBucketValidation';
 import PlayerDetailsModal from './components/PlayerDetailsModal';
-import StandardGamePhase from './components/StandardGamePhase';
+import GamePhase from './components/GamePhase';
 import StandardSetupPhase from './components/StandardSetupPhase';
 import StandardRoleSelectionModal from './components/StandardRoleSelectionModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
@@ -17,6 +17,7 @@ import { useGameSocket } from './hooks/useGameSocket';
 import PageLayout from './components/PageLayout';
 import DialogModal from './components/DialogModal';
 import { useDialog } from './hooks/useDialog';
+import RoomCodeModal from './components/RoomCodeModal';
 
 type Phase = 'setup' | 'game';
 
@@ -33,6 +34,10 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     localStorage.setItem('standard-botc-game-code', newCode);
     return newCode;
   });
+
+  const [remotePlayerIds, setRemotePlayerIds] = useState<Set<string>>(new Set());
+  const [showRoomCodeModal, setShowRoomCodeModal] = useState(false);
+  const [grimoireConfirmed, setGrimoireConfirmed] = useState(false);
 
   const [players, setPlayers] = useState<Player[]>(() => {
     const saved = localStorage.getItem('standard-botc-game');
@@ -240,6 +245,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       }
 
       if (!payload.checkOnly) {
+        setRemotePlayerIds(prev => new Set([...prev, payload.id]));
         setPlayers(prev => {
           const exists = prev.some(p => p.name.trim().toLowerCase() === payload.name.trim().toLowerCase() || p.id === payload.id);
           if (exists) return prev;
@@ -384,6 +390,10 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
 
   const updatePlayerName = (id: string, name: string) => {
     setPlayers(players.map(p => p.id === id ? { ...p, name } : p));
+  };
+
+  const updatePlayerNotes = (id: string, notes: string) => {
+    setPlayers(players.map(p => p.id === id ? { ...p, notes } : p));
   };
 
   const updatePlayerRoles = (id: string, roleIds: string[]) => {
@@ -627,18 +637,14 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
             Standard
           </h1>
           <div
-            onClick={() => {
-              const joinUrl = `${window.location.origin}${window.location.pathname}#/join?code=${gameCode}`;
-              navigator.clipboard.writeText(joinUrl);
-              showAlert(`Copied link to clipboard: ${joinUrl}`, 'Copied!');
-            }}
+            onClick={() => setShowRoomCodeModal(true)}
             className={cn(
               "hidden md:flex cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none items-baseline gap-1",
               isLightModeActive
                 ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
                 : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
             )}
-            title="Click to copy join link"
+            title="Click to share room"
           >
             Room: <span className="text-clocktower-blood font-mono uppercase tracking-wider">{gameCode}</span>
           </div>
@@ -656,18 +662,14 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       }
       headerExtra={
         <div
-          onClick={() => {
-            const joinUrl = `${window.location.origin}${window.location.pathname}#/join?code=${gameCode}`;
-            navigator.clipboard.writeText(joinUrl);
-            alert(`Copied link to clipboard: ${joinUrl}`);
-          }}
+          onClick={() => setShowRoomCodeModal(true)}
           className={cn(
             "md:hidden cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none flex items-baseline gap-1",
             isLightModeActive
               ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
               : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
           )}
-          title="Click to copy join link"
+          title="Click to share room"
         >
           Room: <span className="text-clocktower-blood font-mono uppercase tracking-wider">{gameCode}</span>
         </div>
@@ -698,6 +700,9 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           validationSummary={validationSummary}
           isLightModeActive={isLightModeActive}
           allAssigned={allAssigned}
+          remotePlayerCount={remotePlayerIds.size}
+          grimoireConfirmed={grimoireConfirmed}
+          onGrimoireConfirmed={() => setGrimoireConfirmed(true)}
           setPhase={setPhase}
           draggedIndex={draggedIndex}
           dragOverIndex={dragOverIndex}
@@ -715,7 +720,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       )}
 
       {phase === 'game' && (
-        <StandardGamePhase
+        <GamePhase
           players={players}
           timeOfDay={timeOfDay}
           dayNumber={dayNumber}
@@ -777,6 +782,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           onUpdateName={updatePlayerName}
           onUpdateRole={updatePlayerRole}
           onUpdateRoles={updatePlayerRoles}
+          onUpdateNotes={updatePlayerNotes}
           onToggleDead={togglePlayerDead}
           onToggleDeadVote={togglePlayerDeadVote}
           onToggleDrunkOrPoisoned={togglePlayerDrunkOrPoisoned}
@@ -789,6 +795,14 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       )}
     </PageLayout>
     <DialogModal {...dialogProps} isLightModeActive={isLightModeActive} />
+    {showRoomCodeModal && (
+      <RoomCodeModal
+        gameCode={gameCode}
+        joinUrl={`${window.location.origin}${window.location.pathname}#/join?code=${gameCode}`}
+        onClose={() => setShowRoomCodeModal(false)}
+        isLightModeActive={isLightModeActive}
+      />
+    )}
     </>
   );
 }
