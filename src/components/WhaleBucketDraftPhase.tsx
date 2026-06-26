@@ -11,6 +11,7 @@ interface WhaleBucketDraftPhaseProps {
   validationSummary: ValidationSummary | null;
   isLightModeActive: boolean;
   setPhase: (p: 'setup' | 'draft' | 'game') => void;
+  onStartGame: () => void;
   runAssignment: () => void;
   setActiveDraftPlayerId: (id: string | null) => void;
   togglePlayerTheDrunk: (id: string) => void;
@@ -24,6 +25,7 @@ export default function WhaleBucketDraftPhase({
   validationSummary,
   isLightModeActive,
   setPhase,
+  onStartGame,
   runAssignment,
   setActiveDraftPlayerId,
   togglePlayerTheDrunk,
@@ -35,10 +37,10 @@ export default function WhaleBucketDraftPhase({
     <div className="space-y-5">
       <div className="flex justify-between items-center">
         <h2 className={cn(
-          "text-lg font-semibold",
+          "font-display text-base font-bold tracking-wider uppercase",
           isLightModeActive ? "text-gray-800" : "text-gray-300"
         )}>
-          2. Character Draft Assignment
+          2. Character Assignment
         </h2>
         <button
           onClick={runAssignment}
@@ -66,13 +68,13 @@ export default function WhaleBucketDraftPhase({
           id="open-grimoire-button-top"
           disabled={players.some(p => !p.roleId)}
           onClick={() => {
-            setPhase('game');
+            onStartGame();
             setTimeout(() => {
               const grimoireElement = document.getElementById('grimoire-board-container');
               grimoireElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
           }}
-          className="flex-[2] bg-clocktower-blood hover:bg-red-800 text-white py-3 rounded-lg font-bold transition-all disabled:opacity-40 shadow-lg shadow-black/40"
+          className="flex-[2] bg-clocktower-blood hover:bg-red-800 text-white py-3 rounded-lg font-display font-bold tracking-widest uppercase transition-all disabled:opacity-40 shadow-lg shadow-black/40"
         >
           Open Grimoire
         </button>
@@ -369,13 +371,13 @@ export default function WhaleBucketDraftPhase({
           id="open-grimoire-button"
           disabled={players.some(p => !p.roleId)}
           onClick={() => {
-            setPhase('game');
+            onStartGame();
             setTimeout(() => {
               const grimoireElement = document.getElementById('grimoire-board-container');
               grimoireElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
           }}
-          className="flex-[2] bg-clocktower-blood hover:bg-red-800 text-white py-3 rounded-lg font-bold transition-all disabled:opacity-40 shadow-lg shadow-black/40"
+          className="flex-[2] bg-clocktower-blood hover:bg-red-800 text-white py-3 rounded-lg font-display font-bold tracking-widest uppercase transition-all disabled:opacity-40 shadow-lg shadow-black/40"
         >
           Open Grimoire
         </button>

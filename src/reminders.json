@@ -102,7 +102,7 @@
   "general": [],
   "legion": ["Dead", "About to die"],
   "snitch": [],
-  "lycanthrope": ["Dead"],
+  "lycanthrope": ["Dead", "Registers as Evil"],
   "pixie": ["Mad", "Has ability"],
   "mezepheles": ["Turns evil", "No ability"],
   "poppygrower": ["Evil wakes"],

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useScrollLock } from './hooks/useScrollLock';
 import { useGameSocket } from './hooks/useGameSocket';
 import rolesData from './official_roles.json';
 import { cn } from './utils/cn';
@@ -58,6 +59,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
   });
 
   const [activePrefSelect, setActivePrefSelect] = useState<{ team: 'townsfolk' | 'outsider' | 'minion' | 'demon' } | null>(null);
+  useScrollLock(!!activePrefSelect);
   const [prefSearchTerm, setPrefSearchTerm] = useState('');
   const [excludedRoleIds, setExcludedRoleIds] = useState<string[]>([]);
   const [scriptName, setScriptName] = useState("All Roles");
@@ -287,6 +289,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
     });
   };
 
+  const isMobile = useMemo(() => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent), []);
   const isLight = theme === 'light';
 
   return (
@@ -300,7 +303,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
             "border rounded-lg p-6 space-y-4 shadow-xl transition-all duration-300",
             isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-800"
           )}>
-            <h2 className="text-center text-lg font-bold">Enter Game Room Details</h2>
+            <h2 className="text-center font-display text-base font-bold tracking-wider uppercase">Enter Game Room</h2>
 
             {errorMsg && (
               <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-semibold flex items-center gap-2">
@@ -356,7 +359,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
             isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-800"
           )}>
             <div className="w-12 h-12 border-4 border-clocktower-blood border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <h3 className="font-semibold text-lg">Connecting to Room {code}...</h3>
+            <h3 className="font-display font-bold text-base tracking-wider uppercase">Connecting to Room {code}</h3>
             <p className="text-xs text-gray-500">Exchanging credentials with the Storyteller's browser.</p>
           </div>
         )}
@@ -368,7 +371,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
             isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-800"
           )}>
             <div>
-              <h2 className="text-lg font-bold text-center">Submit Your Role Preferences</h2>
+              <h2 className="font-display text-base font-bold text-center tracking-wider uppercase">Submit Your Preferences</h2>
               <p className="text-xs text-gray-500 text-center mt-0.5">Select one character in each category (optional)</p>
             </div>
 
@@ -484,7 +487,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
                 <Search size={14} className="text-gray-500 mr-2 flex-shrink-0" />
                 <input
                   type="text"
-                  autoFocus
+                  autoFocus={!isMobile}
                   placeholder="Search character name..."
                   className="bg-transparent flex-1 outline-none text-xs placeholder-gray-500 h-8 w-full"
                   value={prefSearchTerm}
@@ -493,7 +496,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
               </div>
 
               <div className={cn(
-                "overflow-y-auto flex-1 border rounded bg-gray-955/20 divide-y pr-1",
+                "overflow-y-auto overscroll-contain flex-1 border rounded bg-gray-955/20 divide-y pr-1",
                 isLight ? "border-gray-200 divide-gray-150" : "border-gray-855 divide-gray-800/60"
               )}>
                 {(rolesData as Role[])
@@ -585,7 +588,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
           )}>
             <div className="flex flex-col items-center space-y-2">
               <CheckCircle2 size={42} className="text-emerald-500 animate-pulse" />
-              <h3 className="text-lg font-bold">Joined Room {code}</h3>
+              <h3 className="font-display text-base font-bold tracking-wider uppercase">Joined Room {code}</h3>
               <p className="text-sm font-semibold text-gray-500">Registered as <span className="text-clocktower-blood">{name}</span></p>
             </div>
 
@@ -668,7 +671,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
                 <div className="w-20 h-20 bg-clocktower-blood/10 border border-clocktower-blood/30 rounded-full flex items-center justify-center mb-4 text-clocktower-blood animate-pulse shadow-[0_0_15px_rgba(139,0,0,0.3)]">
                   <Moon size={36} />
                 </div>
-                <h3 className="font-serif text-xl font-bold">Your Character Token</h3>
+                <h3 className="font-display text-xl font-bold tracking-wider uppercase">Your Character Token</h3>
                 <p className="text-xs text-gray-500 font-semibold mt-2 uppercase tracking-widest flex items-center gap-1">
                   <span>Tap to Reveal</span>
                   {revealed ? <EyeOff size={12} /> : <Eye size={12} />}
@@ -704,7 +707,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
                 </span>
 
                 <h3 className={cn(
-                  "font-serif text-2xl font-bold",
+                  "font-display text-2xl font-bold tracking-wider",
                   assignedRole.team === 'townsfolk' && "text-clocktower-townsfolk",
                   assignedRole.team === 'outsider' && "text-clocktower-outsider",
                   assignedRole.team === 'minion' && "text-clocktower-minion",

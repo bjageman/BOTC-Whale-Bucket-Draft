@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { Search } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player, Role } from '../types';
@@ -24,6 +25,7 @@ export default function StandardRoleSelectionModal({
   isLightModeActive,
   selectionRoles,
 }: StandardRoleSelectionModalProps) {
+  useScrollLock();
   const isMobile = useMemo(() => {
     if (typeof window === 'undefined') return false;
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -59,28 +61,28 @@ export default function StandardRoleSelectionModal({
     <div className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4 backdrop-blur-sm">
       <div id="standard-role-selection-modal" className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[80vh] flex flex-col shadow-2xl">
         <div className="flex justify-between items-center">
-          <h3 className="font-bold text-sm text-black">
-            Select Role for {player?.name}
+          <h3 className="font-display font-bold text-sm text-black tracking-wider uppercase">
+            Select Role
           </h3>
           <button id="close-role-modal-button" onClick={() => { setActivePlayerId(null); setSearchTerm(''); }} className="text-xs text-gray-500 underline">
             Close
           </button>
         </div>
 
-        <div id="role-search-wrapper" className="flex items-center bg-gray-955 border border-gray-800 rounded px-3 py-2 text-sm">
-          <Search size={14} className="text-gray-500 mr-2" />
+        <div id="role-search-wrapper" className="flex items-center bg-white border border-gray-300 rounded px-3 py-2 text-sm">
+          <Search size={14} className="text-gray-400 mr-2" />
           <input
             id="role-search-input"
             type="text"
             autoFocus={!isMobile}
             placeholder="Search character name..."
-            className="bg-transparent flex-1 outline-none text-xs text-white"
+            className="bg-transparent flex-1 outline-none text-xs text-gray-900 placeholder-gray-400"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        <div id="role-list" className="overflow-y-auto flex-1 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
+        <div id="role-list" className="overflow-y-auto overscroll-contain flex-1 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
           {filteredRoles.map(role => {
             const selectedByPlayer = players.find(pl => pl.roleId === role.id && pl.id !== activePlayerId);
             const isCurrent = role.id === player?.roleId;

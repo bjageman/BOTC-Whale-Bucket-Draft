@@ -1,4 +1,5 @@
 import React from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { Search } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player } from '../WhaleBucket';
@@ -26,6 +27,7 @@ export default function PreferenceSelectionModal({
   setActivePrefModal,
   excludedRoleIds,
 }: PreferenceSelectionModalProps) {
+  useScrollLock();
   const filteredPrefRoles = (rolesData as Role[])
     .filter(r => 
       r.team === activePrefModal.team &&
@@ -41,7 +43,7 @@ export default function PreferenceSelectionModal({
       <div id="preference-selection-modal" className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-4 max-h-[85vh] flex flex-col shadow-2xl">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="font-bold text-base text-white">
+            <h3 className="font-display font-bold text-sm text-white tracking-wider uppercase">
               Select {activePrefModal.team === 'townsfolk' ? 'Townsfolk' : activePrefModal.team === 'outsider' ? 'Outsiders' : activePrefModal.team === 'minion' ? 'Minions' : activePrefModal.team === 'demon' ? 'Demons' : 'Travelers'}
             </h3>
             <p className="text-xs text-gray-550">
@@ -53,18 +55,18 @@ export default function PreferenceSelectionModal({
           </button>
         </div>
 
-        <div className="flex items-center bg-gray-955 border border-gray-800 rounded px-2.5 py-0 text-sm">
-          <Search size={14} className="text-gray-500 mr-2 flex-shrink-0" />
+        <div className="flex items-center bg-white border border-gray-300 rounded px-2.5 py-0 text-sm">
+          <Search size={14} className="text-gray-400 mr-2 flex-shrink-0" />
           <input
             type="text"
             placeholder={`Search character name...`}
-            className="bg-transparent flex-1 outline-none text-white text-xs placeholder-gray-650 h-9 w-full"
+            className="bg-transparent flex-1 outline-none text-gray-900 placeholder-gray-400 text-xs h-9 w-full"
             value={prefSearchTerm}
             onChange={(e) => setPrefSearchTerm(e.target.value)}
           />
         </div>
 
-        <div className="overflow-y-auto flex-1 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
+        <div className="overflow-y-auto overscroll-contain flex-1 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
           {filteredPrefRoles.map(role => {
             const isSelected = currentPlayer?.preferences[activePrefModal.team]?.includes(role.id);
             

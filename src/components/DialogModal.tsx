@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { cn } from '../utils/cn';
 
 interface DialogModalProps {
@@ -24,6 +25,8 @@ export default function DialogModal({
   onCancel,
   isLightModeActive,
 }: DialogModalProps) {
+  useScrollLock(isOpen);
+
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
@@ -53,7 +56,7 @@ export default function DialogModal({
         onClick={e => e.stopPropagation()}
       >
         {title && (
-          <h3 className="font-bold text-base text-clocktower-blood text-center">{title}</h3>
+          <h3 className="font-display font-bold text-base text-clocktower-blood text-center tracking-wider uppercase">{title}</h3>
         )}
         <p className={cn('text-sm leading-relaxed text-center', isLightModeActive ? 'text-gray-700' : 'text-gray-300')}>
           {message}

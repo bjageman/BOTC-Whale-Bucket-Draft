@@ -1,4 +1,5 @@
 import { useRef, useMemo } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { ChevronLeft, ChevronRight, X, Search } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Role } from '../types';
@@ -47,6 +48,7 @@ interface PlayerDetailsModalProps {
   onUpdateRoles?: (id: string, roleIds: string[]) => void;
   isSynced?: boolean;
   onUpdateNotes?: (id: string, notes: string) => void;
+  onLogEvent?: (msg: string) => void;
 }
 
 export default function PlayerDetailsModal({
@@ -74,7 +76,11 @@ export default function PlayerDetailsModal({
   onUpdateRoles,
   isSynced = false,
   onUpdateNotes,
+  onLogEvent,
 }: PlayerDetailsModalProps) {
+  useScrollLock();
+  const originalName = useRef('');
+  const originalNotes = useRef('');
   const isMobile = useMemo(() => {
     if (typeof window === 'undefined') return false;
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -162,7 +168,8 @@ export default function PlayerDetailsModal({
                 value={p.name}
                 disabled={isSynced}
                 onChange={(e) => onUpdateName(p.id, e.target.value)}
-                onFocus={(e) => e.target.select()}
+                onFocus={(e) => { originalName.current = e.target.value; e.target.select(); }}
+                onBlur={(e) => { if (onLogEvent && e.target.value.trim() && e.target.value !== originalName.current) onLogEvent(`${originalName.current} renamed to ${e.target.value}`); }}
                 onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                 autoCapitalize="words"
                 className={cn(
@@ -182,7 +189,9 @@ export default function PlayerDetailsModal({
                   type="text"
                   placeholder="Notes..."
                   value={p.notes ?? ''}
+                  onFocus={(e) => { originalNotes.current = e.target.value; }}
                   onChange={(e) => onUpdateNotes(p.id, e.target.value)}
+                  onBlur={(e) => { if (onLogEvent && e.target.value.trim() && e.target.value !== originalNotes.current) onLogEvent(`Note — ${p.name}: ${e.target.value}`); }}
                   onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                   className={cn(
                     'w-full mt-1.5 rounded px-2 py-1 text-xs border focus:outline-none focus:border-clocktower-blood/60 transition-colors',
@@ -218,7 +227,7 @@ export default function PlayerDetailsModal({
               <div className="flex items-center gap-2">
                 <div className={cn(
                   'flex items-center border rounded px-2.5 py-1.5 text-sm flex-1',
-                  isLightModeActive ? 'bg-white border-gray-300' : 'bg-gray-955 border-gray-800'
+                  isLightModeActive ? 'bg-white border-gray-300' : 'bg-white border-gray-300'
                 )}>
                   <Search size={14} className="text-gray-500 mr-2 shrink-0" />
                   <input
@@ -227,7 +236,7 @@ export default function PlayerDetailsModal({
                     placeholder="Search character name..."
                     className={cn(
                       'bg-transparent flex-1 outline-none text-sm',
-                      isLightModeActive ? 'text-clocktower-night' : 'text-white'
+                      isLightModeActive ? 'text-clocktower-night' : 'text-gray-900'
                     )}
                     value={modalRoleSearch}
                     onChange={(e) => onSetModalRoleSearch(e.target.value)}
@@ -649,7 +658,7 @@ function RoleList({
 
   return (
     <div className={cn(
-      'overflow-y-auto max-h-60 md:max-h-72 border rounded divide-y pr-1',
+      'overflow-y-auto overscroll-contain max-h-60 md:max-h-72 border rounded divide-y pr-1',
       isLightModeActive
         ? 'border-gray-300 bg-white/50 divide-gray-200'
         : 'border-gray-800 bg-gray-950/40 divide-gray-800'

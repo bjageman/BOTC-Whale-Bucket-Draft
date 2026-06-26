@@ -154,7 +154,7 @@ export default function StandardSetupPhase({
             </span>
             <span className="text-[10px] text-gray-500 font-medium flex items-center gap-1">
               <Upload size={12} />
-              {customScriptRoles ? `${getScriptStats(customScriptRoles)} — Click to change` : "Default Script — Click to upload .json"}
+              {customScriptRoles ? `${getScriptStats(customScriptRoles)} — Click to change` : "Click to upload .json"}
             </span>
           </button>
           {customScriptRoles && (
@@ -169,7 +169,7 @@ export default function StandardSetupPhase({
                   : "hover:bg-gray-800 border-gray-800 text-gray-500 hover:text-gray-400"
               )}
             >
-              Reset to Default
+              Reset to All Roles
             </button>
           )}
           <button
@@ -205,7 +205,7 @@ export default function StandardSetupPhase({
       {/* Section B: Players & Roles list */}
       <div className="md:col-start-1 md:row-start-1 md:row-span-2 space-y-6 w-full">
         <section>
-          <h2 className="text-lg font-semibold text-gray-300 mb-4">Players & Roles ({players.length})</h2>
+          <h2 className="font-display text-lg font-bold tracking-wider uppercase text-gray-300 mb-4">Character Assignment ({players.length})</h2>
 
           <div className="flex gap-2 mb-4">
             <input
@@ -411,7 +411,7 @@ export default function StandardSetupPhase({
           id="open-grimoire-button"
           disabled={!allAssigned}
           onClick={handleOpenGrimoire}
-          className="w-full bg-clocktower-blood hover:bg-red-800 text-white py-3 rounded-lg font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-black/40 flex items-center justify-center gap-2"
+          className="w-full bg-clocktower-blood hover:bg-red-800 text-white py-3 rounded-lg font-display font-bold tracking-widest uppercase transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-black/40 flex items-center justify-center gap-2"
         >
           Open Grimoire
         </button>
@@ -458,7 +458,7 @@ export default function StandardSetupPhase({
             </button>
             <button
               onClick={confirmOpenGrimoire}
-              className="px-4 py-2 rounded-md text-sm font-semibold bg-clocktower-blood text-white hover:bg-red-800 transition-colors"
+              className="px-4 py-2 rounded-md text-sm font-display font-bold tracking-wider uppercase bg-clocktower-blood text-white hover:bg-red-800 transition-colors"
             >
               Open Grimoire
             </button>

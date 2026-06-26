@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { Search, X, Scroll } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Role } from '../types';
@@ -24,6 +25,8 @@ const TEAMS = [
 export default function ScriptCharactersModal({ isOpen, onClose, scriptName, roles, scriptStats, isLightModeActive }: Props) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+
+  useScrollLock(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -77,7 +80,7 @@ export default function ScriptCharactersModal({ isOpen, onClose, scriptName, rol
         >
           <div className="flex justify-between items-start gap-4 mb-4">
             <div>
-              <h3 className={cn("font-bold text-2xl leading-tight flex items-center gap-2", isLightModeActive ? "text-clocktower-blood" : "text-white")}>
+              <h3 className={cn("font-display font-bold text-xl leading-tight flex items-center gap-2 tracking-wider", isLightModeActive ? "text-clocktower-blood" : "text-white")}>
                 <Scroll size={20} className={isLightModeActive ? "text-clocktower-blood" : "text-clocktower-townsfolk"} />
                 {scriptName}
               </h3>
@@ -110,7 +113,7 @@ export default function ScriptCharactersModal({ isOpen, onClose, scriptName, rol
             )}
           </div>
 
-          <div className="overflow-y-auto flex-1 space-y-5 pr-1 select-none">
+          <div className="overflow-y-auto overscroll-contain flex-1 space-y-5 pr-1 select-none">
             {TEAMS.map(({ key, label, color, border, hover }) => {
               const teamRoles = byTeam[key];
               if (teamRoles.length === 0) return null;

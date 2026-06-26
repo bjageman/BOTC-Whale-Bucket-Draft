@@ -1,4 +1,6 @@
 import { Search } from 'lucide-react';
+import { useMemo } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { cn } from '../utils/cn';
 import type { Player } from '../WhaleBucket';
 import type { Role } from '../types';
@@ -24,6 +26,8 @@ export default function ManualOverrideModal({
   setActiveDraftPlayerId,
   isLightModeActive,
 }: ManualOverrideModalProps) {
+  useScrollLock();
+  const isMobile = useMemo(() => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent), []);
   const draftPlayer = players.find(p => p.id === activeDraftPlayerId);
   const preferredIds = draftPlayer ? [
     ...(draftPlayer.preferences.townsfolk || []),
@@ -69,27 +73,27 @@ export default function ManualOverrideModal({
     <div className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4 backdrop-blur-xs">
       <div id="manual-override-modal" className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[80vh] flex flex-col shadow-2xl">
         <div className="flex justify-between items-center">
-          <h3 className="font-bold text-sm text-gray-300">
-            Change Role for {draftPlayer?.name}
+          <h3 className="font-display font-bold text-sm text-black tracking-wider uppercase">
+            Change Role
           </h3>
           <button onClick={() => { setActiveDraftPlayerId(null); setSearchTerm(''); }} className="text-xs text-gray-500 underline">
             Close
           </button>
         </div>
         
-        <div className="flex items-center bg-gray-955 border border-gray-855 rounded px-3 py-2 text-sm">
-          <Search size={14} className="text-gray-500 mr-2" />
+        <div className="flex items-center bg-white border border-gray-300 rounded px-3 py-2 text-sm">
+          <Search size={14} className="text-gray-400 mr-2" />
           <input
             type="text"
-            autoFocus
+            autoFocus={!isMobile}
             placeholder="Search character name..."
-            className="bg-transparent flex-1 outline-none text-xs text-white"
+            className="bg-transparent flex-1 outline-none text-xs text-gray-900 placeholder-gray-400"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         
-        <div className="overflow-y-auto flex-1 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
+        <div className="overflow-y-auto overscroll-contain flex-1 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
           {preferredRoles.map(role => {
             const selectedByPlayer = players.find(pl => pl.roleId === role.id && pl.id !== activeDraftPlayerId);
             const isCurrent = role.id === draftPlayer?.roleId;

@@ -51,9 +51,8 @@ export default function PageLayout({
       isLight ? "bg-clocktower-parchment text-clocktower-night" : "bg-clocktower-night text-clocktower-parchment"
     )}>
       <header id="page-header" className={cn(
-        "relative flex flex-col items-center justify-center border-b pb-3 w-full pt-4",
+        "relative flex flex-col items-center justify-center pb-3 w-full pt-4",
         headerExtra && "gap-2.5",
-        isLight ? "border-clocktower-blood/20" : "border-clocktower-blood"
       )}>
         <div className="relative flex justify-center items-center w-full min-h-[36px] px-4">
           {backHref && (
@@ -68,7 +67,7 @@ export default function PageLayout({
           )}
 
           {titleContent ?? (
-            <h1 className="text-xl font-bold text-clocktower-blood tracking-wide text-center px-10">
+            <h1 className="font-display text-xl font-bold text-clocktower-blood tracking-widest text-center px-10 uppercase">
               {title}
             </h1>
           )}
@@ -87,6 +86,12 @@ export default function PageLayout({
         </div>
 
         {headerExtra}
+
+        <div className="flex items-center gap-2.5 w-full px-4 mt-1.5">
+          <div className={cn("flex-1 h-px", isLight ? "bg-clocktower-blood/20" : "bg-clocktower-gold/30")} />
+          <span className={cn("text-[8px] leading-none", isLight ? "text-clocktower-blood/40" : "text-clocktower-gold/50")}>◆</span>
+          <div className={cn("flex-1 h-px", isLight ? "bg-clocktower-blood/20" : "bg-clocktower-gold/30")} />
+        </div>
       </header>
 
       <div id="page-content" className={contentClassName ?? "flex-1 flex flex-col pt-8 px-4 pb-4"}>
@@ -95,7 +100,7 @@ export default function PageLayout({
 
       <footer id="page-footer" className={cn(
         "flex justify-between items-center py-4 px-4 border-t",
-        isLight ? "border-clocktower-blood/20" : "border-clocktower-blood/40"
+        isLight ? "border-clocktower-blood/20" : "border-clocktower-gold/20"
       )}>
         <p className={cn("text-xs", isLight ? "text-gray-400" : "text-gray-600")}>
           Not affiliated with The Pandemonium Institute.
@@ -116,7 +121,7 @@ export default function PageLayout({
           </a>
           <a
             id="footer-kofi-link"
-            href="https://ko-fi.com/phillybotc"
+            href="https://ko-fi.com/neurobomber"
             target="_blank"
             rel="noopener noreferrer"
             title="Support on Ko-fi"

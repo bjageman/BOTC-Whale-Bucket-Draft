@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { cn } from '../utils/cn';
 import type { Role } from '../types';
 import remindersData from '../reminders.json';
@@ -26,6 +27,7 @@ export default function ReminderPickerModal({
   onClose,
   isLightModeActive,
 }: ReminderPickerModalProps) {
+  useScrollLock();
   const [search, setSearch] = useState('');
 
   const options: ReminderOption[] = activeRoleIds.flatMap((charId) => {
@@ -66,7 +68,7 @@ export default function ReminderPickerModal({
         {/* Header */}
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-inherit flex-shrink-0">
           <div>
-            <h3 className="font-bold text-sm text-clocktower-blood">Add Reminder</h3>
+            <h3 className="font-display font-bold text-sm text-clocktower-blood tracking-wider uppercase">Add Reminder</h3>
             <p className={cn('text-xs mt-0.5', isLightModeActive ? 'text-gray-500' : 'text-gray-400')}>
               for {targetPlayerName}
             </p>
@@ -97,7 +99,7 @@ export default function ReminderPickerModal({
         </div>
 
         {/* Reminder list */}
-        <div className="overflow-y-auto flex-1 px-2 pb-3">
+        <div className="overflow-y-auto overscroll-contain flex-1 px-2 pb-3">
           {filtered.length === 0 ? (
             <p className={cn('text-xs text-center py-6', isLightModeActive ? 'text-gray-400' : 'text-gray-500')}>
               {options.length === 0 ? 'No reminders available for characters in this game.' : 'No matches.'}

@@ -1,8 +1,11 @@
 # 📖 BOTC Grimoire
 
-A lightweight storyteller and setup companion web application for **Blood on the Clocktower** (BOTC) storytellers. It offers two distinct modes: standard manual grimoire tracking and the custom **"Whale Bucket"** preference draft mode.
+A comprehensive web app for running **Blood on the Clocktower** in-person. Storytellers manage the full game through an interactive digital grimoire, while players join live sessions from their own devices by syncing with the town square in real time to receive their character token and track the game state.
 
 ## Core Features
+
+### Auto-Distribution Algorithm
+Both modes use a shared distribution engine that respects official team counts for 5–15 players and dynamically resolves complex setup roles and jinxes — for example, Legion and Riot restructure the entire evil team composition, Atheist removes the evil team entirely, Baron and similar roles adjust outsider counts automatically, and linked pairs like Choirboy ↔ King are enforced.
 
 ### 1. Standard Setup Mode
 Classic manual storyteller mode:
@@ -10,28 +13,22 @@ Classic manual storyteller mode:
 - **Manual Assignment** — Fully dictate player assignments, set Drunk/Marionette status, and adjust team composition.
 - **Interactive Grimoire** — Responsive, circular layout showing alive status, dead votes, traveler characters, custom storyteller notes, and game phase states (Day/Night toggles).
 
-### 2. Whale Bucket Draft Mode
+### 2. Whale Buffet Draft Mode
 Semi-randomized player preference draft:
 - **Preference Drafting** — Add players and let them submit up to 4 preferred roles for Townsfolk, Outsider, Minion, and Demon teams.
-- **Auto-Distribution Algorithm** — Assigns roles matching player inputs, respects official team counts for 5–15 players, and dynamically resolves complex setup roles and jinxes:
-   - **Legion** — ~60% of players become Legion, the rest get Townsfolk roles.
-   - **Riot** — Demon + Minion count players become Riot, the rest Townsfolk.
-   - **Atheist** — All-Townsfolk/Outsider grimoire with no evil team.
-   - **Baron / Fang Gu / Balloonist / Godfather** — Outsider count adjustments are applied automatically.
-   - **Choirboy ↔ King / Huntsman ↔ Damsel** — Linked-role jinxes are enforced.
+- **Randomized Assignment** — Roles are assigned based on player preferences using the shared distribution engine above.
+
+### 3. Live Player Sessions
+Players join from their own devices using a 4-letter room code:
+- **Character Token Reveal** — Players receive their assigned character token on their device when the grimoire opens.
+- **Real-Time Sync** — The town square layout, player statuses, and day/night phase stay in sync across all connected devices.
+- **Whale Buffet Preferences** — In Whale Buffet mode, players submit their role preferences directly from their phone before assignment.
+- **Player Notes Tracker** — Players can track character claims and alive/dead statuses from their own device throughout the game.
+
+### 4. Installable Web App
+The app is installable as a standalone app via "Add to Home Screen" on Android and iOS, giving a full-screen native-app experience without the browser UI.
 
 All state is persisted to `localStorage`, so refreshing the page won't lose your storyteller grimoire.
-
-## Included Roles
-
-The app ships with the full catalogue of official BOTC roles across all standard editions:
-
-| Team | Count |
-|------|-------|
-| Townsfolk | 60+ |
-| Outsider | 20+ |
-| Minion | 25+ |
-| Demon | 15+ |
 
 ## Getting Started
 
@@ -40,23 +37,17 @@ The app ships with the full catalogue of official BOTC roles across all standard
 - [Node.js](https://nodejs.org/) 20+
 - npm
 
-This app supports a real-time multiplayer portal allowing players to join rooms from their phones, submit role preferences (for Whale Bucket), and view their assigned tokens.
-
-Real-time message routing is powered by **ntfy**. You can run this out-of-the-box using the public `ntfy.sh` server or configure your own self-hosted `ntfy` server instance:
+Real-time session routing is powered by **ntfy**. A self-hosted ntfy instance is required for practical use — the public `ntfy.sh` server will rate-limit a game session almost immediately.
 
 1. Copy `.env.example` in the root of the project to a new file named `.env`:
    ```bash
    cp .env.example .env
    ```
-2. By default, it points to the public `ntfy.sh` broker server:
+2. Set the URL to your self-hosted ntfy server:
    ```env
-   VITE_NTFY_SERVER_URL=ntfy.sh
+   VITE_NTFY_SERVER_URL=your-ntfy-server.example.com
    ```
-3. To swap this with a secure self-hosted `ntfy` server on your own server/VPS, change it to your domain:
-   ```env
-   VITE_NTFY_SERVER_URL=grimoire.brodin.rocks/ntfy
-   ```
-4. If you deploy using Docker or environment configurations, ensure `VITE_NTFY_SERVER_URL` is defined in your environment during build time.
+3. If you deploy using Docker or environment configurations, ensure `VITE_NTFY_SERVER_URL` is defined in your environment during build time.
 
 ### Development
 
@@ -106,6 +97,11 @@ docker run -p 8080:80 botc-grimoire-companion
 - **Tailwind CSS** — styling
 - **Lucide React** — icons
 - **Nginx** — production static file serving (in Docker)
+
+## Acknowledgements
+
+- **[The Pandemonium Institute](https://bloodontheclocktower.com)** — Creators of Blood on the Clocktower.
+- **[botc-icons](https://github.com/tomozbot/botc-icons)** — Role icons used throughout the app are sourced from this project and downloaded automatically at build time.
 
 ## License
 

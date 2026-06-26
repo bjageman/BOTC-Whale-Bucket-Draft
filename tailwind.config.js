@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: ['Cinzel', 'Georgia', 'serif'],
+      },
       colors: {
         clocktower: {
           parchment: '#f4e4bc',
@@ -16,6 +19,8 @@ export default {
           minion: '#ef4444',
           demon: '#7f1d1d',
           traveler: '#a855f7',
+          gold: '#c9a84c',
+          goldDim: '#7a6028',
         },
         // Intermediate gray shades not in Tailwind's default palette
         gray: {

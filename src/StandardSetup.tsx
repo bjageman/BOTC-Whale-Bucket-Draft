@@ -530,6 +530,10 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   };
 
   const togglePlayerDeadVote = (id: string) => {
+    const player = players.find(p => p.id === id);
+    if (player) {
+      addLogEntry(player.hasDeadVote ? `${player.name}'s ghost vote used` : `${player.name}'s ghost vote restored`);
+    }
     setPlayers(players.map(p => p.id === id ? { ...p, hasDeadVote: !p.hasDeadVote } : p));
   };
 
@@ -720,7 +724,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       onBack={phase !== 'setup' ? () => setPhase('setup') : undefined}
       titleContent={
         <div className="flex items-center justify-center gap-2">
-          <h1 className="text-xl font-bold text-clocktower-blood tracking-wide">
+          <h1 className="font-display text-xl font-bold text-clocktower-blood tracking-widest uppercase">
             Standard
           </h1>
           <div
@@ -870,7 +874,9 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `botc-game-log-${new Date().toISOString().split('T')[0]}.txt`;
+            const scriptSlug = scriptName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            const dt = new Date().toISOString().replace('T', '-').slice(0, 16).replace(':', '');
+            a.download = `standard-${scriptSlug}-${players.length}p-${dt}.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -934,6 +940,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           isLilMonstaGame={isLilMonstaGame}
           onSetSearchingRole={setIsSearchingRole}
           onSetModalRoleSearch={setModalRoleSearch}
+          onLogEvent={phase === 'game' ? addLogEntry : undefined}
         />
       )}
     </PageLayout>
