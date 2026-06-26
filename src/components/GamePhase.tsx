@@ -1,28 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { GripVertical, Search, X, Scroll } from 'lucide-react';
 import { cn } from '../utils/cn';
-import type { Role, PlacedReminder } from '../types';
+import type { Player, Role, PlacedReminder } from '../types';
 import rolesData from '../roles.json';
 import officialRoles from '../official_roles.json';
 import { getScriptStats } from '../utils/scriptUtils';
 import GrimoireBoard from './GrimoireBoard';
 import NightOrderWidget from './NightOrderWidget';
-
-interface Player {
-  id: string;
-  name: string;
-  roleId?: string;
-  roleIds?: string[];
-  isDead?: boolean;
-  hasDeadVote?: boolean;
-  isEvil?: boolean;
-  isTheDrunk?: boolean;
-  isTheMarionette?: boolean;
-  isTheLunatic?: boolean;
-  isTheLilMonsta?: boolean;
-  isDrunkOrPoisoned?: boolean;
-  notes?: string;
-}
 
 interface Props {
   players: Player[];
