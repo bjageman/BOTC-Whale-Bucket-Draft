@@ -1,6 +1,6 @@
 # 📖 BOTC Grimoire
 
-A lightweight storyteller and setup companion web application for **Blood on the Clocktower** (BOTC) storytellers. It offers two distinct modes: standard manual grimoire tracking and the custom **"Whale Buffet"** preference draft mode.
+A comprehensive web app for running **Blood on the Clocktower** in-person without a physical grimoire. Storytellers manage the full game through an interactive digital grimoire, while players join live sessions from their own devices — syncing with the town square in real time to receive their character token and track the game state.
 
 ## Core Features
 
