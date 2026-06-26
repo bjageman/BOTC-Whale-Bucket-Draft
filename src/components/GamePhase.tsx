@@ -299,6 +299,7 @@ export default function GamePhase({
                         >
                           {role ? (
                             <span className="flex items-center gap-1.5">
+                              <img src={`/icons/${role.id}.svg`} alt={role.name} className="w-5 h-5 object-contain shrink-0" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                               <span>{role.name}</span>
                               <span className={cn('text-[10px]', role.team === 'outsider' ? 'text-clocktower-outsider' : 'text-clocktower-townsfolk')}>
                                 {role.team === 'outsider' ? 'Outsider' : 'Townsfolk'}
@@ -530,6 +531,12 @@ export default function GamePhase({
                 >
                   {role ? (
                     <>
+                      <img
+                        src={`/icons/${role.id}.svg`}
+                        alt={role.name}
+                        className="w-16 h-16 shrink-0 object-contain"
+                        onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                      />
                       <div className="flex-1">
                         <p className={cn(
                           'text-2xl font-extrabold',
