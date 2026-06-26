@@ -935,7 +935,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           onLogEvent={addLogEntry}
           onDeclareWinner={(team) => {
             const label = team === 'good' ? '🌟 Good wins!' : '😈 Evil wins!';
-            addLogEntry(`Game over — ${label}`);
+            addLogEntry(`Game over ${label}`);
             if (sendMessageRef.current) {
               sendMessageRef.current({ type: 'game_winner', team });
             }

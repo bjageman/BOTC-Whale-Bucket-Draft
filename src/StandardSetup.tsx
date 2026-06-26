@@ -886,7 +886,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           onDeclareWinner={(team) => {
             const broadcast = () => {
               const label = team === 'good' ? '🌟 Good wins!' : '😈 Evil wins!';
-              addLogEntry(`Game over — ${label}`);
+              addLogEntry(`Game over ${label}`);
               if (sendMessageRef.current) {
                 sendMessageRef.current({ type: 'game_winner', team });
               }
