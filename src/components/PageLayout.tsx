@@ -41,7 +41,7 @@ export default function PageLayout({
   }, [isLight]);
 
   const backButtonClass = cn(
-    "absolute left-0 p-1.5 rounded-full transition-all flex items-center justify-center",
+    "absolute left-4 p-1.5 rounded-full transition-all flex items-center justify-center",
     isLight ? "text-gray-700 hover:text-gray-900 hover:bg-black/5" : "text-gray-400 hover:text-white hover:bg-white/10"
   );
 
@@ -73,7 +73,7 @@ export default function PageLayout({
             </h1>
           )}
 
-          <div id="page-header-controls" className="absolute right-0 flex items-center gap-1">
+          <div id="page-header-controls" className="absolute right-4 flex items-center gap-1">
             <button
               id="theme-toggle-button"
               onClick={toggleTheme}

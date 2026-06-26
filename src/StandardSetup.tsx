@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { RefreshCcw } from 'lucide-react';
+import { Undo2 } from 'lucide-react';
 import rolesData from './roles.json';
 import { cn } from './utils/cn';
 import type { Player, Role } from './types';
@@ -670,7 +670,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           className={cn("p-2 transition-colors", isLightModeActive ? "text-gray-600 hover:text-gray-900" : "text-gray-500 hover:text-white")}
           title="Reset game"
         >
-          <RefreshCcw size={20} />
+          <Undo2 size={20} />
         </button>
       }
       headerExtra={

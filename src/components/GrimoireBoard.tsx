@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, RotateCcw, RotateCw } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import type { Player, Role, PlacedReminder } from '../types';
 import { cn } from '../utils/cn';
@@ -40,6 +40,7 @@ export default function GrimoireBoard({
   onRemoveReminder,
   onRemoveAllReminders,
 }: GrimoireBoardProps) {
+  const [rotationOffset, setRotationOffset] = useState(0);
   const [hoveredOrder, setHoveredOrder] = useState<string[]>([]);
   const [playerTopIndex, setPlayerTopIndex] = useState<Record<string, number>>({});
   const [fannedPlayerId, setFannedPlayerId] = useState<string | null>(null);
@@ -264,6 +265,13 @@ export default function GrimoireBoard({
     return angles;
   }, [players.length, dynamicRadiusX, dynamicRadiusY, boardAspect]);
 
+  const rotatedPlayers = useMemo(() => {
+    if (rotationOffset === 0 || players.length === 0) return players;
+    const n = players.length;
+    const off = ((rotationOffset % n) + n) % n;
+    return [...players.slice(off), ...players.slice(0, off)];
+  }, [players, rotationOffset]);
+
   return (
     <>
     <div className="w-full flex flex-col items-center">
@@ -286,7 +294,7 @@ export default function GrimoireBoard({
           </button>
         ) : <div />}
 
-        <div className="flex justify-center">
+        <div className="flex justify-center items-center gap-2">
           {!isSynced && onRemoveAllReminders && reminderTokens.length > 0 && (
             <button
               id="grimoire-reset-reminders-button"
@@ -401,8 +409,41 @@ export default function GrimoireBoard({
           {players.filter(p => !p.isDead).length} Alive
         </div>
 
+        {/* Rotate buttons — center of board */}
+        {players.length > 1 && (
+          <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+            <div className="flex items-center gap-3 pointer-events-auto">
+              <button
+                type="button"
+                onClick={() => setRotationOffset(prev => prev + 1)}
+                className={cn(
+                  "p-2 rounded-full border transition-all shadow-sm active:scale-95",
+                  isLightModeActive
+                    ? "bg-white/80 border-gray-300 text-gray-500 hover:text-gray-800 hover:bg-white"
+                    : "bg-gray-900/80 border-gray-700 text-gray-500 hover:text-gray-200 hover:bg-gray-800"
+                )}
+                title="Rotate counter-clockwise"
+              >
+                <RotateCcw size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setRotationOffset(prev => prev - 1)}
+                className={cn(
+                  "p-2 rounded-full border transition-all shadow-sm active:scale-95",
+                  isLightModeActive
+                    ? "bg-white/80 border-gray-300 text-gray-500 hover:text-gray-800 hover:bg-white"
+                    : "bg-gray-900/80 border-gray-700 text-gray-500 hover:text-gray-200 hover:bg-gray-800"
+                )}
+                title="Rotate clockwise"
+              >
+                <RotateCw size={14} />
+              </button>
+            </div>
+          </div>
+        )}
 
-        {players.map((p, index) => {
+        {rotatedPlayers.map((p, index) => {
           const angle = evenAngles[index] !== undefined ? evenAngles[index] : 0;
 
           const cosVal = Math.cos(angle);
