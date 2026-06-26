@@ -150,7 +150,7 @@ export default function StandardSetupPhase({
                 ? "text-gray-900 group-hover:text-clocktower-blood"
                 : "text-white group-hover:text-clocktower-blood"
             )}>
-              {customScriptRoles ? "📜" : "🌐"} {scriptName}
+              📜 {scriptName}
             </span>
             <span className="text-[10px] text-gray-500 font-medium flex items-center gap-1">
               <Upload size={12} />

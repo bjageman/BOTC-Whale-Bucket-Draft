@@ -54,7 +54,7 @@ export default function GamePhase({
   onResetDead, onResetTime,
   selectionRoles,
   showNightOrder = true,
-  scriptName = 'All Roles (Default)',
+  scriptName = 'All Roles',
   customScriptRoles = null,
   isSynced = false,
   enableReminders = true,
@@ -144,7 +144,7 @@ export default function GamePhase({
             "flex items-center gap-1.5 text-base font-extrabold transition-colors",
             isLightModeActive ? "text-gray-900" : "text-white"
           )}>
-            {customScriptRoles ? "📜" : "🌐"} {scriptName}
+            📜 {scriptName}
           </span>
           {customScriptRoles && (
             <span className="text-[10px] text-gray-500 font-medium">

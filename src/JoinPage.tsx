@@ -60,7 +60,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
   const [activePrefSelect, setActivePrefSelect] = useState<{ team: 'townsfolk' | 'outsider' | 'minion' | 'demon' } | null>(null);
   const [prefSearchTerm, setPrefSearchTerm] = useState('');
   const [excludedRoleIds, setExcludedRoleIds] = useState<string[]>([]);
-  const [scriptName, setScriptName] = useState("All Roles (Default)");
+  const [scriptName, setScriptName] = useState("All Roles");
   const { dialogProps, showAlert } = useDialog();
   const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(null);
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);

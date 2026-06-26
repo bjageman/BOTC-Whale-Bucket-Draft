@@ -199,7 +199,7 @@ export default function PlayerDetailsModal({
             type="button"
             onClick={onClose}
             className={cn(
-              'p-2 -mt-4 ml-2 rounded-lg border transition-colors shrink-0 shadow-sm',
+              'p-2 ml-2 rounded-lg border transition-colors shrink-0 shadow-sm',
               isLightModeActive
                 ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
                 : 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700'
