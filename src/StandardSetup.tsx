@@ -118,12 +118,12 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        return parsed.scriptName || "All Roles (Default)";
+        return parsed.scriptName || "All Roles";
       } catch (e) {
         console.error(e);
       }
     }
-    return "All Roles (Default)";
+    return "All Roles";
   });
   const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(() => {
     const saved = localStorage.getItem('standard-botc-game');
@@ -179,7 +179,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       setTimeOfDay('night');
       setDayNumber(1);
       setIsLilMonstaGame(false);
-      setScriptName("All Roles (Default)");
+      setScriptName("All Roles");
       setCustomScriptRoles(null);
       localStorage.removeItem('standard-botc-game');
       const newCode = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
@@ -572,7 +572,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
 
   const clearCustomScript = () => {
     setCustomScriptRoles(null);
-    setScriptName("All Roles (Default)");
+    setScriptName("All Roles");
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }

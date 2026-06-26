@@ -88,12 +88,12 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        return parsed.scriptName || "All Roles (Default)";
+        return parsed.scriptName || "All Roles";
       } catch (e) {
         console.error(e);
       }
     }
-    return "All Roles (Default)";
+    return "All Roles";
   });
   const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(() => {
     const saved = localStorage.getItem('player-tracker-botc-game');
@@ -214,7 +214,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
       setPhase('setup');
       setTimeOfDay('night');
       setDayNumber(1);
-      setScriptName("All Roles (Default)");
+      setScriptName("All Roles");
       setCustomScriptRoles(null);
       localStorage.removeItem('player-tracker-botc-game');
       sessionStorage.removeItem('joined-code');
@@ -407,7 +407,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
 
   const clearCustomScript = () => {
     setCustomScriptRoles(null);
-    setScriptName("All Roles (Default)");
+    setScriptName("All Roles");
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }

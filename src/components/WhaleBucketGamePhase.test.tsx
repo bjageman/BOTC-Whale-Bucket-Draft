@@ -51,17 +51,17 @@ describe('GamePhase - Script Modal Integration', () => {
   it('renders active script button with correct counts', () => {
     render(<GamePhase {...defaultProps} />);
 
-    const scriptButton = screen.getByText(/All Roles \(Default\)/i).closest('button');
+    const scriptButton = screen.getByText(/All Roles/i).closest('button');
     expect(scriptButton).toBeInTheDocument();
   });
 
   it('opens modal on script button click and displays active characters sorted by team', () => {
     render(<GamePhase {...defaultProps} />);
 
-    const scriptButton = screen.getByText(/All Roles \(Default\)/i).closest('button');
+    const scriptButton = screen.getByText(/All Roles/i).closest('button');
     fireEvent.click(scriptButton!);
 
-    expect(screen.getByRole('heading', { name: /All Roles \(Default\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /All Roles/i })).toBeInTheDocument();
 
     const modalContainer = screen.getByPlaceholderText('Search character by name or type...').closest('.max-w-2xl') as HTMLElement;
     const modal = within(modalContainer);
@@ -79,7 +79,7 @@ describe('GamePhase - Script Modal Integration', () => {
   it('opens character details modal when character is clicked', () => {
     render(<GamePhase {...defaultProps} />);
 
-    const scriptButton = screen.getByText(/All Roles \(Default\)/i).closest('button');
+    const scriptButton = screen.getByText(/All Roles/i).closest('button');
     fireEvent.click(scriptButton!);
 
     const modalContainer = screen.getByPlaceholderText('Search character by name or type...').closest('.max-w-2xl') as HTMLElement;
@@ -96,6 +96,6 @@ describe('GamePhase - Script Modal Integration', () => {
     fireEvent.click(closeBtn);
 
     expect(screen.queryByText('You start knowing that 1 of 2 players is a particular Townsfolk.')).toBeNull();
-    expect(screen.getByRole('heading', { name: /All Roles \(Default\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /All Roles/i })).toBeInTheDocument();
   });
 });
