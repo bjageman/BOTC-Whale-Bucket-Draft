@@ -57,9 +57,9 @@ export default function StandardRoleSelectionModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4 backdrop-blur-sm">
-      <div className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[80vh] flex flex-col shadow-2xl">
+      <div id="standard-role-selection-modal" className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[80vh] flex flex-col shadow-2xl">
         <div className="flex justify-between items-center">
-          <h3 className="font-bold text-sm text-gray-300">
+          <h3 className="font-bold text-sm text-black">
             Select Role for {player?.name}
           </h3>
           <button id="close-role-modal-button" onClick={() => { setActivePlayerId(null); setSearchTerm(''); }} className="text-xs text-gray-500 underline">
@@ -67,7 +67,7 @@ export default function StandardRoleSelectionModal({
           </button>
         </div>
 
-        <div className="flex items-center bg-gray-955 border border-gray-800 rounded px-3 py-2 text-sm">
+        <div id="role-search-wrapper" className="flex items-center bg-gray-955 border border-gray-800 rounded px-3 py-2 text-sm">
           <Search size={14} className="text-gray-500 mr-2" />
           <input
             id="role-search-input"
@@ -80,7 +80,7 @@ export default function StandardRoleSelectionModal({
           />
         </div>
 
-        <div className="overflow-y-auto flex-1 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
+        <div id="role-list" className="overflow-y-auto flex-1 border border-gray-800 rounded bg-gray-955/40 divide-y divide-gray-800/60 pr-1">
           {filteredRoles.map(role => {
             const selectedByPlayer = players.find(pl => pl.roleId === role.id && pl.id !== activePlayerId);
             const isCurrent = role.id === player?.roleId;

@@ -571,6 +571,7 @@ export default function GamePhase({
       {/* Demon Bluffs full-screen overlay — always dark */}
       {isBluffOverlayOpen && (
         <div
+          id="demon-bluffs-overlay"
           className="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center gap-8 p-8 cursor-pointer"
           onClick={() => setIsBluffOverlayOpen(false)}
         >
