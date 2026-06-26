@@ -25,7 +25,7 @@ describe('PlayerTracker', () => {
 
     expect(screen.getByText('Game Notes')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Enter player name in seating order...')).toBeInTheDocument();
-    expect(screen.getByText('Start Game Tracker').closest('button')).toBeDisabled();
+    expect(screen.getByText('Start Game').closest('button')).toBeDisabled();
 
     // Add a player
     const input = screen.getByPlaceholderText('Enter player name in seating order...');
@@ -35,7 +35,7 @@ describe('PlayerTracker', () => {
     fireEvent.click(addButton);
 
     expect(screen.getByDisplayValue('Alice')).toBeInTheDocument();
-    expect(screen.getByText('Start Game Tracker').closest('button')).not.toBeDisabled();
+    expect(screen.getByText('Start Game').closest('button')).not.toBeDisabled();
   });
 
   it('transitions to game phase and displays players in circle with blank characters', () => {
@@ -52,7 +52,7 @@ describe('PlayerTracker', () => {
     });
 
     // Start tracking
-    const startButton = screen.getByText('Start Game Tracker');
+    const startButton = screen.getByText('Start Game');
     fireEvent.click(startButton);
 
     // Verify we are in game phase (badge appears in both mobile row and desktop grimoire)
@@ -106,7 +106,7 @@ describe('PlayerTracker', () => {
     expect(screen.queryByTitle('Remove Player')).toBeNull();
 
     // 4. Start the tracker game phase
-    const startButton = screen.getByText('Start Game Tracker');
+    const startButton = screen.getByText('Start Game');
     fireEvent.click(startButton);
 
     // Verify time/dead resets are not passed/rendered
