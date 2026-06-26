@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { GripVertical } from 'lucide-react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { GripVertical, Search, X } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player, Role, PlacedReminder } from '../types';
 import rolesData from '../roles.json';
@@ -42,6 +42,8 @@ interface Props {
   isSynced?: boolean;
   enableReminders?: boolean;
   travelerCardTitle?: string;
+  demonBluffs?: string[];
+  onUpdateDemonBluffs?: (bluffs: string[]) => void;
 }
 
 export default function GamePhase({
@@ -59,9 +61,15 @@ export default function GamePhase({
   isSynced = false,
   enableReminders = true,
   travelerCardTitle = 'Add Traveler',
+  demonBluffs = [],
+  onUpdateDemonBluffs,
 }: Props) {
 
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
+  const [isBluffOverlayOpen, setIsBluffOverlayOpen] = useState(false);
+  const [bluffPickerSlot, setBluffPickerSlot] = useState<number | null>(null);
+  const [bluffSearch, setBluffSearch] = useState('');
+  const bluffSearchRef = useRef<HTMLInputElement>(null);
   const [reminderTokens, setReminderTokens] = useState<PlacedReminder[]>([]);
 
   const handleAddReminder = (targetPlayerId: string, sourceCharId: string, text: string) => {
@@ -91,6 +99,51 @@ export default function GamePhase({
   }, [customScriptRoles, players]);
 
   const grimoireRolesData = selectionRoles ?? (officialRoles as Role[]);
+
+  // Good roles not assigned to any player — candidates for demon bluffs
+  const assignedRoleIds = useMemo(() => new Set(
+    players.flatMap(p => p.roleIds && p.roleIds.length > 0 ? p.roleIds : (p.roleId ? [p.roleId] : []))
+  ), [players]);
+
+  const bluffCandidates = useMemo(() => {
+    const base = customScriptRoles || (rolesData as Role[]);
+    return base
+      .filter(r => (r.team === 'townsfolk' || r.team === 'outsider') && !assignedRoleIds.has(r.id))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [customScriptRoles, assignedRoleIds]);
+
+  const officialRoleAbility = (id: string) =>
+    (officialRoles as (Role & { ability?: string })[]).find(r => r.id === id)?.ability;
+
+  const filteredBluffCandidates = useMemo(() => {
+    if (!bluffSearch.trim()) return bluffCandidates;
+    const q = bluffSearch.toLowerCase();
+    return bluffCandidates.filter(r =>
+      r.name.toLowerCase().includes(q) || officialRoleAbility(r.id)?.toLowerCase().includes(q)
+    );
+  }, [bluffCandidates, bluffSearch]);
+
+  useEffect(() => {
+    if (bluffPickerSlot !== null) {
+      setTimeout(() => bluffSearchRef.current?.focus(), 50);
+    }
+  }, [bluffPickerSlot]);
+
+  const setBluff = (slot: number, roleId: string) => {
+    if (!onUpdateDemonBluffs) return;
+    const next = [...demonBluffs];
+    next[slot] = roleId;
+    onUpdateDemonBluffs(next);
+    setBluffPickerSlot(null);
+    setBluffSearch('');
+  };
+
+  const clearBluff = (slot: number) => {
+    if (!onUpdateDemonBluffs) return;
+    const arr = [...demonBluffs];
+    arr[slot] = '';
+    onUpdateDemonBluffs(arr);
+  };
 
   return (
     <div className="space-y-6 animate-fadeIn md:grid md:grid-cols-[3fr_2fr] md:gap-8 md:space-y-0 md:items-start landscape:grid landscape:grid-cols-[3fr_2fr] landscape:gap-6 landscape:space-y-0 landscape:items-start">
@@ -152,6 +205,107 @@ export default function GamePhase({
             </span>
           )}
         </button>
+
+        {/* Demon Bluffs — always dark, unaffected by theme */}
+        {!isSynced && onUpdateDemonBluffs && (
+          <div className="rounded-lg border p-3.5 space-y-2.5 bg-gray-900 border-gray-700">
+            <div className="flex items-center justify-between">
+              <h4 className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Demon Bluffs</h4>
+              {demonBluffs.some(b => b) && (
+                <button
+                  type="button"
+                  onClick={() => setIsBluffOverlayOpen(true)}
+                  className="text-[10px] font-bold px-2 py-0.5 rounded bg-clocktower-blood text-white hover:opacity-90 transition-opacity"
+                >
+                  Show Demon
+                </button>
+              )}
+            </div>
+            <div className="flex flex-col gap-1.5">
+              {[0, 1, 2].map(slot => {
+                const roleId = demonBluffs[slot] || '';
+                const role = roleId ? (rolesData as Role[]).find(r => r.id === roleId) : null;
+                return (
+                  <div key={slot} className="relative">
+                    {bluffPickerSlot === slot ? (
+                      <div className="rounded border p-2 space-y-1.5 bg-gray-950 border-gray-700">
+                        <div className="flex items-center gap-1.5">
+                          <Search size={11} className="text-gray-400 shrink-0" />
+                          <input
+                            ref={bluffSearchRef}
+                            type="text"
+                            placeholder="Search roles..."
+                            value={bluffSearch}
+                            onChange={e => setBluffSearch(e.target.value)}
+                            className="flex-1 text-xs bg-transparent focus:outline-none text-white placeholder-gray-500"
+                          />
+                          <button type="button" onClick={() => { setBluffPickerSlot(null); setBluffSearch(''); }}>
+                            <X size={12} className="text-gray-400 hover:text-gray-200" />
+                          </button>
+                        </div>
+                        <div className="max-h-32 overflow-y-auto space-y-0.5">
+                          {filteredBluffCandidates.map(r => (
+                            <button
+                              key={r.id}
+                              type="button"
+                              onClick={() => setBluff(slot, r.id)}
+                              className="w-full text-left text-xs px-2 py-1 rounded transition-colors hover:bg-gray-800 text-gray-200"
+                            >
+                              <span className="font-medium">{r.name}</span>
+                              <span className={cn('ml-1 text-[10px] font-semibold', r.team === 'outsider' ? 'text-emerald-400' : 'text-blue-400')}>
+                                {r.team === 'outsider' ? 'Outsider' : 'Townsfolk'}
+                              </span>
+                            </button>
+                          ))}
+                          {filteredBluffCandidates.length === 0 && (
+                            <p className="text-xs text-gray-500 px-2 py-1">No matching roles</p>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setBluffPickerSlot(slot)}
+                          className={cn(
+                            'flex-1 text-left text-xs px-2.5 py-1.5 rounded border transition-colors',
+                            role
+                              ? 'border-gray-700 bg-gray-800 text-white font-medium'
+                              : 'border-dashed border-gray-700 text-gray-500 hover:border-gray-500'
+                          )}
+                        >
+                          {role ? (
+                            <span className="flex items-center gap-1.5">
+                              <div className="w-5 h-5 shrink-0 rounded-full bg-white flex items-center justify-center p-0.5">
+                                <img src={`/icons/${role.id}.svg`} alt={role.name} className="w-full h-full object-contain" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                              </div>
+                              <span>{role.name}</span>
+                              <span className={cn('text-[10px] font-semibold', role.team === 'outsider' ? 'text-emerald-400' : 'text-blue-400')}>
+                                {role.team === 'outsider' ? 'Outsider' : 'Townsfolk'}
+                              </span>
+                            </span>
+                          ) : (
+                            `Bluff ${slot + 1}…`
+                          )}
+                        </button>
+                        {role && (
+                          <button
+                            type="button"
+                            onClick={() => clearBluff(slot)}
+                            className="p-1 text-gray-400 hover:text-gray-200 transition-colors"
+                            title="Clear"
+                          >
+                            <X size={12} />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Add Traveler */}
         {!isSynced && (
@@ -330,6 +484,60 @@ export default function GamePhase({
         scriptStats={customScriptRoles ? getScriptStats(customScriptRoles) : undefined}
         isLightModeActive={isLightModeActive}
       />
+
+      {/* Demon Bluffs full-screen overlay — always dark */}
+      {isBluffOverlayOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center gap-8 p-8 cursor-pointer"
+          onClick={() => setIsBluffOverlayOpen(false)}
+        >
+          <p className="text-gray-400 text-xs uppercase tracking-widest font-bold select-none">Demon Bluffs — tap to close</p>
+          <div className="flex flex-col gap-5 w-full max-w-sm">
+            {[0, 1, 2].map(slot => {
+              const roleId = demonBluffs[slot] || '';
+              const role = roleId ? (rolesData as Role[]).find(r => r.id === roleId) : null;
+              const isOutsider = role?.team === 'outsider';
+              return (
+                <div
+                  key={slot}
+                  className={cn(
+                    'rounded-xl border-2 px-5 py-4 flex items-center gap-4',
+                    role
+                      ? isOutsider
+                        ? 'border-emerald-500/50 bg-emerald-950/60'
+                        : 'border-blue-500/50 bg-blue-950/60'
+                      : 'border-gray-800 bg-gray-900/50'
+                  )}
+                >
+                  {role ? (
+                    <>
+                      <div className="w-16 h-16 shrink-0 rounded-full bg-white flex items-center justify-center p-1">
+                        <img
+                          src={`/icons/${role.id}.svg`}
+                          alt={role.name}
+                          className="w-full h-full object-contain"
+                          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={cn(
+                          'text-2xl font-extrabold',
+                          isOutsider ? 'text-emerald-300' : 'text-blue-300'
+                        )}>{role.name}</p>
+                        {officialRoleAbility(role.id) && (
+                          <p className="text-sm text-gray-300 mt-1 leading-snug">{officialRoleAbility(role.id)}</p>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-gray-600 text-lg">—</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

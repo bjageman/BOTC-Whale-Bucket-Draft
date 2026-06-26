@@ -137,6 +137,18 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     }
     return null;
   });
+  const [demonBluffs, setDemonBluffs] = useState<string[]>(() => {
+    const saved = localStorage.getItem('standard-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.demonBluffs || [];
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [];
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const broadcastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sendMessageRef = useRef<((payload: unknown) => Promise<void>) | null>(null);
@@ -181,6 +193,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       setIsLilMonstaGame(false);
       setScriptName("All Roles");
       setCustomScriptRoles(null);
+      setDemonBluffs([]);
       localStorage.removeItem('standard-botc-game');
       const newCode = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
       localStorage.setItem('standard-botc-game-code', newCode);
@@ -343,9 +356,10 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       dayNumber,
       customScriptRoles,
       scriptName,
-      isLilMonstaGame
+      isLilMonstaGame,
+      demonBluffs,
     }));
-  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, isLilMonstaGame]);
+  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, isLilMonstaGame, demonBluffs]);
 
   const toggleTimeOfDay = () => {
     if (timeOfDay === 'night') {
@@ -761,6 +775,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           onResetTime={resetTime}
           scriptName={scriptName}
           customScriptRoles={customScriptRoles}
+          demonBluffs={demonBluffs}
+          onUpdateDemonBluffs={setDemonBluffs}
         />
       )}
 
