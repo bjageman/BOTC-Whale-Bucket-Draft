@@ -19,5 +19,7 @@ jobs:
           script_stop: true
           script: |
             cd /home/neurobomber/Apps-Docker/vibes/botc-grimoire-companion
-            git pull
+            git fetch origin
+            git checkout dev
+            git pull origin dev
             BUILDKIT_PROGRESS=plain docker compose -f docker-compose.dev.yml up -d --build --remove-orphans
