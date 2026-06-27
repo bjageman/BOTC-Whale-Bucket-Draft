@@ -78,7 +78,7 @@ function computeBalance(selectedRoles: Role[], playerCount: number) {
     if (hasLilMonsta)    { expectedMinion += 1; expectedDemon -= 1; modifications.push("Lil' Monsta (+1 Minion, -1 Demon)"); }
     if (hasLordOfTyphon) { expectedMinion += 1; modifications.push("Lord of Typhon (+1 Minion)"); }
     if (hasSummoner)     { expectedDemon  -= 1; modifications.push("Summoner (-1 Demon)"); }
-    if (hasLunatic)      { expectedDemon  += 1; modifications.push("Lunatic (+1 Demon)"); }
+    if (hasLunatic)      modifications.push("Lunatic (0 or +1 Demon)");
     if (hasBaron)        modifications.push("Baron (+2 Outsiders)");
     if (hasFangGu)       modifications.push("Fang Gu (+1 Outsider)");
     if (hasBalloonist)   modifications.push("Balloonist (0 or +1 Outsider)");
@@ -93,7 +93,7 @@ function computeBalance(selectedRoles: Role[], playerCount: number) {
 
   expectedDemon = Math.max(0, expectedDemon);
 
-  // Drunk and Marionette each need 1 extra TF in the selection (for the role they impersonate).
+  // Drunk and Marionette each need 1 extra character in the selection (for the role they impersonate).
   const tfDelta = !hasLegion && !hasRiot ? ((hasDrunk ? 1 : 0) + (hasMarionette ? 1 : 0)) : 0;
 
   const gfMods   = (hasGodfather  && !hasLegion && !hasRiot) ? [-1, 1] : [0];
@@ -180,8 +180,7 @@ export default function SelectCharactersModal({ isOpen, onClose, roles, playerCo
   const selectAll   = () => setSelectedIds(new Set(assignableRoles.map(r => r.id)));
   const deselectAll = () => setSelectedIds(new Set());
 
-  const extraTFNeeded = selectedRoles.filter(r => r.id === 'drunk' || r.id === 'marionette').length;
-  const canAssign = playerCount >= 5 && selectedIds.size >= playerCount + extraTFNeeded;
+  const canAssign = playerCount >= 5 && selectedIds.size >= playerCount;
 
   const handleAssign = () => { onAssign(selectedRoles); onClose(); };
 
