@@ -4,7 +4,7 @@ import rolesData from './roles.json';
 import { cn } from './utils/cn';
 import type { Player, Role } from './types';
 import { TEAM_ORDER } from './types';
-import { parseScriptFile } from './utils/scriptUtils';
+import { parseScriptFile, expandVillageIdiots } from './utils/scriptUtils';
 
 import { performStandardAssignment } from './utils/standardAssignment';
 import { getValidationSummary } from './utils/whaleBucketValidation';
@@ -659,8 +659,17 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
 
   const currentScriptRoles = customScriptRoles || (rolesData as Role[]);
 
+  const [selectedCharacterIds, setSelectedCharacterIds] = useState<Set<string>>(
+    () => new Set(currentScriptRoles.map(r => r.id))
+  );
+  const [prevScriptRolesForSelection, setPrevScriptRolesForSelection] = useState(currentScriptRoles);
+  if (prevScriptRolesForSelection !== currentScriptRoles) {
+    setPrevScriptRolesForSelection(currentScriptRoles);
+    setSelectedCharacterIds(new Set(currentScriptRoles.map(r => r.id)));
+  }
+
   const selectionRoles = useMemo(() => {
-    const roles = [...currentScriptRoles];
+    const roles = expandVillageIdiots([...currentScriptRoles]);
     const allTravelers = (rolesData as Role[]).filter(r => r.team === 'traveler');
     for (const traveler of allTravelers) {
       if (!roles.some(r => r.id === traveler.id)) {
@@ -826,6 +835,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           validationSummary={validationSummary}
           isLightModeActive={isLightModeActive}
           allAssigned={allAssigned}
+          selectedCharacterIds={selectedCharacterIds}
+          setSelectedCharacterIds={setSelectedCharacterIds}
           remotePlayerCount={remotePlayerIds.size}
           grimoireConfirmed={grimoireConfirmed}
           onGrimoireConfirmed={() => setGrimoireConfirmed(true)}

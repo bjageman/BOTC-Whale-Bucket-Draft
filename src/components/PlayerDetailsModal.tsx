@@ -5,6 +5,7 @@ import { cn } from '../utils/cn';
 import type { Role } from '../types';
 import rolesData from '../roles.json';
 import officialRoles from '../official_roles.json';
+import { roleIconId } from '../utils/scriptUtils';
 import DialogModal from './DialogModal';
 import { useDialog } from '../hooks/useDialog';
 
@@ -335,7 +336,7 @@ export default function PlayerDetailsModal({
                             <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                               <div className="w-[47%] h-[47%] flex items-center justify-center">
                                 <img
-                                  src={`/icons/${rObj.id}.svg`}
+                                  src={`/icons/${roleIconId(rObj.id)}.svg`}
                                   alt={rObj.name}
                                   className="w-full h-full object-contain"
                                   onError={(e) => { e.currentTarget.style.display = 'none'; }}
@@ -428,7 +429,7 @@ export default function PlayerDetailsModal({
                             <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                               <div className="w-[47%] h-[47%] flex items-center justify-center">
                                 <img
-                                  src={`/icons/${rObj.id}.svg`}
+                                  src={`/icons/${roleIconId(rObj.id)}.svg`}
                                   alt={rObj.name}
                                   className="w-full h-full object-contain"
                                   onError={(e) => { e.currentTarget.style.display = 'none'; }}
@@ -700,7 +701,7 @@ function RoleList({
             <div className="flex items-center min-w-0 flex-1 gap-2 mr-2">
               <span className="w-5.5 h-5.5 bg-white rounded-full flex items-center justify-center shrink-0">
                 <img
-                  src={`/icons/${role.id}.svg`}
+                  src={`/icons/${roleIconId(role.id)}.svg`}
                   alt={role.name}
                   className="w-4 h-4 object-contain"
                   onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}

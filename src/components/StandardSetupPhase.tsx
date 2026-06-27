@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Plus, Shuffle, Upload, CheckCircle, AlertTriangle, Package } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player, Role } from '../types';
-import { getScriptStats } from '../utils/scriptUtils';
+import { getScriptStats, expandVillageIdiots } from '../utils/scriptUtils';
 import rolesData from '../roles.json';
 import ScriptCharactersModal from './ScriptCharactersModal';
 import SelectCharactersModal from './SelectCharactersModal';
@@ -50,6 +50,8 @@ interface StandardSetupPhaseProps {
   movePlayer: (index: number, direction: 'up' | 'down') => void;
   validationSummary: ValidationSummary | null;
   isLightModeActive: boolean;
+  selectedCharacterIds: Set<string>;
+  setSelectedCharacterIds: React.Dispatch<React.SetStateAction<Set<string>>>;
 }
 
 export default function StandardSetupPhase({
@@ -89,6 +91,8 @@ export default function StandardSetupPhase({
   movePlayer,
   validationSummary,
   isLightModeActive,
+  selectedCharacterIds,
+  setSelectedCharacterIds,
   remotePlayerCount = 0,
   grimoireConfirmed = false,
   onGrimoireConfirmed,
@@ -96,13 +100,14 @@ export default function StandardSetupPhase({
   const [showGrimoireWarning, setShowGrimoireWarning] = useState(false);
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
   const [isSelectCharactersModalOpen, setIsSelectCharactersModalOpen] = useState(false);
-  const [selectedCharacterIds, setSelectedCharacterIds] = useState<Set<string>>(() => new Set(scriptRoles.map(r => r.id)));
   const [prevScriptRoles, setPrevScriptRoles] = useState<Role[]>(scriptRoles);
 
   if (prevScriptRoles !== scriptRoles) {
     setPrevScriptRoles(scriptRoles);
     setSelectedCharacterIds(new Set(scriptRoles.map(r => r.id)));
   }
+
+  const selectableRoles = useMemo(() => expandVillageIdiots(scriptRoles), [scriptRoles]);
 
   const sortedRoles = useMemo(() => {
     const baseRoles = customScriptRoles || (rolesData as Role[]);
@@ -219,7 +224,7 @@ export default function StandardSetupPhase({
               type="button"
               onClick={() => {
                 if (selectedCharacterIds.size > 0) {
-                  const selectedRoles = scriptRoles.filter(r => selectedCharacterIds.has(r.id));
+                  const selectedRoles = selectableRoles.filter(r => selectedCharacterIds.has(r.id));
                   randomlyAssignWithRoles(selectedRoles);
                 } else {
                   randomlyAssignRoles();
@@ -510,7 +515,7 @@ export default function StandardSetupPhase({
     <SelectCharactersModal
       isOpen={isSelectCharactersModalOpen}
       onClose={() => setIsSelectCharactersModalOpen(false)}
-      roles={scriptRoles}
+      roles={selectableRoles}
       playerCount={players.length}
       isLightModeActive={isLightModeActive}
       onAssign={randomlyAssignWithRoles}
