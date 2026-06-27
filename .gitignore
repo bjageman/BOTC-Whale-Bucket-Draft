@@ -25,6 +25,7 @@ dist-ssr
 
 # Production / environment
 docker-compose.prod.yml
+docker-compose.dev.yml
 .env
 ntfy/
 
