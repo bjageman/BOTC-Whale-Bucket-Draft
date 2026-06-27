@@ -22,4 +22,4 @@ jobs:
             git fetch origin
             git checkout main
             git pull origin main
-            BUILDKIT_PROGRESS=plain docker compose -f docker-compose.prod.yml up --build -d
+            BUILDKIT_PROGRESS=plain docker compose -f docker-compose.prod.yml up --build -d botc-companion
