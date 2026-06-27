@@ -1,83 +1,88 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
 
   <!-- Background -->
-  <rect width="512" height="512" fill="#1a2236"/>
+  <rect width="512" height="512" fill="#1c2438"/>
 
-  <!-- Moon -->
-  <circle cx="256" cy="215" r="178" fill="#d4c8a0" opacity="0.88"/>
+  <!-- ── BLOOD SPLATTERS (behind clock) ── -->
+  <circle cx="178" cy="172" r="4"   fill="#8b1010"/>
+  <circle cx="160" cy="198" r="3"   fill="#8b1010"/>
+  <circle cx="145" cy="222" r="2.5" fill="#8b1010"/>
+  <circle cx="332" cy="162" r="3.5" fill="#8b1010"/>
+  <circle cx="358" cy="178" r="4"   fill="#8b1010"/>
+  <circle cx="384" cy="206" r="3"   fill="#8b1010"/>
+  <circle cx="112" cy="298" r="3.5" fill="#8b1010"/>
+  <circle cx="105" cy="328" r="2.5" fill="#8b1010"/>
+  <circle cx="398" cy="315" r="3"   fill="#8b1010"/>
+  <circle cx="408" cy="288" r="2"   fill="#8b1010"/>
+  <circle cx="192" cy="465" r="3"   fill="#8b1010"/>
+  <circle cx="322" cy="467" r="4"   fill="#8b1010"/>
+  <circle cx="152" cy="438" r="2.5" fill="#8b1010"/>
+  <circle cx="368" cy="442" r="3"   fill="#8b1010"/>
+  <circle cx="240" cy="474" r="2"   fill="#8b1010"/>
+  <circle cx="138" cy="355" r="2"   fill="#8b1010"/>
 
-  <!-- Tower silhouette colour -->
-  <defs>
-    <style>.t { fill: #232e44; }</style>
-  </defs>
+  <!-- ── CLOCK RIM ── -->
+  <circle cx="256" cy="308" r="158" fill="#1e1010" stroke="#5a1818" stroke-width="2"/>
 
-  <!-- ── LEFT TURRET ── -->
-  <rect class="t" x="108" y="210" width="52" height="190"/>
-  <!-- Left turret battlements -->
-  <rect class="t" x="108" y="198" width="14" height="18"/>
-  <rect class="t" x="130" y="198" width="14" height="18"/>
-  <rect class="t" x="152" y="198" width="8"  height="18"/>
-  <!-- Left turret spire -->
-  <polygon class="t" points="108,210 160,210 134,158"/>
+  <!-- ── CLOCK FACE (warm orange-red) ── -->
+  <circle cx="256" cy="308" r="148" fill="#d94e20"/>
 
-  <!-- ── RIGHT TURRET ── -->
-  <rect class="t" x="352" y="210" width="52" height="190"/>
-  <!-- Right turret battlements -->
-  <rect class="t" x="352" y="198" width="8"  height="18"/>
-  <rect class="t" x="368" y="198" width="14" height="18"/>
-  <rect class="t" x="390" y="198" width="14" height="18"/>
-  <!-- Right turret spire -->
-  <polygon class="t" points="352,210 404,210 378,158"/>
+  <!-- Blood stain blotches on face -->
+  <ellipse cx="278" cy="286" rx="40" ry="32" fill="#b83a14" opacity="0.65"/>
+  <ellipse cx="226" cy="348" rx="28" ry="22" fill="#b83a14" opacity="0.5"/>
+  <ellipse cx="295" cy="358" rx="22" ry="17" fill="#b83a14" opacity="0.45"/>
+  <ellipse cx="240" cy="270" rx="18" ry="14" fill="#c04018" opacity="0.4"/>
 
-  <!-- ── HORIZONTAL LINTEL connecting turrets ── -->
-  <rect class="t" x="108" y="245" width="296" height="18"/>
+  <!-- Face inner ring shadow -->
+  <circle cx="256" cy="308" r="148" fill="none" stroke="#1e1010" stroke-width="7"/>
 
-  <!-- ── MAIN TOWER BODY ── -->
-  <rect class="t" x="178" y="263" width="156" height="197"/>
+  <!-- ── ROMAN NUMERALS ── -->
+  <text x="256" y="196"  text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="24" font-weight="bold" fill="#1a0a0a">XII</text>
+  <text x="316" y="214"  text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="22" fill="#1a0a0a">I</text>
+  <text x="362" y="258"  text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="22" fill="#1a0a0a">II</text>
+  <text x="378" y="308"  text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="23" fill="#1a0a0a">III</text>
+  <text x="362" y="358"  text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="22" fill="#1a0a0a">IV</text>
+  <text x="316" y="402"  text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="22" fill="#1a0a0a">V</text>
+  <text x="256" y="420"  text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="23" fill="#1a0a0a">VI</text>
+  <text x="196" y="402"  text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="22" fill="#1a0a0a">VII</text>
+  <text x="148" y="358"  text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="20" fill="#1a0a0a">VIII</text>
+  <text x="134" y="308"  text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="23" fill="#1a0a0a">IX</text>
+  <text x="150" y="258"  text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="22" fill="#1a0a0a">X</text>
+  <text x="196" y="214"  text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-size="22" fill="#1a0a0a">XI</text>
 
-  <!-- ── CENTRAL SPIRE ── -->
-  <rect class="t" x="234" y="120" width="44" height="150"/>
-  <polygon class="t" points="220,128 292,128 256,42"/>
-  <!-- Spire finial nub -->
-  <rect class="t" x="248" y="38" width="16" height="10"/>
+  <!-- ── CLOCK HANDS ── -->
+  <!-- Hour hand (~10 o'clock) -->
+  <line x1="256" y1="308" x2="180" y2="254" stroke="#1a0a0a" stroke-width="9" stroke-linecap="round"/>
+  <!-- Minute hand (~2 o'clock) -->
+  <line x1="256" y1="308" x2="314" y2="202" stroke="#1a0a0a" stroke-width="6" stroke-linecap="round"/>
+  <!-- Centre boss -->
+  <circle cx="256" cy="308" r="11" fill="#1a0a0a"/>
+  <circle cx="256" cy="308" r="5"  fill="#7a1010"/>
 
-  <!-- ── ARCH OPENINGS in turrets (negative space via light fill matching moon) ── -->
-  <!-- Left turret arch window -->
-  <rect x="118" y="270" width="32" height="28" fill="#232e44"/>
-  <!-- Right turret arch window -->
-  <rect x="362" y="270" width="32" height="28" fill="#232e44"/>
+  <!-- ── TOWER ABOVE CLOCK ── -->
+  <!-- Finial ball -->
+  <circle cx="256" cy="62" r="12" fill="#2a1515" stroke="#6a2020" stroke-width="1.5"/>
+  <!-- Finial stem -->
+  <rect x="252" y="73" width="8" height="22" fill="#2a1515"/>
 
-  <!-- ── CLOCK FACE ── -->
-  <circle cx="256" cy="336" r="54" fill="white"/>
-  <circle cx="256" cy="336" r="54" fill="none" stroke="#232e44" stroke-width="5"/>
-  <!-- Hour markers -->
-  <line x1="256" y1="286" x2="256" y2="297" stroke="#232e44" stroke-width="3"/>
-  <line x1="256" y1="375" x2="256" y2="386" stroke="#232e44" stroke-width="3"/>
-  <line x1="202" y1="336" x2="213" y2="336" stroke="#232e44" stroke-width="3"/>
-  <line x1="299" y1="336" x2="310" y2="336" stroke="#232e44" stroke-width="3"/>
-  <!-- Minute hand pointing to ~12 -->
-  <line x1="256" y1="336" x2="256" y2="295" stroke="#232e44" stroke-width="4" stroke-linecap="round"/>
-  <!-- Hour hand pointing to ~10 -->
-  <line x1="256" y1="336" x2="228" y2="310" stroke="#232e44" stroke-width="5" stroke-linecap="round"/>
-  <!-- Centre dot -->
-  <circle cx="256" cy="336" r="5" fill="#232e44"/>
+  <!-- Pointed roof -->
+  <path d="M198,140 C205,148 230,152 256,153 C282,152 307,148 314,140 L256,78 Z"
+        fill="#231212" stroke="#5a1818" stroke-width="1"/>
 
-  <!-- ── BLOOD ── -->
-  <!-- Drip streaks on tower / spire area -->
-  <path d="M248,180 L244,240 Q246,220 252,180 Z" fill="#cc0011"/>
-  <path d="M262,175 L266,235 Q264,215 258,175 Z" fill="#cc0011"/>
+  <!-- Roof eave drips -->
+  <path d="M210,148 Q208,162 210,170" stroke="#7a1010" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M302,148 Q304,160 302,168" stroke="#7a1010" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <circle cx="210" cy="172" r="4" fill="#7a1010"/>
+  <circle cx="302" cy="170" r="3" fill="#7a1010"/>
 
-  <!-- Dramatic diagonal blood streak / pool at the bottom -->
-  <path d="M155,440 Q200,418 270,428 Q330,422 390,404 L420,400 Q400,420 355,438 Q285,458 215,455 Q175,455 155,448 Z"
-        fill="#cc0011"/>
-  <!-- Shadow layer for depth -->
-  <path d="M168,452 Q220,438 295,446 Q350,442 398,428 L415,426 Q395,444 348,458 Q278,472 210,468 Q178,467 168,460 Z"
-        fill="#cc0011" opacity="0.55"/>
+  <!-- Bell arch opening -->
+  <path d="M233,153 L233,138 Q233,118 256,118 Q279,118 279,138 L279,153 Z" fill="#1c2438"/>
 
-  <!-- Blood splatter dots -->
-  <circle cx="232" cy="420" r="5" fill="#cc0011"/>
-  <circle cx="310" cy="412" r="4" fill="#cc0011"/>
-  <circle cx="360" cy="432" r="3" fill="#cc0011"/>
-  <circle cx="195" cy="438" r="4" fill="#cc0011"/>
+  <!-- Small silhouette detail inside arch -->
+  <polygon points="248,152 264,152 256,140" fill="#2a1515"/>
+
+  <!-- ── BLOOD DRIP from bottom of clock ── -->
+  <path d="M256,466 L256,494" stroke="#8b1010" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="256" cy="499" rx="7" ry="9" fill="#8b1010"/>
 
 </svg>
