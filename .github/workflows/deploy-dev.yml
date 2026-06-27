@@ -16,7 +16,8 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           command_timeout: 30m
+          script_stop: true
           script: |
             cd /home/neurobomber/Apps-Docker/vibes/botc-grimoire-companion
             git pull
-            docker compose -f docker-compose.dev.yml up -d --build --remove-orphans
+            BUILDKIT_PROGRESS=plain docker compose -f docker-compose.dev.yml up -d --build --remove-orphans

@@ -16,7 +16,8 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           command_timeout: 30m
+          script_stop: true
           script: |
             cd /home/neurobomber/Apps-Docker/vibes/botc-grimoire-companion
             git pull
-            docker compose -f docker-compose.prod.yml up --build -d
+            BUILDKIT_PROGRESS=plain docker compose -f docker-compose.prod.yml up --build -d botc-companion
