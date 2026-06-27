@@ -23,7 +23,7 @@ const TEAMS = [
   { key: 'demon',     label: '🔴 Demons',    color: 'text-clocktower-demon',     border: 'border-clocktower-demon/20'     },
 ] as const;
 
-function computeBalance(selectedRoles: Role[], playerCount: number) {
+export function computeBalance(selectedRoles: Role[], playerCount: number) {
   const base = getDistribution(playerCount);
 
   const has = (id: string) => selectedRoles.some(r => r.id === id);
