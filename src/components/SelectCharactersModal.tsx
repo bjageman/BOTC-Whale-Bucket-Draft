@@ -4,7 +4,6 @@ import { cn } from '../utils/cn';
 import type { Role } from '../types';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { computeBalance } from '../utils/computeBalance';
-import { roleIconId } from '../utils/scriptUtils';
 
 interface Props {
   isOpen: boolean;
@@ -195,7 +194,7 @@ export default function SelectCharactersModal({ isOpen, onClose, roles, playerCo
                           />
                           <span className="w-5 h-5 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm border border-gray-100">
                             <img
-                              src={`/icons/${roleIconId(role.id)}.svg`}
+                              src={`/icons/${role.id}.svg`}
                               alt=""
                               className="w-3.5 h-3.5 object-contain"
                               onError={e => { e.currentTarget.parentElement!.style.display = 'none'; }}

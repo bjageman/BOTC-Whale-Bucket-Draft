@@ -2,21 +2,6 @@ import type { Role } from '../types';
 import rolesData from '../roles.json';
 import officialRoles from '../official_roles.json';
 
-const ICON_ALIAS: Record<string, string> = {
-  villageidiot2: 'villageidiot',
-  villageidiot3: 'villageidiot',
-};
-export const roleIconId = (id: string): string => ICON_ALIAS[id] ?? id;
-
-export function expandVillageIdiots(roles: Role[]): Role[] {
-  const idx = roles.findIndex(r => r.id === 'villageidiot');
-  if (idx === -1) return roles;
-  const result = [...roles];
-  const vi: Role = { id: 'villageidiot', name: 'Village Idiot', team: 'townsfolk' };
-  result.splice(idx + 1, 0, { ...vi, id: 'villageidiot2' }, { ...vi, id: 'villageidiot3' });
-  return result;
-}
-
 export function getScriptStats(roles: Role[] | null): string {
   if (!roles) return '';
   const tf = roles.filter(r => r.team === 'townsfolk').length;

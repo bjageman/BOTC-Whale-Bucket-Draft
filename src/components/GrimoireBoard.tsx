@@ -6,7 +6,6 @@ import type { Player, Role, PlacedReminder } from '../types';
 import { cn } from '../utils/cn';
 import ReminderPickerModal from './ReminderPickerModal';
 import ReminderTokenModal from './ReminderTokenModal';
-import { roleIconId } from '../utils/scriptUtils';
 
 interface GrimoireBoardProps {
   players: Player[];
@@ -723,7 +722,7 @@ export default function GrimoireBoard({
                             <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none">
                               <div className="w-[50%] h-[50%] flex items-center justify-center">
                                 <img
-                                  src={`/icons/${roleIconId(roleObj.id)}.svg`}
+                                  src={`/icons/${roleObj.id}.svg`}
                                   alt={roleObj.name}
                                   className={cn(
                                     "w-full h-full object-contain transition-all duration-200 select-none",

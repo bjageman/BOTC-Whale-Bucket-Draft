@@ -4,7 +4,7 @@ import rolesData from './roles.json';
 import { cn } from './utils/cn';
 import type { Player, Role } from './types';
 import { TEAM_ORDER } from './types';
-import { parseScriptFile, expandVillageIdiots } from './utils/scriptUtils';
+import { parseScriptFile } from './utils/scriptUtils';
 
 import { performStandardAssignment } from './utils/standardAssignment';
 import { getValidationSummary } from './utils/whaleBucketValidation';
@@ -20,11 +20,6 @@ import { useDialog } from './hooks/useDialog';
 import RoomCodeModal from './components/RoomCodeModal';
 
 type Phase = 'setup' | 'game';
-
-const generateId = (): string =>
-  typeof crypto.randomUUID === 'function'
-    ? crypto.randomUUID()
-    : Date.now().toString(36) + Math.random().toString(36).substring(2);
 
 interface SetupProps {
   theme: 'light' | 'dark';
@@ -406,10 +401,10 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   };
 
   const addPlayer = () => {
-    if (players.length >= 15) return;
+    if (players.length >= 20) return;
     const name = newPlayerName.trim() || `Player #${players.length + 1}`;
     const newPlayer: Player = {
-      id: generateId(),
+      id: Math.random().toString(36).substring(2, 11),
       name,
       isDead: false,
       isTheDrunk: false,
@@ -434,7 +429,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       return;
     }
     const newPlayer: Player = {
-      id: generateId(),
+      id: crypto.randomUUID(),
       name: newTravelerName.trim(),
       roleId: newTravelerRoleId,
       isDead: false,
@@ -664,17 +659,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
 
   const currentScriptRoles = customScriptRoles || (rolesData as Role[]);
 
-  const [selectedCharacterIds, setSelectedCharacterIds] = useState<Set<string>>(
-    () => new Set(currentScriptRoles.map(r => r.id))
-  );
-  const [prevScriptRolesForSelection, setPrevScriptRolesForSelection] = useState(currentScriptRoles);
-  if (prevScriptRolesForSelection !== currentScriptRoles) {
-    setPrevScriptRolesForSelection(currentScriptRoles);
-    setSelectedCharacterIds(new Set(currentScriptRoles.map(r => r.id)));
-  }
-
   const selectionRoles = useMemo(() => {
-    const roles = expandVillageIdiots([...currentScriptRoles]);
+    const roles = [...currentScriptRoles];
     const allTravelers = (rolesData as Role[]).filter(r => r.team === 'traveler');
     for (const traveler of allTravelers) {
       if (!roles.some(r => r.id === traveler.id)) {
@@ -840,8 +826,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           validationSummary={validationSummary}
           isLightModeActive={isLightModeActive}
           allAssigned={allAssigned}
-          selectedCharacterIds={selectedCharacterIds}
-          setSelectedCharacterIds={setSelectedCharacterIds}
           remotePlayerCount={remotePlayerIds.size}
           grimoireConfirmed={grimoireConfirmed}
           onGrimoireConfirmed={() => setGrimoireConfirmed(true)}
