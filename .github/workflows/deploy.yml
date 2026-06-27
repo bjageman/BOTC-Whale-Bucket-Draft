@@ -15,6 +15,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
+          command_timeout: 30m
           script: |
             cd /home/neurobomber/Apps-Docker/vibes/botc-grimoire-companion
             git pull
