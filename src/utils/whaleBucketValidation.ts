@@ -183,6 +183,18 @@ export function getValidationSummary(players: Player[]): ValidationSummary | nul
   if (hasChoirboy && !hasKing) jinxWarnings.push("Choirboy in play, but no King assigned.");
   if (hasHuntsman && !hasDamsel) jinxWarnings.push("Huntsman in play, but no Damsel assigned.");
 
+  const roleIdFreq: Record<string, number> = {};
+  for (const p of players) {
+    if (!p.roleId || p.isTheLunatic || p.isTheDrunk || p.isTheMarionette) continue;
+    roleIdFreq[p.roleId] = (roleIdFreq[p.roleId] || 0) + 1;
+  }
+  for (const [roleId, count] of Object.entries(roleIdFreq)) {
+    if (count > 1 && roleId !== 'legion') {
+      const role = (rolesData as Role[]).find(r => r.id === roleId);
+      jinxWarnings.push(`${role?.name ?? roleId} is assigned to ${count} players.`);
+    }
+  }
+
   // Marionette check: each Marionette must neighbor at least one Demon
   const basePlayersInOrder = players.filter(p => {
     if (!p.roleId) return true;

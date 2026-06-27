@@ -683,6 +683,23 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     setIsLilMonstaGame(assignedPlayers.some(p => p.isTheLilMonsta));
   };
 
+  const randomlyAssignWithRoles = (selectedRoles: Role[]) => {
+    const allTravelers = (rolesData as Role[]).filter(r => r.team === 'traveler');
+    const customSelectionRoles = [...selectedRoles];
+    for (const traveler of allTravelers) {
+      if (!customSelectionRoles.some(r => r.id === traveler.id)) {
+        customSelectionRoles.push(traveler);
+      }
+    }
+    const assignedPlayers = performStandardAssignment(players, selectedRoles, customSelectionRoles);
+    if (!assignedPlayers) {
+      showAlert("The selected characters must include at least some Townsfolk, Minions, and Demons.");
+      return;
+    }
+    setPlayers(assignedPlayers);
+    setIsLilMonstaGame(assignedPlayers.some(p => p.isTheLilMonsta));
+  };
+
 
 
   const validationSummary = useMemo(() => {
@@ -802,6 +819,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           handleScriptUpload={handleScriptUpload}
           clearCustomScript={clearCustomScript}
           randomlyAssignRoles={randomlyAssignRoles}
+          randomlyAssignWithRoles={randomlyAssignWithRoles}
+          scriptRoles={customScriptRoles || (rolesData as Role[])}
           setActivePlayerId={setActivePlayerId}
           setSearchTerm={setSearchTerm}
           togglePlayerTheDrunk={togglePlayerTheDrunk}

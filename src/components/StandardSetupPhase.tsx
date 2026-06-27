@@ -5,6 +5,7 @@ import type { Player, Role } from '../types';
 import { getScriptStats } from '../utils/scriptUtils';
 import rolesData from '../roles.json';
 import ScriptCharactersModal from './ScriptCharactersModal';
+import SelectCharactersModal from './SelectCharactersModal';
 import { getDistribution } from '../constants';
 import StandardSetupPlayerRow from './StandardSetupPlayerRow';
 import type { ValidationSummary } from '../utils/whaleBucketValidation';
@@ -22,6 +23,8 @@ interface StandardSetupPhaseProps {
   handleScriptUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   clearCustomScript: () => void;
   randomlyAssignRoles: () => void;
+  randomlyAssignWithRoles: (roles: Role[]) => void;
+  scriptRoles: Role[];
   setActivePlayerId: (id: string | null) => void;
   setSearchTerm: (term: string) => void;
   togglePlayerTheDrunk: (id: string) => void;
@@ -62,6 +65,8 @@ export default function StandardSetupPhase({
   handleScriptUpload,
   clearCustomScript,
   randomlyAssignRoles,
+  randomlyAssignWithRoles,
+  scriptRoles,
   setActivePlayerId,
   setSearchTerm,
   togglePlayerTheDrunk,
@@ -90,6 +95,8 @@ export default function StandardSetupPhase({
 }: StandardSetupPhaseProps) {
   const [showGrimoireWarning, setShowGrimoireWarning] = useState(false);
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
+  const [isSelectCharactersModalOpen, setIsSelectCharactersModalOpen] = useState(false);
+  const [selectedCharacterIds, setSelectedCharacterIds] = useState<Set<string>>(new Set());
 
   const sortedRoles = useMemo(() => {
     const baseRoles = customScriptRoles || (rolesData as Role[]);
@@ -185,13 +192,33 @@ export default function StandardSetupPhase({
           >
             View Characters
           </button>
-            
+          <button
+            id="select-characters-button"
+            type="button"
+            onClick={() => setIsSelectCharactersModalOpen(true)}
+            className={cn(
+              "w-full text-center bg-transparent border py-1.5 rounded text-xs font-semibold transition-all",
+              isLightModeActive
+                ? "hover:bg-gray-200/50 border-gray-300 text-gray-600 hover:text-gray-900"
+                : "hover:bg-gray-800 border-gray-800 text-gray-500 hover:text-gray-400"
+            )}
+          >
+            Select Characters to Assign
+          </button>
+
             <div className="border-t border-gray-800/60 my-1" />
             
             <button
               id="random-assign-button"
               type="button"
-              onClick={randomlyAssignRoles}
+              onClick={() => {
+                if (selectedCharacterIds.size > 0) {
+                  const selectedRoles = scriptRoles.filter(r => selectedCharacterIds.has(r.id));
+                  randomlyAssignWithRoles(selectedRoles);
+                } else {
+                  randomlyAssignRoles();
+                }
+              }}
               className="w-full bg-clocktower-blood hover:bg-red-800 text-white py-2.5 rounded text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
               disabled={players.length < 5}
               title="Randomly assign roles to all players based on the active script, keeping to standard distribution rules"
@@ -473,6 +500,16 @@ export default function StandardSetupPhase({
       roles={sortedRoles}
       scriptStats={customScriptRoles ? getScriptStats(customScriptRoles) : undefined}
       isLightModeActive={isLightModeActive}
+    />
+    <SelectCharactersModal
+      isOpen={isSelectCharactersModalOpen}
+      onClose={() => setIsSelectCharactersModalOpen(false)}
+      roles={scriptRoles}
+      playerCount={players.length}
+      isLightModeActive={isLightModeActive}
+      onAssign={randomlyAssignWithRoles}
+      selectedIds={selectedCharacterIds}
+      setSelectedIds={setSelectedCharacterIds}
     />
     </>
   );

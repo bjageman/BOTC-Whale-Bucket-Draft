@@ -13,7 +13,8 @@ export function performStandardAssignment(
   const baseCount = N - travelerCount;
   const base = DISTRIBUTION[baseCount] || { townsfolk: 0, outsider: 0, minion: 0, demon: 0 };
 
-  let tfs = currentScriptRoles.filter(r => r.team === 'townsfolk');
+  const hasDrunk = currentScriptRoles.some(r => r.id === 'drunk');
+  let tfs = currentScriptRoles.filter(r => r.team === 'townsfolk' && r.id !== 'drunk');
   const outs = currentScriptRoles.filter(r => r.team === 'outsider');
   const mins = currentScriptRoles.filter(r => r.team === 'minion');
   const dems = currentScriptRoles.filter(r => r.team === 'demon');
@@ -511,12 +512,7 @@ export function performStandardAssignment(
     let isTheLunatic = false;
     let isTheLilMonsta = false;
 
-    if (roleId === 'drunk') {
-      isTheDrunk = true;
-      const unmatchedTfs = tfs.filter(t => !roleIdsInPlay.includes(t.id));
-      const matchedTf = unmatchedTfs[Math.floor(Math.random() * unmatchedTfs.length)] || tfs[0];
-      roleId = matchedTf.id;
-    } else if (roleId === 'marionette') {
+    if (roleId === 'marionette') {
       isTheMarionette = true;
       const unmatchedGoods = [...tfs, ...outs].filter(g => !roleIdsInPlay.includes(g.id));
       const matchedGood = unmatchedGoods[Math.floor(Math.random() * unmatchedGoods.length)] || tfs[0];
@@ -543,9 +539,24 @@ export function performStandardAssignment(
     };
   });
 
+  const travelerRoleIds = new Set(selectionRoles.filter(r => r.team === 'traveler').map(r => r.id));
+
+  if (hasDrunk) {
+    const tfPlayers = assignedPlayers.filter(p =>
+      p.roleId &&
+      !travelerRoleIds.has(p.roleId) &&
+      tfs.some(t => t.id === p.roleId) &&
+      !p.isTheLunatic &&
+      !p.isTheMarionette &&
+      !p.isTheDrunk
+    );
+    if (tfPlayers.length > 0) {
+      tfPlayers[Math.floor(Math.random() * tfPlayers.length)].isTheDrunk = true;
+    }
+  }
+
   const hasHuntsmanInPlay = assignedPlayers.some(p => p.roleId === 'huntsman');
   const hasDamselInPlay = assignedPlayers.some(p => p.roleId === 'damsel');
-  const travelerRoleIds = new Set(selectionRoles.filter(r => r.team === 'traveler').map(r => r.id));
 
   if (hasHuntsmanInPlay && !hasDamselInPlay) {
     const eligiblePlayers = assignedPlayers.filter(p => 
