@@ -30,8 +30,8 @@ function computeBalance(selectedRoles: Role[], playerCount: number) {
   const hasDrunk       = has('drunk');
 
   const counts = {
-    townsfolk: selectedRoles.filter(r => r.team === 'townsfolk' || r.id === 'drunk').length,
-    outsider:  selectedRoles.filter(r => r.team === 'outsider' && r.id !== 'drunk').length,
+    townsfolk: selectedRoles.filter(r => r.team === 'townsfolk').length,
+    outsider:  selectedRoles.filter(r => r.team === 'outsider').length,
     minion:    selectedRoles.filter(r => r.team === 'minion').length,
     demon:     selectedRoles.filter(r => r.team === 'demon').length,
   };
