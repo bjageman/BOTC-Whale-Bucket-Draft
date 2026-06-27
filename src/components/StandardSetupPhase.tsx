@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Plus, Shuffle, Upload, CheckCircle, AlertTriangle, Package } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player, Role } from '../types';
-import { getScriptStats, expandVillageIdiots } from '../utils/scriptUtils';
+import { getScriptStats } from '../utils/scriptUtils';
 import rolesData from '../roles.json';
 import ScriptCharactersModal from './ScriptCharactersModal';
 import SelectCharactersModal from './SelectCharactersModal';
@@ -50,8 +50,6 @@ interface StandardSetupPhaseProps {
   movePlayer: (index: number, direction: 'up' | 'down') => void;
   validationSummary: ValidationSummary | null;
   isLightModeActive: boolean;
-  selectedCharacterIds: Set<string>;
-  setSelectedCharacterIds: React.Dispatch<React.SetStateAction<Set<string>>>;
 }
 
 export default function StandardSetupPhase({
@@ -91,8 +89,6 @@ export default function StandardSetupPhase({
   movePlayer,
   validationSummary,
   isLightModeActive,
-  selectedCharacterIds,
-  setSelectedCharacterIds,
   remotePlayerCount = 0,
   grimoireConfirmed = false,
   onGrimoireConfirmed,
@@ -100,14 +96,13 @@ export default function StandardSetupPhase({
   const [showGrimoireWarning, setShowGrimoireWarning] = useState(false);
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
   const [isSelectCharactersModalOpen, setIsSelectCharactersModalOpen] = useState(false);
+  const [selectedCharacterIds, setSelectedCharacterIds] = useState<Set<string>>(() => new Set(scriptRoles.map(r => r.id)));
   const [prevScriptRoles, setPrevScriptRoles] = useState<Role[]>(scriptRoles);
 
   if (prevScriptRoles !== scriptRoles) {
     setPrevScriptRoles(scriptRoles);
     setSelectedCharacterIds(new Set(scriptRoles.map(r => r.id)));
   }
-
-  const selectableRoles = useMemo(() => expandVillageIdiots(scriptRoles), [scriptRoles]);
 
   const sortedRoles = useMemo(() => {
     const baseRoles = customScriptRoles || (rolesData as Role[]);
@@ -224,7 +219,7 @@ export default function StandardSetupPhase({
               type="button"
               onClick={() => {
                 if (selectedCharacterIds.size > 0) {
-                  const selectedRoles = selectableRoles.filter(r => selectedCharacterIds.has(r.id));
+                  const selectedRoles = scriptRoles.filter(r => selectedCharacterIds.has(r.id));
                   randomlyAssignWithRoles(selectedRoles);
                 } else {
                   randomlyAssignRoles();
@@ -252,19 +247,19 @@ export default function StandardSetupPhase({
               value={newPlayerName}
               onChange={(e) => setNewPlayerName(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
-              disabled={players.length >= 15}
-              placeholder={players.length >= 15 ? "Maximum players reached (15)" : "Enter player name in seating order..."}
+              disabled={players.length >= 20}
+              placeholder={players.length >= 20 ? "Maximum players reached (20)" : "Enter player name in seating order..."}
               autoCapitalize="words"
               className="flex-1 bg-gray-955 border border-gray-800 rounded px-3 py-2 text-white focus:outline-none focus:border-clocktower-blood text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             />
-            <button
+            <button 
               id="add-player-button"
-              onClick={addPlayer}
-              disabled={players.length >= 15}
+              onClick={addPlayer} 
+              disabled={players.length >= 20}
               className={cn(
                 "px-4 py-2 rounded transition-colors text-white",
-                players.length >= 15
-                  ? "bg-gray-800 text-gray-500 cursor-not-allowed opacity-50 border border-gray-800"
+                players.length >= 20 
+                  ? "bg-gray-800 text-gray-500 cursor-not-allowed opacity-50 border border-gray-800" 
                   : "bg-clocktower-blood hover:bg-red-800 border border-clocktower-blood"
               )}
             >
@@ -515,7 +510,7 @@ export default function StandardSetupPhase({
     <SelectCharactersModal
       isOpen={isSelectCharactersModalOpen}
       onClose={() => setIsSelectCharactersModalOpen(false)}
-      roles={selectableRoles}
+      roles={scriptRoles}
       playerCount={players.length}
       isLightModeActive={isLightModeActive}
       onAssign={randomlyAssignWithRoles}
