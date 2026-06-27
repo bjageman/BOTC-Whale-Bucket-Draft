@@ -692,10 +692,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       }
     }
     const assignedPlayers = performStandardAssignment(players, selectedRoles, customSelectionRoles);
-    if (!assignedPlayers) {
-      showAlert("The selected characters must include at least some Townsfolk, Minions, and Demons.");
-      return;
-    }
+    if (!assignedPlayers) return;
     setPlayers(assignedPlayers);
     setIsLilMonstaGame(assignedPlayers.some(p => p.isTheLilMonsta));
   };
