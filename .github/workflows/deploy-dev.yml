@@ -1,9 +1,9 @@
-name: Deploy to Production
+name: Deploy to Dev
 
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   deploy:
@@ -19,4 +19,4 @@ jobs:
           script: |
             cd /home/neurobomber/Apps-Docker/vibes/botc-grimoire-companion
             git pull
-            docker compose -f docker-compose.prod.yml up --build -d botc-companion
+            docker compose -f docker-compose.dev.yml up -d --build --remove-orphans
