@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Plus, Shuffle, Upload, CheckCircle, AlertTriangle, Package } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player, Role } from '../types';
-import { getScriptStats } from '../utils/scriptUtils';
+import { getScriptStats, expandVillageIdiots } from '../utils/scriptUtils';
 import rolesData from '../roles.json';
 import ScriptCharactersModal from './ScriptCharactersModal';
 import SelectCharactersModal from './SelectCharactersModal';
@@ -104,14 +104,7 @@ export default function StandardSetupPhase({
     setSelectedCharacterIds(new Set(scriptRoles.map(r => r.id)));
   }
 
-  const selectableRoles = useMemo(() => {
-    if (!scriptRoles.some(r => r.id === 'villageidiot')) return scriptRoles;
-    const idx = scriptRoles.findIndex(r => r.id === 'villageidiot');
-    const result = [...scriptRoles];
-    const vi: Role = { id: 'villageidiot', name: 'Village Idiot', team: 'townsfolk' };
-    result.splice(idx + 1, 0, { ...vi, id: 'villageidiot2' }, { ...vi, id: 'villageidiot3' });
-    return result;
-  }, [scriptRoles]);
+  const selectableRoles = useMemo(() => expandVillageIdiots(scriptRoles), [scriptRoles]);
 
   const sortedRoles = useMemo(() => {
     const baseRoles = customScriptRoles || (rolesData as Role[]);
