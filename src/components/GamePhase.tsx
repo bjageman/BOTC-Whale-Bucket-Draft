@@ -143,11 +143,13 @@ export default function GamePhase({
     );
   }, [bluffCandidates, bluffSearch]);
 
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
   useEffect(() => {
-    if (bluffPickerSlot !== null) {
+    if (bluffPickerSlot !== null && !isMobile) {
       setTimeout(() => bluffSearchRef.current?.focus(), 50);
     }
-  }, [bluffPickerSlot]);
+  }, [bluffPickerSlot, isMobile]);
 
   const setBluff = (slot: number, roleId: string) => {
     if (!onUpdateDemonBluffs) return;
