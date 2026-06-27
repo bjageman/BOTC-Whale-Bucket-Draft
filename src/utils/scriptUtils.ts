@@ -2,6 +2,12 @@ import type { Role } from '../types';
 import rolesData from '../roles.json';
 import officialRoles from '../official_roles.json';
 
+const ICON_ALIAS: Record<string, string> = {
+  villageidiot2: 'villageidiot',
+  villageidiot3: 'villageidiot',
+};
+export const roleIconId = (id: string): string => ICON_ALIAS[id] ?? id;
+
 export function expandVillageIdiots(roles: Role[]): Role[] {
   const idx = roles.findIndex(r => r.id === 'villageidiot');
   if (idx === -1) return roles;
