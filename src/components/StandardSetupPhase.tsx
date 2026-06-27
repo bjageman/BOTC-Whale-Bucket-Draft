@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Shuffle, Upload, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, Shuffle, Upload, CheckCircle, AlertTriangle, Package } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player, Role } from '../types';
 import { getScriptStats } from '../utils/scriptUtils';
@@ -203,13 +203,13 @@ export default function StandardSetupPhase({
             type="button"
             onClick={() => setIsSelectCharactersModalOpen(true)}
             className={cn(
-              "w-full text-center bg-transparent border py-1.5 rounded text-xs font-semibold transition-all",
+              "w-full py-2.5 rounded text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md",
               isLightModeActive
-                ? "hover:bg-gray-200/50 border-gray-300 text-gray-600 hover:text-gray-900"
-                : "hover:bg-gray-800 border-gray-800 text-gray-500 hover:text-gray-400"
+                ? "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                : "bg-gray-700 hover:bg-gray-600 text-white"
             )}
           >
-            Select Characters to Assign
+            <Package size={14} /> Setup Bag
           </button>
 
             <div className="border-t border-gray-800/60 my-1" />
