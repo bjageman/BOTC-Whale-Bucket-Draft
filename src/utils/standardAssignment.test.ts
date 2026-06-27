@@ -419,6 +419,11 @@ describe('performStandardAssignment', () => {
       if (hasAtheist) {
         const evilPlayers = result.filter(p => p.isEvil === true);
         expect(evilPlayers.length).toBe(0);
+        result.forEach(p => {
+          const role = scriptWithAtheist.find(r => r.id === p.roleId);
+          expect(role?.team).not.toBe('demon');
+          expect(role?.team).not.toBe('minion');
+        });
       }
     }
   });

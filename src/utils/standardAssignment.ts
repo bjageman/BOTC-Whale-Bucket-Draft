@@ -13,7 +13,7 @@ export function performStandardAssignment(
   const baseCount = N - travelerCount;
   const base = DISTRIBUTION[baseCount] || { townsfolk: 0, outsider: 0, minion: 0, demon: 0 };
 
-  const tfs = currentScriptRoles.filter(r => r.team === 'townsfolk');
+  let tfs = currentScriptRoles.filter(r => r.team === 'townsfolk');
   const outs = currentScriptRoles.filter(r => r.team === 'outsider');
   const mins = currentScriptRoles.filter(r => r.team === 'minion');
   const dems = currentScriptRoles.filter(r => r.team === 'demon');
@@ -23,6 +23,120 @@ export function performStandardAssignment(
   }
 
   const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
+
+  const hasAtheistRole = tfs.some(r => r.id === 'atheist');
+  let isAtheistActive = false;
+  if (hasAtheistRole) {
+    const bagCandidates = [...dems];
+    const atheistRole = tfs.find(r => r.id === 'atheist')!;
+    bagCandidates.push(atheistRole);
+    const drawn = shuffle(bagCandidates)[0];
+    if (drawn.id === 'atheist') {
+      isAtheistActive = true;
+    }
+  }
+
+  if (isAtheistActive) {
+    const O = base.outsider;
+    const T = baseCount - O;
+
+    let selectedOutsiders = shuffle(outs).slice(0, O);
+    const atheistRole = tfs.find(r => r.id === 'atheist')!;
+    let selectedTownsfolk = [atheistRole, ...shuffle(tfs.filter(t => t.id !== 'atheist')).slice(0, T - 1)];
+
+    // Choirboy & King adjustment
+    const hasChoirboy = selectedTownsfolk.some(t => t.id === 'choirboy');
+    const hasKing = selectedTownsfolk.some(t => t.id === 'king');
+    if (hasChoirboy && !hasKing) {
+      const kingRole = tfs.find(t => t.id === 'king');
+      if (kingRole) {
+        const otherTfs = selectedTownsfolk.filter(t => t.id !== 'choirboy' && t.id !== 'atheist');
+        if (otherTfs.length > 0) {
+          const tfToRemove = otherTfs[Math.floor(Math.random() * otherTfs.length)];
+          selectedTownsfolk = selectedTownsfolk.filter(t => t.id !== tfToRemove.id);
+          selectedTownsfolk.push(kingRole);
+        }
+      }
+    }
+
+    // Huntsman & Damsel adjustment
+    const hasHuntsman = selectedTownsfolk.some(t => t.id === 'huntsman');
+    const hasDamsel = selectedOutsiders.some(o => o.id === 'damsel');
+    if (hasHuntsman && !hasDamsel) {
+      const damselRole = outs.find(o => o.id === 'damsel');
+      if (damselRole) {
+        const otherOutsiders = selectedOutsiders.filter(o => o.id !== 'damsel');
+        if (otherOutsiders.length > 0) {
+          const outToRemove = otherOutsiders[Math.floor(Math.random() * otherOutsiders.length)];
+          selectedOutsiders = selectedOutsiders.filter(o => o.id !== outToRemove.id);
+          selectedOutsiders.push(damselRole);
+        } else {
+          selectedOutsiders.push(damselRole);
+          const otherTfs = selectedTownsfolk.filter(t => t.id !== 'huntsman' && t.id !== 'atheist');
+          if (otherTfs.length > 0) {
+            const tfToRemove = otherTfs[Math.floor(Math.random() * otherTfs.length)];
+            selectedTownsfolk = selectedTownsfolk.filter(t => t.id !== tfToRemove.id);
+          }
+        }
+      }
+    }
+
+    const finalRolesList = shuffle([
+      ...selectedOutsiders,
+      ...selectedTownsfolk
+    ]);
+
+    while (finalRolesList.length < baseCount) {
+      const unusedTfs = tfs.filter(t => !finalRolesList.some(fr => fr.id === t.id));
+      if (unusedTfs.length > 0) {
+        finalRolesList.push(unusedTfs[0]);
+      } else {
+        finalRolesList.push(tfs[0] || outs[0]);
+      }
+    }
+
+    const shuffledPlayers = shuffle(players);
+    const travelerPlayers = shuffledPlayers.slice(0, travelerCount);
+    const basePlayers = players.filter(p => !travelerPlayers.some(tp => tp.id === p.id));
+
+    const assignedRoles = shuffle(finalRolesList);
+
+    const assignedPlayers = players.map(p => {
+      const isTraveler = travelerPlayers.some(tp => tp.id === p.id);
+      if (isTraveler) {
+        const matched = selectionRoles.find(r => r.team === 'traveler') || { id: 'beggar' };
+        return {
+          ...p,
+          roleId: matched.id,
+          isTheDrunk: false,
+          isTheMarionette: false,
+          isTheLunatic: false,
+          isTheLilMonsta: false,
+        };
+      }
+
+      const bpIdx = basePlayers.findIndex(bp => bp.id === p.id);
+      const role = assignedRoles[bpIdx];
+      const roleId = role?.id;
+
+      return {
+        ...p,
+        roleId,
+        isTheDrunk: false,
+        isTheMarionette: false,
+        isTheLunatic: false,
+        isTheLilMonsta: false,
+        isEvil: undefined,
+      };
+    });
+
+    return assignedPlayers;
+  }
+
+  // If Atheist is not active, filter it out from the Townsfolk pool for standard assignment
+  if (hasAtheistRole) {
+    tfs = tfs.filter(t => t.id !== 'atheist');
+  }
 
   const tempDemons = shuffle(dems);
   const chosenDemonAtTop = tempDemons[0];

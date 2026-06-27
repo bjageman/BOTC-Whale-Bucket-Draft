@@ -175,7 +175,7 @@ function assignBaseCharacters(
   // Decide if Atheist is active (if atheist is in script and either preferred or randomly chosen)
   const hasAtheist = scriptTownsfolk.some(t => t.id === 'atheist');
   const preferAtheist = hasPref('atheist');
-  const isAtheistActive = hasAtheist && (preferAtheist ? Math.random() < 0.5 : Math.random() < 1 / Math.max(1, scriptTownsfolk.length));
+  const isAtheistActive = hasAtheist && (preferAtheist ? Math.random() < 0.5 : Math.random() < 1 / Math.max(1, scriptDemons.length + 1));
 
   let chosenDemon: Role | null = null;
   if (!isAtheistActive && scriptDemons.length > 0) {
