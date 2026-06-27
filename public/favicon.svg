@@ -1,59 +1,83 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background circle -->
-  <circle cx="256" cy="256" r="248" fill="#1a1010"/>
 
-  <!-- Base plinth -->
-  <rect x="128" y="455" width="256" height="36" fill="#d4c9a8"/>
+  <!-- Background -->
+  <rect width="512" height="512" fill="#1a2236"/>
 
-  <!-- Tower body -->
-  <rect x="138" y="140" width="236" height="315" fill="#d4c9a8"/>
+  <!-- Moon -->
+  <circle cx="256" cy="215" r="178" fill="#d4c8a0" opacity="0.88"/>
 
-  <!-- Stone row lines -->
-  <line x1="138" y1="179" x2="374" y2="179" stroke="#b0a080" stroke-width="2"/>
-  <line x1="138" y1="218" x2="374" y2="218" stroke="#b0a080" stroke-width="2"/>
-  <line x1="138" y1="257" x2="374" y2="257" stroke="#b0a080" stroke-width="2"/>
-  <line x1="138" y1="336" x2="374" y2="336" stroke="#b0a080" stroke-width="2"/>
-  <line x1="138" y1="375" x2="374" y2="375" stroke="#b0a080" stroke-width="2"/>
-  <line x1="138" y1="414" x2="374" y2="414" stroke="#b0a080" stroke-width="2"/>
+  <!-- Tower silhouette colour -->
+  <defs>
+    <style>.t { fill: #232e44; }</style>
+  </defs>
 
-  <!-- Battlements (5 merlons) -->
-  <rect x="138" y="98" width="36" height="42" fill="#d4c9a8"/>
-  <rect x="190" y="98" width="36" height="42" fill="#d4c9a8"/>
-  <rect x="242" y="98" width="36" height="42" fill="#d4c9a8"/>
-  <rect x="294" y="98" width="36" height="42" fill="#d4c9a8"/>
-  <rect x="346" y="98" width="36" height="42" fill="#d4c9a8"/>
+  <!-- ── LEFT TURRET ── -->
+  <rect class="t" x="108" y="210" width="52" height="190"/>
+  <!-- Left turret battlements -->
+  <rect class="t" x="108" y="198" width="14" height="18"/>
+  <rect class="t" x="130" y="198" width="14" height="18"/>
+  <rect class="t" x="152" y="198" width="8"  height="18"/>
+  <!-- Left turret spire -->
+  <polygon class="t" points="108,210 160,210 134,158"/>
 
-  <!-- Doorway (pointed arch) -->
-  <rect x="234" y="430" width="44" height="25" fill="#111"/>
-  <ellipse cx="256" cy="430" rx="22" ry="22" fill="#111"/>
+  <!-- ── RIGHT TURRET ── -->
+  <rect class="t" x="352" y="210" width="52" height="190"/>
+  <!-- Right turret battlements -->
+  <rect class="t" x="352" y="198" width="8"  height="18"/>
+  <rect class="t" x="368" y="198" width="14" height="18"/>
+  <rect class="t" x="390" y="198" width="14" height="18"/>
+  <!-- Right turret spire -->
+  <polygon class="t" points="352,210 404,210 378,158"/>
 
-  <!-- Clock face -->
-  <circle cx="256" cy="250" r="68" fill="#111" stroke="#c8a84b" stroke-width="5"/>
+  <!-- ── HORIZONTAL LINTEL connecting turrets ── -->
+  <rect class="t" x="108" y="245" width="296" height="18"/>
+
+  <!-- ── MAIN TOWER BODY ── -->
+  <rect class="t" x="178" y="263" width="156" height="197"/>
+
+  <!-- ── CENTRAL SPIRE ── -->
+  <rect class="t" x="234" y="120" width="44" height="150"/>
+  <polygon class="t" points="220,128 292,128 256,42"/>
+  <!-- Spire finial nub -->
+  <rect class="t" x="248" y="38" width="16" height="10"/>
+
+  <!-- ── ARCH OPENINGS in turrets (negative space via light fill matching moon) ── -->
+  <!-- Left turret arch window -->
+  <rect x="118" y="270" width="32" height="28" fill="#232e44"/>
+  <!-- Right turret arch window -->
+  <rect x="362" y="270" width="32" height="28" fill="#232e44"/>
+
+  <!-- ── CLOCK FACE ── -->
+  <circle cx="256" cy="336" r="54" fill="white"/>
+  <circle cx="256" cy="336" r="54" fill="none" stroke="#232e44" stroke-width="5"/>
   <!-- Hour markers -->
-  <line x1="256" y1="187" x2="256" y2="198" stroke="#c8a84b" stroke-width="3"/>
-  <line x1="290" y1="190" x2="285" y2="200" stroke="#c8a84b" stroke-width="3"/>
-  <line x1="316" y1="216" x2="308" y2="222" stroke="#c8a84b" stroke-width="3"/>
-  <line x1="324" y1="250" x2="313" y2="250" stroke="#c8a84b" stroke-width="3"/>
-  <line x1="316" y1="284" x2="308" y2="278" stroke="#c8a84b" stroke-width="3"/>
-  <line x1="290" y1="310" x2="285" y2="300" stroke="#c8a84b" stroke-width="3"/>
-  <line x1="256" y1="313" x2="256" y2="302" stroke="#c8a84b" stroke-width="3"/>
-  <line x1="222" y1="310" x2="227" y2="300" stroke="#c8a84b" stroke-width="3"/>
-  <line x1="196" y1="284" x2="204" y2="278" stroke="#c8a84b" stroke-width="3"/>
-  <line x1="188" y1="250" x2="199" y2="250" stroke="#c8a84b" stroke-width="3"/>
-  <line x1="196" y1="216" x2="204" y2="222" stroke="#c8a84b" stroke-width="3"/>
-  <line x1="222" y1="190" x2="227" y2="200" stroke="#c8a84b" stroke-width="3"/>
-  <!-- Hour hand (~10 o'clock) -->
-  <line x1="256" y1="250" x2="224" y2="218" stroke="#f0e8d0" stroke-width="5" stroke-linecap="round"/>
-  <!-- Minute hand (12) -->
-  <line x1="256" y1="250" x2="256" y2="196" stroke="#f0e8d0" stroke-width="4" stroke-linecap="round"/>
-  <!-- Centre pin -->
-  <circle cx="256" cy="250" r="6" fill="#c8a84b"/>
+  <line x1="256" y1="286" x2="256" y2="297" stroke="#232e44" stroke-width="3"/>
+  <line x1="256" y1="375" x2="256" y2="386" stroke="#232e44" stroke-width="3"/>
+  <line x1="202" y1="336" x2="213" y2="336" stroke="#232e44" stroke-width="3"/>
+  <line x1="299" y1="336" x2="310" y2="336" stroke="#232e44" stroke-width="3"/>
+  <!-- Minute hand pointing to ~12 -->
+  <line x1="256" y1="336" x2="256" y2="295" stroke="#232e44" stroke-width="4" stroke-linecap="round"/>
+  <!-- Hour hand pointing to ~10 -->
+  <line x1="256" y1="336" x2="228" y2="310" stroke="#232e44" stroke-width="5" stroke-linecap="round"/>
+  <!-- Centre dot -->
+  <circle cx="256" cy="336" r="5" fill="#232e44"/>
 
-  <!-- Blood drips from clock bottom -->
-  <line x1="234" y1="318" x2="234" y2="370" stroke="#cc0000" stroke-width="6"/>
-  <ellipse cx="234" cy="377" rx="8" ry="10" fill="#cc0000"/>
+  <!-- ── BLOOD ── -->
+  <!-- Drip streaks on tower / spire area -->
+  <path d="M248,180 L244,240 Q246,220 252,180 Z" fill="#cc0011"/>
+  <path d="M262,175 L266,235 Q264,215 258,175 Z" fill="#cc0011"/>
 
-<line x1="280" y1="318" x2="280" y2="355" stroke="#cc0000" stroke-width="6"/>
-  <ellipse cx="280" cy="362" rx="8" ry="10" fill="#cc0000"/>
+  <!-- Dramatic diagonal blood streak / pool at the bottom -->
+  <path d="M155,440 Q200,418 270,428 Q330,422 390,404 L420,400 Q400,420 355,438 Q285,458 215,455 Q175,455 155,448 Z"
+        fill="#cc0011"/>
+  <!-- Shadow layer for depth -->
+  <path d="M168,452 Q220,438 295,446 Q350,442 398,428 L415,426 Q395,444 348,458 Q278,472 210,468 Q178,467 168,460 Z"
+        fill="#cc0011" opacity="0.55"/>
+
+  <!-- Blood splatter dots -->
+  <circle cx="232" cy="420" r="5" fill="#cc0011"/>
+  <circle cx="310" cy="412" r="4" fill="#cc0011"/>
+  <circle cx="360" cy="432" r="3" fill="#cc0011"/>
+  <circle cx="195" cy="438" r="4" fill="#cc0011"/>
 
 </svg>
