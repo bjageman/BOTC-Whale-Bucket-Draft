@@ -31,7 +31,18 @@ interface SetupProps {
 }
 
 export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
+  const [syncCode] = useState<string | null>(() => {
+    const params = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.search);
+    return params.get('syncCode');
+  });
+  const isSecondary = !!syncCode;
+  const [showSyncModal, setShowSyncModal] = useState(false);
+  const [hasReceivedSync, setHasReceivedSync] = useState(!isSecondary);
+
   const [gameCode, setGameCode] = useState<string>(() => {
+    if (isSecondary && syncCode) {
+      return syncCode.replace(/-st$/, '').toUpperCase();
+    }
     const saved = localStorage.getItem('whale-bucket-game-code');
     if (saved) return saved;
     const newCode = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
@@ -115,7 +126,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   });
 
   // Traveler states
-  const [allowTravelers] = useState<boolean>(() => {
+  const [allowTravelers, setAllowTravelers] = useState<boolean>(() => {
     const saved = localStorage.getItem('whale-bucket-game');
     if (saved) {
       try {
@@ -368,7 +379,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     }
   };
 
-  const { sendMessage } = useGameSocket(gameCode, handleIncomingMessage);
+  const { sendMessage } = useGameSocket(!isSecondary ? gameCode : '', handleIncomingMessage);
   
   useEffect(() => {
     sendMessageRef.current = sendMessage;
@@ -376,7 +387,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
 
   // Sync game state to players when in game phase
   useEffect(() => {
-    if (phase === 'game') {
+    if (!isSecondary && phase === 'game' && sendMessage) {
       sendMessage({
         type: 'game_update',
         players,
@@ -384,17 +395,141 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         dayNumber
       });
     }
-  }, [phase, players, timeOfDay, dayNumber, sendMessage]);
+  }, [phase, players, timeOfDay, dayNumber, sendMessage, isSecondary]);
 
   // Broadcast player list to players during setup or draft phases
   useEffect(() => {
-    if (phase === 'setup' || phase === 'draft') {
+    if (!isSecondary && (phase === 'setup' || phase === 'draft')) {
       const initialTimer = setTimeout(() => {
         broadcastSetupUpdate(players);
       }, 500);
       return () => clearTimeout(initialTimer);
     }
-  }, [phase, players, broadcastSetupUpdate]);
+  }, [phase, players, broadcastSetupUpdate, isSecondary]);
+
+  // Storyteller Sync channel (laptop <-> phone)
+  const syncChannelCode = gameCode ? `${gameCode}-st` : '';
+  const sendSyncRef = useRef<((payload: unknown) => Promise<void>) | null>(null);
+
+  const handleIncomingSyncMessage = useCallback((data: unknown) => {
+    const payload = data as {
+      type: string;
+      state?: {
+        players: Player[];
+        phase: Phase;
+        timeOfDay: 'night' | 'day';
+        dayNumber: number;
+        allowTravelers: boolean;
+        isLilMonstaGame: boolean;
+        excludedRoleIds: string[];
+        gameLog: string[];
+        demonBluffs: string[];
+      };
+    };
+
+    if (payload.type === 'storyteller_sync_request') {
+      if (!isSecondary && sendSyncRef.current) {
+        sendSyncRef.current({
+          type: 'storyteller_state_sync',
+          state: {
+            players,
+            phase,
+            timeOfDay,
+            dayNumber,
+            allowTravelers,
+            isLilMonstaGame,
+            excludedRoleIds,
+            gameLog,
+            demonBluffs,
+          }
+        });
+      }
+    } else if (payload.type === 'storyteller_state_sync' && payload.state) {
+      const incoming = payload.state;
+      const localStateStr = JSON.stringify({
+        players,
+        phase,
+        timeOfDay,
+        dayNumber,
+        allowTravelers,
+        isLilMonstaGame,
+        excludedRoleIds,
+        gameLog,
+        demonBluffs,
+      });
+      const incomingStateStr = JSON.stringify(incoming);
+
+      if (localStateStr !== incomingStateStr) {
+        setPlayers(incoming.players || []);
+        setPhase(incoming.phase || 'setup');
+        setTimeOfDay(incoming.timeOfDay || 'night');
+        setDayNumber(incoming.dayNumber || 1);
+        setAllowTravelers(incoming.allowTravelers !== undefined ? incoming.allowTravelers : true);
+        setIsLilMonstaGame(incoming.isLilMonstaGame || false);
+        setExcludedRoleIds(incoming.excludedRoleIds || ['drunk', 'marionette', 'lunatic']);
+        setGameLog(incoming.gameLog || []);
+        setDemonBluffs(incoming.demonBluffs || []);
+      }
+      setHasReceivedSync(true);
+    }
+  }, [
+    isSecondary,
+    players,
+    phase,
+    timeOfDay,
+    dayNumber,
+    allowTravelers,
+    isLilMonstaGame,
+    excludedRoleIds,
+    gameLog,
+    demonBluffs,
+  ]);
+
+  const { sendMessage: sendSyncMessage } = useGameSocket(syncChannelCode, handleIncomingSyncMessage);
+
+  useEffect(() => {
+    sendSyncRef.current = sendSyncMessage;
+  }, [sendSyncMessage]);
+
+  useEffect(() => {
+    if (isSecondary && sendSyncMessage) {
+      const timer = setTimeout(() => {
+        sendSyncMessage({ type: 'storyteller_sync_request' });
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSecondary, sendSyncMessage]);
+
+  const localStateStr = JSON.stringify({
+    players,
+    phase,
+    timeOfDay,
+    dayNumber,
+    allowTravelers,
+    isLilMonstaGame,
+    excludedRoleIds,
+    gameLog,
+    demonBluffs,
+  });
+
+  useEffect(() => {
+    if (sendSyncMessage && hasReceivedSync) {
+      sendSyncMessage({
+        type: 'storyteller_state_sync',
+        state: {
+          players,
+          phase,
+          timeOfDay,
+          dayNumber,
+          allowTravelers,
+          isLilMonstaGame,
+          excludedRoleIds,
+          gameLog,
+          demonBluffs,
+        }
+      });
+    }
+  }, [localStateStr, sendSyncMessage, hasReceivedSync]);
 
   // Save to localStorage
   useEffect(() => {
@@ -804,18 +939,33 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           <h1 className="font-display text-xl font-bold text-clocktower-blood tracking-widest uppercase">
             Whale Buffet
           </h1>
-          <div
-          onClick={() => setShowRoomCodeModal(true)}
-            className={cn(
-              "hidden md:flex cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none items-baseline gap-1",
-              isLightModeActive
-                ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
-                : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
-            )}
-            title="Click to copy join link"
-          >
-            Room: <span className="text-clocktower-blood font-mono uppercase tracking-wider">{gameCode}</span>
-          </div>
+          {phase !== 'game' ? (
+            <div
+              onClick={() => setShowRoomCodeModal(true)}
+              className={cn(
+                "hidden md:flex cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none items-baseline gap-1",
+                isLightModeActive
+                  ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
+                  : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
+              )}
+              title="Click to copy join link"
+            >
+              Room: <span className="text-clocktower-blood font-mono uppercase tracking-wider">{gameCode}</span>
+            </div>
+          ) : (
+            <div
+              onClick={() => setShowSyncModal(true)}
+              className={cn(
+                "hidden md:flex cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none items-baseline gap-1",
+                isLightModeActive
+                  ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
+                  : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
+              )}
+              title="Sync phone as secondary controller"
+            >
+              Sync Phone
+            </div>
+          )}
         </div>
       }
       extraControls={
@@ -829,18 +979,33 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         </button>
       }
       headerExtra={
-        <div
-          onClick={() => setShowRoomCodeModal(true)}
-          className={cn(
-            "md:hidden cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none flex items-baseline gap-1",
-            isLightModeActive
-              ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
-              : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
-          )}
-          title="Click to copy join link"
-        >
-          Room: <span className="text-clocktower-blood font-mono uppercase tracking-wider">{gameCode}</span>
-        </div>
+        phase !== 'game' ? (
+          <div
+            onClick={() => setShowRoomCodeModal(true)}
+            className={cn(
+              "md:hidden cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none flex items-baseline gap-1",
+              isLightModeActive
+                ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
+                : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
+            )}
+            title="Click to copy join link"
+          >
+            Room: <span className="text-clocktower-blood font-mono uppercase tracking-wider">{gameCode}</span>
+          </div>
+        ) : (
+          <div
+            onClick={() => setShowSyncModal(true)}
+            className={cn(
+              "md:hidden cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none flex items-baseline gap-1",
+              isLightModeActive
+                ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
+                : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
+            )}
+            title="Sync phone as secondary controller"
+          >
+            Sync Phone
+          </div>
+        )
       }
       contentClassName="px-4 pt-6 pb-4"
     >
@@ -1018,6 +1183,14 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         gameCode={gameCode}
         joinUrl={`${window.location.origin}${window.location.pathname}#/join?code=${gameCode}`}
         onClose={() => setShowRoomCodeModal(false)}
+        isLightModeActive={isLightModeActive}
+      />
+    )}
+    {showSyncModal && (
+      <RoomCodeModal
+        gameCode={`${gameCode}-st`}
+        joinUrl={`${window.location.origin}${window.location.pathname}#/whale-bucket?syncCode=${gameCode}-st`}
+        onClose={() => setShowSyncModal(false)}
         isLightModeActive={isLightModeActive}
       />
     )}
