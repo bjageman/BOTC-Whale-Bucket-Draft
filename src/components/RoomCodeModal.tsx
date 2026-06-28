@@ -16,14 +16,48 @@ export default function RoomCodeModal({ gameCode, joinUrl, onClose, isLightModeA
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
 
-  const copy = (text: string, which: 'url' | 'code') => {
-    navigator.clipboard.writeText(text);
+  const handleSuccess = (which: 'url' | 'code') => {
     if (which === 'url') {
       setCopiedUrl(true);
       setTimeout(() => setCopiedUrl(false), 2000);
     } else {
       setCopiedCode(true);
       setTimeout(() => setCopiedCode(false), 2000);
+    }
+  };
+
+  const fallbackCopy = (text: string, which: 'url' | 'code') => {
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.top = '0';
+      textArea.style.left = '0';
+      textArea.style.position = 'fixed';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      if (successful) {
+        handleSuccess(which);
+      } else {
+        console.error('Fallback copy command was unsuccessful');
+      }
+    } catch (err) {
+      console.error('Fallback copy failed: ', err);
+    }
+  };
+
+  const copy = (text: string, which: 'url' | 'code') => {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text)
+        .then(() => handleSuccess(which))
+        .catch(err => {
+          console.error('Failed to copy text: ', err);
+          fallbackCopy(text, which);
+        });
+    } else {
+      fallbackCopy(text, which);
     }
   };
 
