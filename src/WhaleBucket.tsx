@@ -473,7 +473,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         sendSyncRef.current({
           type: 'storyteller_state_sync',
           state: {
-            players,
+            players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
             phase,
             timeOfDay,
             dayNumber,
@@ -490,7 +490,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     } else if (payload.type === 'storyteller_state_sync' && payload.state) {
       const incoming = payload.state;
       const localStateStr = JSON.stringify({
-        players,
+        players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
         phase,
         timeOfDay,
         dayNumber,
@@ -502,7 +502,20 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         reminderTokens,
         checkedItems,
       });
-      const incomingStateStr = JSON.stringify(incoming);
+
+      const incomingStateStr = JSON.stringify({
+        players: incoming.players || [],
+        phase: incoming.phase || 'setup',
+        timeOfDay: incoming.timeOfDay || 'night',
+        dayNumber: incoming.dayNumber || 1,
+        allowTravelers: incoming.allowTravelers !== undefined ? incoming.allowTravelers : true,
+        isLilMonstaGame: incoming.isLilMonstaGame || false,
+        excludedRoleIds: incoming.excludedRoleIds || [],
+        gameLog: incoming.gameLog || [],
+        demonBluffs: incoming.demonBluffs || [],
+        reminderTokens: incoming.reminderTokens || [],
+        checkedItems: incoming.checkedItems || {},
+      });
 
       if (localStateStr !== incomingStateStr) {
         setPlayers(incoming.players || []);
@@ -550,7 +563,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   }, [isSecondary, sendSyncMessage]);
 
   const localStateStr = JSON.stringify({
-    players,
+    players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
     phase,
     timeOfDay,
     dayNumber,
@@ -568,7 +581,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       sendSyncMessage({
         type: 'storyteller_state_sync',
         state: {
-          players,
+          players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
           phase,
           timeOfDay,
           dayNumber,

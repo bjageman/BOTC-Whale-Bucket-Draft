@@ -444,7 +444,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         phase: Phase;
         timeOfDay: 'night' | 'day';
         dayNumber: number;
-        customScriptRoles: Role[] | null;
+        customScriptRoleIds?: string[] | null;
         scriptName: string;
         isLilMonstaGame: boolean;
         demonBluffs: string[];
@@ -459,11 +459,11 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         sendSyncRef.current({
           type: 'storyteller_state_sync',
           state: {
-            players,
+            players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
             phase,
             timeOfDay,
             dayNumber,
-            customScriptRoles,
+            customScriptRoleIds: customScriptRoles ? customScriptRoles.map(r => r.id) : null,
             scriptName,
             isLilMonstaGame,
             demonBluffs,
@@ -475,12 +475,24 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       }
     } else if (payload.type === 'storyteller_state_sync' && payload.state) {
       const incoming = payload.state;
+      const customScriptRolesResolved = incoming.customScriptRoleIds
+        ? incoming.customScriptRoleIds.map((id: string) => {
+            const matched = (rolesData as Role[]).find(r => r.id === id);
+            if (matched) return matched;
+            return {
+              id,
+              name: id.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+              team: 'townsfolk' as const
+            };
+          })
+        : null;
+
       const localStateStr = JSON.stringify({
-        players,
+        players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
         phase,
         timeOfDay,
         dayNumber,
-        customScriptRoles,
+        customScriptRoleIds: customScriptRoles ? customScriptRoles.map(r => r.id) : null,
         scriptName,
         isLilMonstaGame,
         demonBluffs,
@@ -488,14 +500,27 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         reminderTokens,
         checkedItems,
       });
-      const incomingStateStr = JSON.stringify(incoming);
+
+      const incomingStateStr = JSON.stringify({
+        players: incoming.players || [],
+        phase: incoming.phase || 'setup',
+        timeOfDay: incoming.timeOfDay || 'night',
+        dayNumber: incoming.dayNumber || 1,
+        customScriptRoleIds: incoming.customScriptRoleIds || null,
+        scriptName: incoming.scriptName || "All Roles",
+        isLilMonstaGame: incoming.isLilMonstaGame || false,
+        demonBluffs: incoming.demonBluffs || [],
+        gameLog: incoming.gameLog || [],
+        reminderTokens: incoming.reminderTokens || [],
+        checkedItems: incoming.checkedItems || {},
+      });
 
       if (localStateStr !== incomingStateStr) {
         setPlayers(incoming.players || []);
         setPhase(incoming.phase || 'setup');
         setTimeOfDay(incoming.timeOfDay || 'night');
         setDayNumber(incoming.dayNumber || 1);
-        setCustomScriptRoles(incoming.customScriptRoles || null);
+        setCustomScriptRoles(customScriptRolesResolved);
         setScriptName(incoming.scriptName || "All Roles");
         setIsLilMonstaGame(incoming.isLilMonstaGame || false);
         setDemonBluffs(incoming.demonBluffs || []);
@@ -536,11 +561,11 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   }, [isSecondary, sendSyncMessage]);
 
   const localStateStr = JSON.stringify({
-    players,
+    players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
     phase,
     timeOfDay,
     dayNumber,
-    customScriptRoles,
+    customScriptRoleIds: customScriptRoles ? customScriptRoles.map(r => r.id) : null,
     scriptName,
     isLilMonstaGame,
     demonBluffs,
@@ -554,11 +579,11 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       sendSyncMessage({
         type: 'storyteller_state_sync',
         state: {
-          players,
+          players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
           phase,
           timeOfDay,
           dayNumber,
-          customScriptRoles,
+          customScriptRoleIds: customScriptRoles ? customScriptRoles.map(r => r.id) : null,
           scriptName,
           isLilMonstaGame,
           demonBluffs,
