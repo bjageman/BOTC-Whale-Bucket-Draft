@@ -461,7 +461,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         allowTravelers: boolean;
         isLilMonstaGame: boolean;
         excludedRoleIds: string[];
-        gameLog: string[];
         demonBluffs: string[];
         reminderTokens: PlacedReminder[];
         checkedItems: Record<string, boolean>;
@@ -480,7 +479,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
             allowTravelers,
             isLilMonstaGame,
             excludedRoleIds,
-            gameLog: gameLog.slice(-30),
             demonBluffs,
             reminderTokens,
             checkedItems,
@@ -497,7 +495,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         allowTravelers,
         isLilMonstaGame,
         excludedRoleIds,
-        gameLog: gameLog.slice(-30),
         demonBluffs,
         reminderTokens,
         checkedItems,
@@ -511,7 +508,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         allowTravelers: incoming.allowTravelers !== undefined ? incoming.allowTravelers : true,
         isLilMonstaGame: incoming.isLilMonstaGame || false,
         excludedRoleIds: incoming.excludedRoleIds || [],
-        gameLog: incoming.gameLog || [],
         demonBluffs: incoming.demonBluffs || [],
         reminderTokens: incoming.reminderTokens || [],
         checkedItems: incoming.checkedItems || {},
@@ -525,7 +521,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         setAllowTravelers(incoming.allowTravelers !== undefined ? incoming.allowTravelers : true);
         setIsLilMonstaGame(incoming.isLilMonstaGame || false);
         setExcludedRoleIds(incoming.excludedRoleIds || ['drunk', 'marionette', 'lunatic']);
-        setGameLog(incoming.gameLog || []);
         setDemonBluffs(incoming.demonBluffs || []);
         setReminderTokens(incoming.reminderTokens || []);
         setCheckedItems(incoming.checkedItems || {});
@@ -541,7 +536,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     allowTravelers,
     isLilMonstaGame,
     excludedRoleIds,
-    gameLog,
     demonBluffs,
     reminderTokens,
     checkedItems,
@@ -570,7 +564,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     allowTravelers,
     isLilMonstaGame,
     excludedRoleIds,
-    gameLog: gameLog.slice(-30),
     demonBluffs,
     reminderTokens,
     checkedItems,
@@ -588,7 +581,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           allowTravelers,
           isLilMonstaGame,
           excludedRoleIds,
-          gameLog: gameLog.slice(-30),
           demonBluffs,
           reminderTokens,
           checkedItems,
