@@ -961,9 +961,9 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                   ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
                   : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
               )}
-              title="Sync phone as secondary controller"
+              title="Sync other device as secondary controller"
             >
-              Sync Phone
+              Sync Other Device
             </div>
           )}
         </div>
@@ -1001,9 +1001,9 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
                 ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
                 : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
             )}
-            title="Sync phone as secondary controller"
+            title="Sync other device as secondary controller"
           >
-            Sync Phone
+            Sync Other Device
           </div>
         )
       }
