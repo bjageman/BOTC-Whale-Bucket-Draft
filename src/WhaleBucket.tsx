@@ -219,6 +219,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     return [];
   });
   const [showRoomCodeModal, setShowRoomCodeModal] = useState(false);
+  const [remotePlayerIds, setRemotePlayerIds] = useState<Set<string>>(new Set());
 
   const [reminderTokens, setReminderTokens] = useState<PlacedReminder[]>(() => {
     const saved = localStorage.getItem('whale-bucket-game');
@@ -331,6 +332,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       }
 
       if (!payload.checkOnly) {
+        setRemotePlayerIds(prev => new Set([...prev, payload.id]));
         setPlayers(prev => {
           const exists = prev.some(p => p.name.trim().toLowerCase() === payload.name.trim().toLowerCase() || p.id === payload.id);
           if (exists) {
@@ -646,7 +648,31 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   };
 
   const removePlayer = (id: string) => {
-    setPlayers(players.filter(p => p.id !== id));
+    const player = players.find(p => p.id === id);
+    if (!player) return;
+
+    const performRemoval = () => {
+      setPlayers(players.filter(p => p.id !== id));
+      if (remotePlayerIds.has(id)) {
+        setRemotePlayerIds(prev => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+        if (sendMessageRef.current) {
+          sendMessageRef.current({
+            type: 'booted',
+            playerId: id,
+          });
+        }
+      }
+    };
+
+    if (remotePlayerIds.has(id)) {
+      showConfirm(`Are you sure you want to remove the connected player "${player.name}"?`, performRemoval, 'Remove Player');
+    } else {
+      performRemoval();
+    }
   };
 
   const updatePlayerName = (id: string, name: string) => {
@@ -941,6 +967,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       setIsLilMonstaGame(false);
       setReminderTokens([]);
       setCheckedItems({});
+      setRemotePlayerIds(new Set());
       localStorage.removeItem('whale-bucket-game');
       const newCode = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
       localStorage.setItem('whale-bucket-game-code', newCode);

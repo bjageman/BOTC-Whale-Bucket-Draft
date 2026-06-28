@@ -642,7 +642,31 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   };
 
   const removePlayer = (id: string) => {
-    setPlayers(players.filter(p => p.id !== id));
+    const player = players.find(p => p.id === id);
+    if (!player) return;
+
+    const performRemoval = () => {
+      setPlayers(players.filter(p => p.id !== id));
+      if (remotePlayerIds.has(id)) {
+        setRemotePlayerIds(prev => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+        if (sendMessageRef.current) {
+          sendMessageRef.current({
+            type: 'booted',
+            playerId: id,
+          });
+        }
+      }
+    };
+
+    if (remotePlayerIds.has(id)) {
+      showConfirm(`Are you sure you want to remove the connected player "${player.name}"?`, performRemoval, 'Remove Player');
+    } else {
+      performRemoval();
+    }
   };
 
   const updatePlayerName = (id: string, name: string) => {
