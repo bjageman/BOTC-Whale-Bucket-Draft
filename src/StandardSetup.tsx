@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Undo2 } from 'lucide-react';
 import rolesData from './roles.json';
 import { cn } from './utils/cn';
-import type { Player, Role } from './types';
+import type { Player, Role, PlacedReminder } from './types';
 import { TEAM_ORDER } from './types';
 import { parseScriptFile } from './utils/scriptUtils';
 
@@ -54,6 +54,30 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   const [remotePlayerIds, setRemotePlayerIds] = useState<Set<string>>(new Set());
   const [showRoomCodeModal, setShowRoomCodeModal] = useState(false);
   const [grimoireConfirmed, setGrimoireConfirmed] = useState(false);
+
+  const [reminderTokens, setReminderTokens] = useState<PlacedReminder[]>(() => {
+    const saved = localStorage.getItem('standard-botc-game');
+    if (saved) {
+      try {
+        return JSON.parse(saved).reminderTokens || [];
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [];
+  });
+
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(() => {
+    const saved = localStorage.getItem('standard-botc-game');
+    if (saved) {
+      try {
+        return JSON.parse(saved).checkedItems || {};
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return {};
+  });
 
   const [players, setPlayers] = useState<Player[]>(() => {
     const saved = localStorage.getItem('standard-botc-game');
@@ -237,6 +261,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       setCustomScriptRoles(null);
       setDemonBluffs([]);
       setGameLog([]);
+      setReminderTokens([]);
+      setCheckedItems({});
       localStorage.removeItem('standard-botc-game');
       const newCode = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
       localStorage.setItem('standard-botc-game-code', newCode);
@@ -407,6 +433,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         isLilMonstaGame: boolean;
         demonBluffs: string[];
         gameLog: string[];
+        reminderTokens: PlacedReminder[];
+        checkedItems: Record<string, boolean>;
       };
     };
 
@@ -424,6 +452,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
             isLilMonstaGame,
             demonBluffs,
             gameLog,
+            reminderTokens,
+            checkedItems,
           }
         });
       }
@@ -439,6 +469,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         isLilMonstaGame,
         demonBluffs,
         gameLog,
+        reminderTokens,
+        checkedItems,
       });
       const incomingStateStr = JSON.stringify(incoming);
 
@@ -452,6 +484,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         setIsLilMonstaGame(incoming.isLilMonstaGame || false);
         setDemonBluffs(incoming.demonBluffs || []);
         setGameLog(incoming.gameLog || []);
+        setReminderTokens(incoming.reminderTokens || []);
+        setCheckedItems(incoming.checkedItems || {});
       }
       setHasReceivedSync(true);
     }
@@ -466,6 +500,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     isLilMonstaGame,
     demonBluffs,
     gameLog,
+    reminderTokens,
+    checkedItems,
   ]);
 
   const { sendMessage: sendSyncMessage } = useGameSocket(syncChannelCode, handleIncomingSyncMessage);
@@ -493,6 +529,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     isLilMonstaGame,
     demonBluffs,
     gameLog,
+    reminderTokens,
+    checkedItems,
   });
 
   useEffect(() => {
@@ -509,6 +547,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           isLilMonstaGame,
           demonBluffs,
           gameLog,
+          reminderTokens,
+          checkedItems,
         }
       });
     }
@@ -526,8 +566,10 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       isLilMonstaGame,
       demonBluffs,
       gameLog,
+      reminderTokens,
+      checkedItems,
     }));
-  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, isLilMonstaGame, demonBluffs, gameLog]);
+  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, isLilMonstaGame, demonBluffs, gameLog, reminderTokens, checkedItems]);
 
   const toggleTimeOfDay = () => {
     if (timeOfDay === 'night') {
@@ -1084,6 +1126,10 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
               broadcast();
             }
           }}
+          reminderTokens={reminderTokens}
+          onSetReminderTokens={setReminderTokens}
+          checkedItems={checkedItems}
+          onSetCheckedItems={setCheckedItems}
         />
       )}
 

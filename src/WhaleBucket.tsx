@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Undo2 } from 'lucide-react';
 import rolesData from './official_roles.json';
 import { cn } from './utils/cn';
-import type { Role, Player as BasePlayer, PlayerPreferences } from './types';
+import type { Role, Player as BasePlayer, PlayerPreferences, PlacedReminder } from './types';
 import { TEAM_ORDER } from './types';
 import { assignCharacters } from './utils/assignment';
 import { getValidationSummary } from './utils/whaleBucketValidation';
@@ -206,6 +206,30 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     return [];
   });
   const [showRoomCodeModal, setShowRoomCodeModal] = useState(false);
+
+  const [reminderTokens, setReminderTokens] = useState<PlacedReminder[]>(() => {
+    const saved = localStorage.getItem('whale-bucket-game');
+    if (saved) {
+      try {
+        return JSON.parse(saved).reminderTokens || [];
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [];
+  });
+
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(() => {
+    const saved = localStorage.getItem('whale-bucket-game');
+    if (saved) {
+      try {
+        return JSON.parse(saved).checkedItems || {};
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return {};
+  });
 
   const [newTravelerName, setNewTravelerName] = useState('');
   const [newTravelerRoleId, setNewTravelerRoleId] = useState('beggar');
@@ -424,6 +448,8 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         excludedRoleIds: string[];
         gameLog: string[];
         demonBluffs: string[];
+        reminderTokens: PlacedReminder[];
+        checkedItems: Record<string, boolean>;
       };
     };
 
@@ -441,6 +467,8 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
             excludedRoleIds,
             gameLog,
             demonBluffs,
+            reminderTokens,
+            checkedItems,
           }
         });
       }
@@ -456,6 +484,8 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         excludedRoleIds,
         gameLog,
         demonBluffs,
+        reminderTokens,
+        checkedItems,
       });
       const incomingStateStr = JSON.stringify(incoming);
 
@@ -469,6 +499,8 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         setExcludedRoleIds(incoming.excludedRoleIds || ['drunk', 'marionette', 'lunatic']);
         setGameLog(incoming.gameLog || []);
         setDemonBluffs(incoming.demonBluffs || []);
+        setReminderTokens(incoming.reminderTokens || []);
+        setCheckedItems(incoming.checkedItems || {});
       }
       setHasReceivedSync(true);
     }
@@ -483,6 +515,8 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     excludedRoleIds,
     gameLog,
     demonBluffs,
+    reminderTokens,
+    checkedItems,
   ]);
 
   const { sendMessage: sendSyncMessage } = useGameSocket(syncChannelCode, handleIncomingSyncMessage);
@@ -510,6 +544,8 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     excludedRoleIds,
     gameLog,
     demonBluffs,
+    reminderTokens,
+    checkedItems,
   });
 
   useEffect(() => {
@@ -526,6 +562,8 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           excludedRoleIds,
           gameLog,
           demonBluffs,
+          reminderTokens,
+          checkedItems,
         }
       });
     }
@@ -533,8 +571,20 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
 
   // Save to localStorage
   useEffect(() => {
-    localStorage.setItem('whale-bucket-game', JSON.stringify({ players, phase, timeOfDay, dayNumber, allowTravelers, isLilMonstaGame, excludedRoleIds, gameLog, demonBluffs }));
-  }, [players, phase, timeOfDay, dayNumber, allowTravelers, isLilMonstaGame, excludedRoleIds, gameLog, demonBluffs]);
+    localStorage.setItem('whale-bucket-game', JSON.stringify({
+      players,
+      phase,
+      timeOfDay,
+      dayNumber,
+      allowTravelers,
+      isLilMonstaGame,
+      excludedRoleIds,
+      gameLog,
+      demonBluffs,
+      reminderTokens,
+      checkedItems,
+    }));
+  }, [players, phase, timeOfDay, dayNumber, allowTravelers, isLilMonstaGame, excludedRoleIds, gameLog, demonBluffs, reminderTokens, checkedItems]);
 
   const toggleTimeOfDay = () => {
     if (timeOfDay === 'night') {
@@ -876,6 +926,8 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       setTimeOfDay('night');
       setDayNumber(1);
       setIsLilMonstaGame(false);
+      setReminderTokens([]);
+      setCheckedItems({});
       localStorage.removeItem('whale-bucket-game');
       const newCode = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
       localStorage.setItem('whale-bucket-game-code', newCode);
@@ -1118,6 +1170,10 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
               sendMessageRef.current({ type: 'game_winner', team });
             }
           }}
+          reminderTokens={reminderTokens}
+          onSetReminderTokens={setReminderTokens}
+          checkedItems={checkedItems}
+          onSetCheckedItems={setCheckedItems}
         />
       )}
 
