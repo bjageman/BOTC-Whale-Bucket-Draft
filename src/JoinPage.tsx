@@ -3,13 +3,14 @@ import { useScrollLock } from './hooks/useScrollLock';
 import { useGameSocket } from './hooks/useGameSocket';
 import rolesData from './official_roles.json';
 import { cn } from './utils/cn';
-import { ShieldAlert, Sparkles, ArrowRight, Eye, EyeOff, Settings, CheckCircle2, RotateCcw, Plus, Search, Moon, Scroll } from 'lucide-react';
+import { ShieldAlert, Sparkles, ArrowRight, Eye, EyeOff, Settings, CheckCircle2, RotateCcw, Plus, Search, Moon, Scroll, QrCode } from 'lucide-react';
 import type { Role, Player } from './types';
 import ScriptCharactersModal from './components/ScriptCharactersModal';
 import GrimoireBoard from './components/GrimoireBoard';
 import PageLayout from './components/PageLayout';
 import DialogModal from './components/DialogModal';
 import { useDialog } from './hooks/useDialog';
+import RoomCodeModal from './components/RoomCodeModal';
 
 export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: () => void }) {
   const [code, setCode] = useState(() => {
@@ -67,6 +68,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
   const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(null);
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
   const [pronouns, setPronouns] = useState(() => localStorage.getItem('joined-pronouns') || '');
+  const [showRoomCodeModal, setShowRoomCodeModal] = useState(false);
 
   const sortedRoles = useMemo(() => {
     const baseRoles = customScriptRoles || (rolesData as Role[]);
@@ -604,10 +606,25 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
 
         {/* 4. WAITING SCREEN */}
         {state === 'waiting' && (
-          <div className={cn(
-            "border rounded-lg p-6 text-center space-y-6 shadow-xl",
-            isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-800"
-          )}>
+          <div
+            id="waiting-screen"
+            className={cn(
+              "border rounded-lg p-6 text-center space-y-6 shadow-xl relative",
+              isLight ? "bg-white border-gray-200" : "bg-gray-900/60 border-gray-800"
+            )}
+          >
+            <button
+              id="waiting-screen-qr-button"
+              type="button"
+              onClick={() => setShowRoomCodeModal(true)}
+              className={cn(
+                "absolute top-4 right-4 p-1.5 rounded-full transition-colors",
+                isLight ? "text-gray-500 hover:text-gray-900 hover:bg-black/5" : "text-gray-400 hover:text-white hover:bg-white/10"
+              )}
+              title="Show Room QR Code"
+            >
+              <QrCode size={36} />
+            </button>
             <div className="flex flex-col items-center space-y-2">
               <CheckCircle2 size={42} className="text-emerald-500 animate-pulse" />
               <h3 className="font-display text-base font-bold tracking-wider uppercase">Joined Room {code}</h3>
@@ -860,6 +877,15 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
       roles={sortedRoles}
       isLightModeActive={isLight}
     />
+
+    {showRoomCodeModal && (
+      <RoomCodeModal
+        gameCode={code}
+        joinUrl={`${window.location.origin}${window.location.pathname}#/join?code=${code}`}
+        onClose={() => setShowRoomCodeModal(false)}
+        isLightModeActive={isLight}
+      />
+    )}
     </>
   );
 }
