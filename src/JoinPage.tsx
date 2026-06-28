@@ -44,6 +44,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
   const [gameType, setGameType] = useState<'standard' | 'whale-bucket'>('standard');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [assignedRole, setAssignedRole] = useState<Role | null>(null);
+  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
   const [revealed, setRevealed] = useState(false);
 
   // Dynamic game state synced from Storyteller for the player tracker
@@ -103,11 +104,12 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
   const handleMessage = (data: unknown) => {
     const payload = data as GamePayload;
     if (payload.type === 'setup_update') {
-      const isMyNameInList = payload.players?.some(
+      const me = payload.players?.find(
         (pl) => pl.name.trim().toLowerCase() === name.trim().toLowerCase() || pl.id === playerId
       );
 
-      if (isMyNameInList) {
+      if (me) {
+        setCurrentPlayer(me);
         if (joinRetryIntervalRef.current) clearInterval(joinRetryIntervalRef.current);
         if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
         setGameType(payload.gameType);
@@ -176,12 +178,15 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
 
         // Check if I am in the player list and find my assigned role
         const me = payload.players.find((pl) => pl.name.trim().toLowerCase() === name.trim().toLowerCase() || pl.id === playerId);
-        if (me && me.roleId) {
-          const rObj = (rolesData as Role[]).find(r => r.id === me.roleId);
-          if (rObj) {
-            setAssignedRole(rObj);
-            if (state === 'waiting' || state === 'preferences') {
-              setState('revealed');
+        if (me) {
+          setCurrentPlayer(me);
+          if (me.roleId) {
+            const rObj = (rolesData as Role[]).find(r => r.id === me.roleId);
+            if (rObj) {
+              setAssignedRole(rObj);
+              if (state === 'waiting' || state === 'preferences') {
+                setState('revealed');
+              }
             }
           }
         }
@@ -323,6 +328,9 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
 
   const isMobile = useMemo(() => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent), []);
   const isLight = theme === 'light';
+
+  const defaultEvil = assignedRole ? (assignedRole.team === 'minion' || assignedRole.team === 'demon') : false;
+  const isPlayerEvil = currentPlayer?.isEvil !== undefined ? currentPlayer.isEvil : defaultEvil;
 
   return (
     <>
@@ -742,16 +750,26 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
                   <img src={`/icons/${assignedRole.id}.svg`} alt={assignedRole.name} className="w-20 h-20 object-contain" />
                 </div>
 
-                <span className={cn(
-                  "text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded border mb-2",
-                  assignedRole.team === 'townsfolk' && "text-clocktower-townsfolk border-clocktower-townsfolk/40 bg-clocktower-townsfolk/5",
-                  assignedRole.team === 'outsider' && "text-clocktower-outsider border-clocktower-outsider/40 bg-clocktower-outsider/5",
-                  assignedRole.team === 'minion' && "text-clocktower-minion border-clocktower-minion/40 bg-clocktower-minion/5",
-                  assignedRole.team === 'demon' && "text-clocktower-demon border-clocktower-demon/40 bg-clocktower-demon/5",
-                  assignedRole.team === 'traveler' && "text-clocktower-traveler border-clocktower-traveler/40 bg-clocktower-traveler/5"
-                )}>
-                  {assignedRole.team}
-                </span>
+                <div className="flex gap-2 justify-center items-center mb-3">
+                  <span className={cn(
+                    "text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded border",
+                    assignedRole.team === 'townsfolk' && "text-clocktower-townsfolk border-clocktower-townsfolk/40 bg-clocktower-townsfolk/5",
+                    assignedRole.team === 'outsider' && "text-clocktower-outsider border-clocktower-outsider/40 bg-clocktower-outsider/5",
+                    assignedRole.team === 'minion' && "text-clocktower-minion border-clocktower-minion/40 bg-clocktower-minion/5",
+                    assignedRole.team === 'demon' && "text-clocktower-demon border-clocktower-demon/40 bg-clocktower-demon/5",
+                    assignedRole.team === 'traveler' && "text-clocktower-traveler border-clocktower-traveler/40 bg-clocktower-traveler/5"
+                  )}>
+                    {assignedRole.team}
+                  </span>
+                  <span className={cn(
+                    "text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded border",
+                    isPlayerEvil
+                      ? "text-clocktower-minion border-clocktower-minion/40 bg-clocktower-minion/5 animate-pulse"
+                      : "text-clocktower-townsfolk border-clocktower-townsfolk/40 bg-clocktower-townsfolk/5"
+                  )}>
+                    {isPlayerEvil ? '👿 Evil Alignment' : '😇 Good Alignment'}
+                  </span>
+                </div>
 
                 <h3 className={cn(
                   "font-display text-2xl font-bold tracking-wider",
