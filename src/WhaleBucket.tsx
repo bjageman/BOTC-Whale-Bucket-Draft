@@ -1129,7 +1129,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           onSetCheckedItems={setCheckedItems}
           rotationOffset={rotationOffset}
           onRotationChange={setRotationOffset}
-          isSynced={isSecondary}
         />
       )}
 
