@@ -22,6 +22,8 @@ interface GrimoireBoardProps {
   onAddReminder?: (targetPlayerId: string, sourceCharId: string, text: string) => void;
   onRemoveReminder?: (reminderId: string) => void;
   onRemoveAllReminders?: () => void;
+  rotationOffset?: number;
+  onRotationChange?: (offset: number) => void;
 }
 
 export default function GrimoireBoard({
@@ -39,8 +41,23 @@ export default function GrimoireBoard({
   onAddReminder,
   onRemoveReminder,
   onRemoveAllReminders,
+  rotationOffset: controlledRotation,
+  onRotationChange,
 }: GrimoireBoardProps) {
-  const [rotationOffset, setRotationOffset] = useState(0);
+  const [internalRotation, setInternalRotation] = useState(0);
+  // Ref accumulates rapid clicks before the parent re-render delivers the new prop
+  const rotationRef = useRef(controlledRotation ?? 0);
+  const rotationOffset = controlledRotation !== undefined ? controlledRotation : internalRotation;
+  // Keep ref in sync when the controlled prop is updated by the parent
+  useEffect(() => {
+    if (controlledRotation !== undefined) rotationRef.current = controlledRotation;
+  }, [controlledRotation]);
+  const handleRotate = (delta: number) => {
+    rotationRef.current += delta;
+    const next = rotationRef.current;
+    setInternalRotation(next);
+    onRotationChange?.(next);
+  };
   const [hoveredOrder, setHoveredOrder] = useState<string[]>([]);
   const [playerTopIndex, setPlayerTopIndex] = useState<Record<string, number>>({});
   const [fannedPlayerId, setFannedPlayerId] = useState<string | null>(null);
@@ -415,7 +432,7 @@ export default function GrimoireBoard({
             <div className="flex items-center gap-3 pointer-events-auto">
               <button
                 type="button"
-                onClick={() => setRotationOffset(prev => prev + 1)}
+                onClick={() => handleRotate(1)}
                 className={cn(
                   "p-2 rounded-full border transition-all shadow-sm active:scale-95",
                   isLightModeActive
@@ -428,7 +445,7 @@ export default function GrimoireBoard({
               </button>
               <button
                 type="button"
-                onClick={() => setRotationOffset(prev => prev - 1)}
+                onClick={() => handleRotate(-1)}
                 className={cn(
                   "p-2 rounded-full border transition-all shadow-sm active:scale-95",
                   isLightModeActive

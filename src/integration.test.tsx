@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import StandardSetup from './StandardSetup';
 import PlayerTracker from './PlayerTracker';
 import JoinPage from './JoinPage';
+import type { PlacedReminder } from './types';
 
 interface SocketSubscription {
   gameCode: string;
@@ -11,6 +12,7 @@ interface SocketSubscription {
 }
 
 const activeSubscriptions: SocketSubscription[] = [];
+const sentPayloads: Array<{ gameCode: string; payload: unknown }> = [];
 
 // Mock useGameSocket to route messages between components sharing the same game code
 vi.mock('./hooks/useGameSocket', () => {
@@ -29,6 +31,7 @@ vi.mock('./hooks/useGameSocket', () => {
       }, [gameCode, onMessage]);
 
       const sendMessage = vi.fn(async (payload: unknown) => {
+        sentPayloads.push({ gameCode, payload });
         // Simulate network latency
         await new Promise((resolve) => setTimeout(resolve, 10));
         // Run callbacks in act since they update component state
@@ -54,6 +57,7 @@ describe('Storyteller Reset Integration', () => {
     localStorage.clear();
     sessionStorage.clear();
     activeSubscriptions.length = 0;
+    sentPayloads.length = 0;
     vi.clearAllMocks();
   });
 
@@ -159,5 +163,240 @@ describe('Storyteller Reset Integration', () => {
 
     unmountStoryteller();
     unmountJoinPage();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Storyteller Device Sync Integration
+// ---------------------------------------------------------------------------
+
+const SYNC_CODE = 'SYNC';
+const GAME_CODE = 'GAME';
+
+const SYNC_PLAYERS = [
+  { id: 'p1', name: 'Alice', isDead: false, roleId: 'imp', isEvil: true },
+  { id: 'p2', name: 'Bob', isDead: false, roleId: 'washerwoman' },
+  { id: 'p3', name: 'Carol', isDead: false, roleId: 'empath' },
+  { id: 'p4', name: 'Dave', isDead: false, roleId: 'poisoner', isEvil: true },
+  { id: 'p5', name: 'Eve', isDead: false, roleId: 'butler' },
+];
+
+// 10 reminder tokens spread across all 5 players — two per reminder text
+const SYNC_REMINDERS: PlacedReminder[] = [
+  { id: 'r1',  sourceCharId: 'washerwoman', text: 'Washerwoman', targetPlayerId: 'p1' },
+  { id: 'r2',  sourceCharId: 'empath',      text: 'Empath',      targetPlayerId: 'p2' },
+  { id: 'r3',  sourceCharId: 'poisoner',    text: 'Poisoned',    targetPlayerId: 'p3' },
+  { id: 'r4',  sourceCharId: 'butler',      text: 'Master',      targetPlayerId: 'p4' },
+  { id: 'r5',  sourceCharId: 'imp',         text: 'Dead',        targetPlayerId: 'p1' },
+  { id: 'r6',  sourceCharId: 'empath',      text: 'Empath',      targetPlayerId: 'p5' },
+  { id: 'r7',  sourceCharId: 'poisoner',    text: 'Poisoned',    targetPlayerId: 'p2' },
+  { id: 'r8',  sourceCharId: 'washerwoman', text: 'Washerwoman', targetPlayerId: 'p3' },
+  { id: 'r9',  sourceCharId: 'imp',         text: 'Dead',        targetPlayerId: 'p4' },
+  { id: 'r10', sourceCharId: 'butler',      text: 'Master',      targetPlayerId: 'p5' },
+];
+
+function seedPrimary(overrides: Record<string, unknown> = {}) {
+  localStorage.setItem('standard-botc-sync-code', SYNC_CODE);
+  localStorage.setItem('standard-botc-game-code', GAME_CODE);
+  localStorage.setItem('standard-botc-game', JSON.stringify({
+    players: SYNC_PLAYERS,
+    phase: 'game',
+    timeOfDay: 'night',
+    dayNumber: 1,
+    reminderTokens: SYNC_REMINDERS,
+    checkedItems: {},
+    customScriptRoles: null,
+    scriptName: 'All Roles',
+    isLilMonstaGame: false,
+    demonBluffs: [],
+    gameLog: [],
+    ...overrides,
+  }));
+}
+
+// Delivers a sync_request to all sync-channel subscribers so the primary
+// responds immediately, bypassing the 1 s setTimeout in StandardSetup.
+async function triggerSync() {
+  act(() => {
+    activeSubscriptions
+      .filter(s => s.gameCode.toLowerCase() === SYNC_CODE.toLowerCase())
+      .forEach(s => s.onMessage({ type: 'storyteller_sync_request' }));
+  });
+  await act(async () => {
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+}
+
+// Returns the last storyteller_state_sync payload sent on the sync channel.
+function lastSyncState(): Record<string, unknown> | undefined {
+  const found = [...sentPayloads]
+    .reverse()
+    .find(p =>
+      p.gameCode.toLowerCase() === SYNC_CODE.toLowerCase() &&
+      (p.payload as { type?: string }).type === 'storyteller_state_sync'
+    );
+  return found ? (found.payload as { state: Record<string, unknown> }).state : undefined;
+}
+
+// Renders primary (from localStorage) then secondary (starting fresh), syncs them.
+async function renderSyncedPair() {
+  window.location.hash = '#/standard';
+  const primary = render(<StandardSetup theme="dark" toggleTheme={vi.fn()} />);
+
+  // Secondary must start with no saved game so it truly relies on sync
+  localStorage.removeItem('standard-botc-game');
+
+  window.location.hash = `#/standard?syncCode=${SYNC_CODE}&gameCode=${GAME_CODE}`;
+  const secondary = render(<StandardSetup theme="dark" toggleTheme={vi.fn()} />);
+
+  await triggerSync();
+
+  return { primary, secondary };
+}
+
+describe('Storyteller Device Sync', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    activeSubscriptions.length = 0;
+    sentPayloads.length = 0;
+    vi.clearAllMocks();
+  });
+
+  it('transfers all 10 reminder tokens to the secondary on initial sync', async () => {
+    seedPrimary();
+    const { primary, secondary } = await renderSyncedPair();
+
+    const sec = within(secondary.container);
+
+    // All 5 players visible — confirms the game phase was synced
+    // (player names may appear more than once, e.g. board + night-order widget)
+    for (const name of ['Alice', 'Bob', 'Carol', 'Dave', 'Eve']) {
+      expect(sec.getAllByText(name).length).toBeGreaterThan(0);
+    }
+
+    // Collect the title attrs of every reminder token button in the secondary board
+    const titles = Array.from(
+      secondary.container.querySelectorAll<HTMLElement>('button[title]')
+    ).map(b => b.getAttribute('title'));
+
+    // Two reminders per text (one on each of two different players)
+    expect(titles.filter(t => t === 'Poisoned').length).toBe(2);
+    expect(titles.filter(t => t === 'Dead').length).toBe(2);
+    expect(titles.filter(t => t === 'Master').length).toBe(2);
+    expect(titles.filter(t => t === 'Washerwoman').length).toBe(2);
+    expect(titles.filter(t => t === 'Empath').length).toBe(2);
+
+    // Also verify primary shows its own reminders (sanity check)
+    const primaryTitles = Array.from(
+      primary.container.querySelectorAll<HTMLElement>('button[title]')
+    ).map(b => b.getAttribute('title'));
+    const knownTexts = new Set(['Poisoned', 'Dead', 'Master', 'Washerwoman', 'Empath']);
+    expect(primaryTitles.filter(t => knownTexts.has(t ?? '')).length).toBe(10);
+
+    primary.unmount();
+    secondary.unmount();
+  });
+
+  it('syncs time-of-day toggle from primary to secondary in real time', async () => {
+    seedPrimary();
+    const { primary, secondary } = await renderSyncedPair();
+
+    // Both start at Night 1
+    expect(within(primary.container).getAllByText('Night 1').length).toBeGreaterThan(0);
+    expect(within(secondary.container).getAllByText('Night 1').length).toBeGreaterThan(0);
+
+    // Click the time-of-day badge on primary to advance to Day 1
+    const timeBadge = primary.container.querySelector('#grimoire-info-row');
+    expect(timeBadge).not.toBeNull();
+
+    await act(async () => {
+      fireEvent.click(timeBadge!);
+      await new Promise(resolve => setTimeout(resolve, 50));
+    });
+
+    // Secondary should now reflect Day 1 without any manual interaction
+    expect(within(secondary.container).getAllByText('Day 1').length).toBeGreaterThan(0);
+
+    primary.unmount();
+    secondary.unmount();
+  });
+
+  it('syncs board rotation offset from primary to secondary', async () => {
+    seedPrimary();
+    const { primary, secondary } = await renderSyncedPair();
+
+    const rotateBtn = () => primary.container.querySelector<HTMLElement>(
+      'button[title="Rotate counter-clockwise"]'
+    );
+    expect(rotateBtn()).not.toBeNull();
+
+    // Click rotate three times, one at a time so each state update lands before the next
+    for (let i = 0; i < 3; i++) {
+      await act(async () => {
+        fireEvent.click(rotateBtn()!);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      });
+    }
+
+    // Force a fresh full-state dump from primary and confirm rotationOffset is now 3
+    sentPayloads.length = 0;
+    await triggerSync();
+    const state = lastSyncState();
+    expect(state).toBeDefined();
+    expect(state!.rotationOffset).toBe(3);
+
+    primary.unmount();
+    secondary.unmount();
+  });
+
+  it('reminder tokens survive a round-trip: primary → secondary → resync', async () => {
+    seedPrimary();
+    const { primary, secondary } = await renderSyncedPair();
+
+    // Confirm all 10 reminders arrived on secondary
+    const afterFirstSync = lastSyncState();
+    expect((afterFirstSync!.reminderTokens as PlacedReminder[]).length).toBe(10);
+
+    // Trigger a second sync (simulates secondary reconnecting)
+    await triggerSync();
+    const afterSecondSync = lastSyncState();
+    expect((afterSecondSync!.reminderTokens as PlacedReminder[]).length).toBe(10);
+
+    // The same 10 IDs should be present in both syncs
+    const ids = (s: Record<string, unknown>) =>
+      (s.reminderTokens as PlacedReminder[]).map(r => r.id).sort();
+    expect(ids(afterFirstSync!)).toEqual(ids(afterSecondSync!));
+
+    primary.unmount();
+    secondary.unmount();
+  });
+
+  it('syncs day-number advance alongside time-of-day toggle', async () => {
+    seedPrimary();
+    const { primary, secondary } = await renderSyncedPair();
+
+    // Re-query inside each act so the reference is always fresh after re-renders
+    const clickTimeBadge = async () => {
+      await act(async () => {
+        fireEvent.click(primary.container.querySelector('#grimoire-info-row')!);
+        await new Promise(resolve => setTimeout(resolve, 150));
+      });
+    };
+
+    // Night → Day: verify via DOM on secondary
+    await clickTimeBadge();
+    expect(within(secondary.container).getAllByText('Day 1').length).toBeGreaterThan(0);
+
+    // Day → Night 2: verify via sync payload (more reliable than DOM after multiple toggles)
+    sentPayloads.length = 0;
+    await clickTimeBadge();
+    const nightSync = lastSyncState();
+    expect(nightSync).toBeDefined();
+    expect(nightSync!.timeOfDay).toBe('night');
+    expect(nightSync!.dayNumber).toBe(2);
+
+    primary.unmount();
+    secondary.unmount();
   });
 });

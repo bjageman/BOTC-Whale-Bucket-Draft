@@ -14,6 +14,7 @@ import StandardSetupPhase from './components/StandardSetupPhase';
 import StandardRoleSelectionModal from './components/StandardRoleSelectionModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
+import { useStorytellerSync, getSyncParams } from './hooks/useStorytellerSync';
 import PageLayout from './components/PageLayout';
 import DialogModal from './components/DialogModal';
 import { useDialog } from './hooks/useDialog';
@@ -32,15 +33,12 @@ interface SetupProps {
 }
 
 export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
-  const [isSecondary] = useState<boolean>(() => {
-    const params = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.search);
-    return params.has('syncCode');
-  });
+  const [{ isSecondary, urlSync, urlGame }] = useState(() => getSyncParams());
+
+  const [showSyncModal, setShowSyncModal] = useState(false);
 
   const [syncCode, setSyncCode] = useState<string>(() => {
-    const params = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.search);
-    const urlSync = params.get('syncCode');
-    if (urlSync) return urlSync.toUpperCase();
+    if (isSecondary && urlSync) return urlSync.toUpperCase();
 
     const saved = localStorage.getItem('standard-botc-sync-code');
     if (saved) return saved;
@@ -49,12 +47,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     return newSync;
   });
 
-  const [showSyncModal, setShowSyncModal] = useState(false);
-  const [hasReceivedSync, setHasReceivedSync] = useState(!isSecondary);
-
   const [gameCode, setGameCode] = useState<string>(() => {
-    const params = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.search);
-    const urlGame = params.get('gameCode');
     if (isSecondary && urlGame) return urlGame.toUpperCase();
 
     const saved = localStorage.getItem('standard-botc-game-code');
@@ -229,6 +222,18 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     setGameLog(prev => [...prev, `[${label} · ${clock}] ${message}`]);
   }, []);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [rotationOffset, setRotationOffset] = useState<number>(() => {
+    const saved = localStorage.getItem('standard-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.rotationOffset || 0;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return 0;
+  });
   const broadcastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sendMessageRef = useRef<((payload: unknown) => Promise<void>) | null>(null);
 
@@ -433,142 +438,59 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   }, [phase, players, broadcastSetupUpdate, isSecondary]);
 
   // Storyteller Sync channel (laptop <-> phone)
-  const syncChannelCode = syncCode;
-  const sendSyncRef = useRef<((payload: unknown) => Promise<void>) | null>(null);
-
-  const handleIncomingSyncMessage = useCallback((data: unknown) => {
-    const payload = data as {
-      type: string;
-      state?: {
-        players: Player[];
-        phase: Phase;
-        timeOfDay: 'night' | 'day';
-        dayNumber: number;
-        customScriptRoles: Role[] | null;
-        scriptName: string;
-        isLilMonstaGame: boolean;
-        demonBluffs: string[];
-        gameLog: string[];
-        reminderTokens: PlacedReminder[];
-        checkedItems: Record<string, boolean>;
-      };
-    };
-
-    if (payload.type === 'storyteller_sync_request') {
-      if (!isSecondary && sendSyncRef.current) {
-        sendSyncRef.current({
-          type: 'storyteller_state_sync',
-          state: {
-            players,
-            phase,
-            timeOfDay,
-            dayNumber,
-            customScriptRoles,
-            scriptName,
-            isLilMonstaGame,
-            demonBluffs,
-            gameLog,
-            reminderTokens,
-            checkedItems,
-          }
-        });
-      }
-    } else if (payload.type === 'storyteller_state_sync' && payload.state) {
-      const incoming = payload.state;
-      const localStateStr = JSON.stringify({
-        players,
-        phase,
-        timeOfDay,
-        dayNumber,
-        customScriptRoles,
-        scriptName,
-        isLilMonstaGame,
-        demonBluffs,
-        gameLog,
-        reminderTokens,
-        checkedItems,
-      });
-      const incomingStateStr = JSON.stringify(incoming);
-
-      if (localStateStr !== incomingStateStr) {
-        setPlayers(incoming.players || []);
-        setPhase(incoming.phase || 'setup');
-        setTimeOfDay(incoming.timeOfDay || 'night');
-        setDayNumber(incoming.dayNumber || 1);
-        setCustomScriptRoles(incoming.customScriptRoles || null);
-        setScriptName(incoming.scriptName || "All Roles");
-        setIsLilMonstaGame(incoming.isLilMonstaGame || false);
-        setDemonBluffs(incoming.demonBluffs || []);
-        setGameLog(incoming.gameLog || []);
-        setReminderTokens(incoming.reminderTokens || []);
-        setCheckedItems(incoming.checkedItems || {});
-      }
-      setHasReceivedSync(true);
-    }
-  }, [
-    isSecondary,
-    players,
+  const syncState = useMemo(() => ({
+    players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
     phase,
     timeOfDay,
     dayNumber,
-    customScriptRoles,
+    customScriptRoleIds: customScriptRoles ? customScriptRoles.map(r => r.id) : null,
     scriptName,
     isLilMonstaGame,
     demonBluffs,
-    gameLog,
     reminderTokens,
     checkedItems,
+    rotationOffset,
+  }), [
+    players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, isLilMonstaGame, demonBluffs, reminderTokens, checkedItems, rotationOffset
   ]);
 
-  const { sendMessage: sendSyncMessage } = useGameSocket(syncChannelCode, handleIncomingSyncMessage);
+  const handleApplySync = useCallback((incoming: typeof syncState) => {
+    const customScriptRolesResolved = incoming.customScriptRoleIds
+      ? incoming.customScriptRoleIds.map((id: string) => {
+          const matched = (rolesData as Role[]).find(r => r.id === id);
+          if (matched) return matched;
+          return {
+            id,
+            name: id.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+            team: 'townsfolk' as const
+          };
+        })
+      : null;
 
-  useEffect(() => {
-    sendSyncRef.current = sendSyncMessage;
-  }, [sendSyncMessage]);
+    const localStateStr = JSON.stringify(syncState);
+    const incomingStateStr = JSON.stringify(incoming);
 
-  useEffect(() => {
-    if (isSecondary && sendSyncMessage) {
-      const timer = setTimeout(() => {
-        sendSyncMessage({ type: 'storyteller_sync_request' });
-      }, 1000);
-      return () => clearTimeout(timer);
+    if (localStateStr !== incomingStateStr) {
+      setPlayers(incoming.players || []);
+      setPhase(incoming.phase || 'setup');
+      setTimeOfDay(incoming.timeOfDay || 'night');
+      setDayNumber(incoming.dayNumber || 1);
+      setCustomScriptRoles(customScriptRolesResolved);
+      setScriptName(incoming.scriptName || "All Roles");
+      setIsLilMonstaGame(incoming.isLilMonstaGame || false);
+      setDemonBluffs(incoming.demonBluffs || []);
+      setReminderTokens(incoming.reminderTokens || []);
+      setCheckedItems(incoming.checkedItems || {});
+      setRotationOffset(incoming.rotationOffset ?? 0);
     }
-  }, [isSecondary, sendSyncMessage]);
+  }, [syncState]);
 
-  const localStateStr = JSON.stringify({
-    players,
-    phase,
-    timeOfDay,
-    dayNumber,
-    customScriptRoles,
-    scriptName,
-    isLilMonstaGame,
-    demonBluffs,
-    gameLog,
-    reminderTokens,
-    checkedItems,
+  useStorytellerSync({
+    isSecondary,
+    syncCode,
+    localState: syncState,
+    onApplySync: handleApplySync,
   });
-
-  useEffect(() => {
-    if (sendSyncMessage && hasReceivedSync) {
-      sendSyncMessage({
-        type: 'storyteller_state_sync',
-        state: {
-          players,
-          phase,
-          timeOfDay,
-          dayNumber,
-          customScriptRoles,
-          scriptName,
-          isLilMonstaGame,
-          demonBluffs,
-          gameLog,
-          reminderTokens,
-          checkedItems,
-        }
-      });
-    }
-  }, [localStateStr, sendSyncMessage, hasReceivedSync]);
 
   // Save to localStorage
   useEffect(() => {
@@ -1170,6 +1092,9 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           onSetReminderTokens={setReminderTokens}
           checkedItems={checkedItems}
           onSetCheckedItems={setCheckedItems}
+          rotationOffset={rotationOffset}
+          onRotationChange={setRotationOffset}
+          isSynced={isSecondary}
         />
       )}
 

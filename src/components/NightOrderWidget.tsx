@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { Check, RotateCcw, Moon, Award, ChevronRight } from 'lucide-react';
 import { cn } from '../utils/cn';
@@ -35,8 +35,6 @@ export default function NightOrderWidget({
   checkedItems: propCheckedItems,
   onSetCheckedItems,
 }: NightOrderWidgetProps) {
-  // Track previous phase to reset tab and checklist on phase change
-  const [prevPhase, setPrevPhase] = useState({ dayNumber, timeOfDay });
   const [activeTab, setActiveTab] = useState<'first' | 'other'>(dayNumber === 1 ? 'first' : 'other');
   
   // Track checkmarks by item ID
@@ -44,12 +42,15 @@ export default function NightOrderWidget({
   const checkedItems = propCheckedItems !== undefined ? propCheckedItems : localCheckedItems;
   const setCheckedItems = onSetCheckedItems !== undefined ? onSetCheckedItems : setLocalCheckedItems;
 
-  // Reset tab and checklists during render if phase changes
-  if (prevPhase.dayNumber !== dayNumber || prevPhase.timeOfDay !== timeOfDay) {
-    setPrevPhase({ dayNumber, timeOfDay });
+  const isFirstMount = useRef(true);
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
     setActiveTab(dayNumber === 1 ? 'first' : 'other');
     setCheckedItems({});
-  }
+  }, [dayNumber, timeOfDay, setCheckedItems]);
 
   // Clear checks manually
   const handleReset = () => {
