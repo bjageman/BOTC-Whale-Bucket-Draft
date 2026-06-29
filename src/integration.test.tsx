@@ -485,9 +485,10 @@ describe('Storyteller Grimoire Bug Fixes', () => {
 
     // Verify Alice's role is updated but alignment (isEvil: true) is preserved
     const saved = JSON.parse(localStorage.getItem('standard-botc-game') || '{}');
-    const alice = saved.players.find((p: any) => p.id === 'p1');
-    expect(alice.roleId).toBe('empath');
-    expect(alice.isEvil).toBe(true);
+    const alice = saved.players.find((p: { id: string; roleId?: string; isEvil?: boolean }) => p.id === 'p1');
+    expect(alice).toBeDefined();
+    expect(alice!.roleId).toBe('empath');
+    expect(alice!.isEvil).toBe(true);
 
     storyteller.unmount();
   });
