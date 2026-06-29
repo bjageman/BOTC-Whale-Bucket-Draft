@@ -473,7 +473,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     const incomingStateStr = JSON.stringify(incoming);
 
     if (localStateStr !== incomingStateStr) {
-      setPlayers(incoming.players || []);
+      setPlayers((incoming.players || []) as Player[]);
       setPhase(incoming.phase || 'setup');
       setTimeOfDay(incoming.timeOfDay || 'night');
       setDayNumber(incoming.dayNumber || 1);
@@ -490,7 +490,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   useStorytellerSync({
     isSecondary,
     syncCode,
-    gameType: 'whale-bucket',
     localState: syncState,
     onApplySync: handleApplySync,
   });

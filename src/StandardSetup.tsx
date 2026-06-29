@@ -488,7 +488,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   useStorytellerSync({
     isSecondary,
     syncCode,
-    gameType: 'standard',
     localState: syncState,
     onApplySync: handleApplySync,
   });
