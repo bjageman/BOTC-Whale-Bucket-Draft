@@ -37,7 +37,7 @@
   "tinker": ["Die"],
   "moonchild": ["Die"],
   "goon": ["Drunk"],
-  "lunatic": [],
+  "lunatic": ["Chosen", "Chosen", "Chosen"],
   "godfather": ["Died today", "Die"],
   "devilsadvocate": ["Survives execution"],
   "assassin": ["Die", "Used"],

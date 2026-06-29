@@ -183,6 +183,25 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     }
     return null;
   });
+  const [selectedCharacterIds, setSelectedCharacterIds] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('standard-botc-game');
+    let loadedRoles: Role[] | null = null;
+    let loadedSelectedIds: string[] | null = null;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        loadedRoles = parsed.customScriptRoles || null;
+        loadedSelectedIds = parsed.selectedCharacterIds || null;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    if (loadedSelectedIds) {
+      return new Set(loadedSelectedIds);
+    }
+    const scriptRoles = loadedRoles || (rolesData as Role[]);
+    return new Set(scriptRoles.map(r => r.id));
+  });
   const [demonBluffs, setDemonBluffs] = useState<string[]>(() => {
     const saved = localStorage.getItem('standard-botc-game');
     if (saved) {
@@ -492,6 +511,14 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     onApplySync: handleApplySync,
   });
 
+  // Synchronize selectedCharacterIds with customScriptRoles
+  const rolesForSync = customScriptRoles || (rolesData as Role[]);
+  const [prevScriptRoles, setPrevScriptRoles] = useState<Role[]>(rolesForSync);
+  if (prevScriptRoles !== rolesForSync) {
+    setPrevScriptRoles(rolesForSync);
+    setSelectedCharacterIds(new Set(rolesForSync.map(r => r.id)));
+  }
+
   // Save to localStorage
   useEffect(() => {
     localStorage.setItem('standard-botc-game', JSON.stringify({
@@ -506,16 +533,18 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       gameLog,
       reminderTokens,
       checkedItems,
+      selectedCharacterIds: [...selectedCharacterIds],
     }));
-  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, isLilMonstaGame, demonBluffs, gameLog, reminderTokens, checkedItems]);
+  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, isLilMonstaGame, demonBluffs, gameLog, reminderTokens, checkedItems, selectedCharacterIds]);
 
   const toggleTimeOfDay = () => {
+    setCheckedItems({});
     if (timeOfDay === 'night') {
       setTimeOfDay('day');
       addLogEntry(`Advanced to Day ${dayNumber}`, 'day', dayNumber);
     } else {
+      setDayNumber(dayNumber + 1);
       setTimeOfDay('night');
-      setDayNumber(prev => prev + 1);
       addLogEntry(`Advanced to Night ${dayNumber + 1}`, 'night', dayNumber + 1);
     }
   };
@@ -604,10 +633,21 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   };
 
   const updatePlayerRole = (id: string, roleId: string) => {
+    const player = players.find(p => p.id === id);
+    const oldRole = player?.roleId ? (rolesData as Role[]).find(r => r.id === player.roleId) : undefined;
+    const defaultEvil = oldRole ? (oldRole.team === 'minion' || oldRole.team === 'demon') : false;
+    const currentAlignment = player 
+      ? (player.isEvil !== undefined 
+          ? player.isEvil 
+          : player.isTheLunatic 
+            ? false 
+            : player.isTheMarionette 
+              ? true 
+              : defaultEvil) 
+      : undefined;
+
     if (phase === 'game') {
-      const player = players.find(p => p.id === id);
       if (player && player.roleId !== (roleId || undefined)) {
-        const oldRole = (rolesData as Role[]).find(r => r.id === player.roleId);
         const newRole = (rolesData as Role[]).find(r => r.id === roleId);
         if (oldRole && newRole) {
           addLogEntry(`${player.name} changed from ${oldRole.name} to ${newRole.name}`);
@@ -621,7 +661,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         return {
           ...p,
           roleId: roleId || undefined,
-          isEvil: undefined,
+          isEvil: phase === 'game' ? currentAlignment : undefined,
           isTheDrunk: false,
           isTheMarionette: false,
           isTheLunatic: false,
@@ -852,7 +892,16 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
 
   // Modal logic details
   const modalPlayer = selectedPlayerId ? players.find(x => x.id === selectedPlayerId) : null;
-  const modalRoleObj = modalPlayer ? (rolesData as Role[]).find(r => r.id === modalPlayer.roleId) : undefined;
+  const modalRoleObj = modalPlayer ? (() => {
+    const actualRoleId = modalPlayer.isTheDrunk
+      ? 'drunk'
+      : modalPlayer.isTheMarionette
+        ? 'marionette'
+        : modalPlayer.isTheLunatic
+          ? 'lunatic'
+          : modalPlayer.roleId;
+    return (rolesData as Role[]).find(r => r.id === actualRoleId);
+  })() : undefined;
   const filteredModalRoles = selectionRoles
     .filter(r =>
       r.name.toLowerCase().includes(modalRoleSearch.toLowerCase()) ||
@@ -980,6 +1029,8 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           }}
           customScriptRoles={customScriptRoles}
           scriptName={scriptName}
+          selectedCharacterIds={selectedCharacterIds}
+          setSelectedCharacterIds={setSelectedCharacterIds}
           newPlayerName={newPlayerName}
           setNewPlayerName={setNewPlayerName}
           addPlayer={addPlayer}

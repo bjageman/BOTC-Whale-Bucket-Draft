@@ -132,6 +132,14 @@ export default function NightOrderWidget({
       const extra = players.filter(p => p.isTheLilMonsta && p.roleId !== 'lilmonsta');
       matchedPlayers = [...matchedPlayers, ...extra];
     }
+    if (id === 'lunatic') {
+      const extra = players.filter(p => p.isTheLunatic && p.roleId !== 'lunatic');
+      matchedPlayers = [...matchedPlayers, ...extra];
+    }
+    if (id === 'marionette') {
+      const extra = players.filter(p => p.isTheMarionette && p.roleId !== 'marionette');
+      matchedPlayers = [...matchedPlayers, ...extra];
+    }
     if (matchedPlayers.length > 0) {
       const roleDetails = officialRoles.find(r => r.id === id);
       const reminder = activeTab === 'first' 

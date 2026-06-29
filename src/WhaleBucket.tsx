@@ -512,6 +512,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   }, [players, phase, timeOfDay, dayNumber, allowTravelers, isLilMonstaGame, excludedRoleIds, gameLog, demonBluffs, reminderTokens, checkedItems]);
 
   const toggleTimeOfDay = () => {
+    setCheckedItems({});
     if (timeOfDay === 'night') {
       setTimeOfDay('day');
       addLogEntry(`Advanced to Day ${dayNumberRef.current}`, 'day', dayNumberRef.current);
@@ -706,6 +707,19 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   };
 
   const updatePlayerRole = (id: string, roleId: string) => {
+    const player = players.find(p => p.id === id);
+    const oldRole = player?.roleId ? (rolesData as Role[]).find(r => r.id === player.roleId) : undefined;
+    const defaultEvil = oldRole ? (oldRole.team === 'minion' || oldRole.team === 'demon') : false;
+    const currentAlignment = player 
+      ? (player.isEvil !== undefined 
+          ? player.isEvil 
+          : player.isTheLunatic 
+            ? false 
+            : player.isTheMarionette 
+              ? true 
+              : defaultEvil) 
+      : undefined;
+
     let newPlayers = players.map(p => {
       if (p.id === id) {
         const role = (rolesData as Role[]).find(r => r.id === roleId);
@@ -714,7 +728,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           ...p,
           roleId: roleId || undefined,
           assignedFromPref: isPref,
-          isEvil: undefined,
+          isEvil: phase === 'game' ? currentAlignment : undefined,
           isTheDrunk: false,
           isTheMarionette: false,
           isTheLunatic: false,
@@ -911,7 +925,16 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
 
   // Details Modal variables
   const modalPlayer = selectedPlayerId ? players.find(x => x.id === selectedPlayerId) : null;
-  const modalRoleObj = modalPlayer ? (rolesData as Role[]).find(r => r.id === modalPlayer.roleId) : undefined;
+  const modalRoleObj = modalPlayer ? (() => {
+    const actualRoleId = modalPlayer.isTheDrunk
+      ? 'drunk'
+      : modalPlayer.isTheMarionette
+        ? 'marionette'
+        : modalPlayer.isTheLunatic
+          ? 'lunatic'
+          : modalPlayer.roleId;
+    return (rolesData as Role[]).find(r => r.id === actualRoleId);
+  })() : undefined;
   const filteredModalRoles = (rolesData as Role[])
     .filter(r =>
       r.name.toLowerCase().includes(modalRoleSearch.toLowerCase()) ||

@@ -16,6 +16,8 @@ interface Player {
   isDead?: boolean;
   isDrunkOrPoisoned?: boolean;
   isEvil?: boolean;
+  isTheDrunk?: boolean;
+  isTheMarionette?: boolean;
   isTheLunatic?: boolean;
   isTheLilMonsta?: boolean;
   hasDeadVote?: boolean;
@@ -110,11 +112,14 @@ export default function PlayerDetailsModal({
 
   // Setup multiple roles array or single role array
   const displayRoles = useMemo(() => {
-    if ((allowMultipleRoles || p.isTheLunatic) && p.roleIds && p.roleIds.length > 0) {
+    if (allowMultipleRoles && p.roleIds && p.roleIds.length > 0) {
       return p.roleIds;
     }
+    if (p.isTheDrunk) return ['drunk'];
+    if (p.isTheMarionette) return ['marionette'];
+    if (p.isTheLunatic) return ['lunatic'];
     return p.roleId ? [p.roleId] : [];
-  }, [allowMultipleRoles, p.roleIds, p.roleId, p.isTheLunatic]);
+  }, [allowMultipleRoles, p.roleIds, p.roleId, p.isTheDrunk, p.isTheMarionette, p.isTheLunatic]);
 
   return (
     <>
@@ -258,15 +263,15 @@ export default function PlayerDetailsModal({
                 </button>
               </div>
               <RoleList
-                hasRole={(allowMultipleRoles || p.isTheLunatic) ? !!(p.roleIds && p.roleIds.length > 0) : !!p.roleId}
+                hasRole={allowMultipleRoles ? !!(p.roleIds && p.roleIds.length > 0) : (p.isTheDrunk || p.isTheMarionette || p.isTheLunatic || !!p.roleId)}
                 roles={filteredModalRoles}
                 players={players}
                 currentPlayerId={p.id}
                 isLightModeActive={isLightModeActive}
-                allowMultipleRoles={allowMultipleRoles || p.isTheLunatic}
+                allowMultipleRoles={allowMultipleRoles}
                 roleIds={p.roleIds || []}
                 onSelect={(roleId) => {
-                  if ((allowMultipleRoles || p.isTheLunatic) && onUpdateRoles) {
+                  if (allowMultipleRoles && onUpdateRoles) {
                     const currentRoles = p.roleIds || [];
                     if (currentRoles.includes(roleId)) {
                       onUpdateRoles(p.id, currentRoles.filter(id => id !== roleId));
@@ -286,7 +291,7 @@ export default function PlayerDetailsModal({
                   }
                 }}
                 onClear={() => {
-                  if ((allowMultipleRoles || p.isTheLunatic) && onUpdateRoles) {
+                  if (allowMultipleRoles && onUpdateRoles) {
                     onUpdateRoles(p.id, []);
                   } else {
                     onUpdateRole(p.id, '');
@@ -298,7 +303,7 @@ export default function PlayerDetailsModal({
             </div>
           ) : (
             /* Character display */
-            (allowMultipleRoles || p.isTheLunatic) ? (
+            allowMultipleRoles ? (
               <div className="w-full flex flex-col items-center justify-center py-4 rounded-xl border border-transparent relative">
                 {displayRoles.length > 0 ? (
                   <div className="flex flex-col items-center space-y-3 w-full">
@@ -463,7 +468,7 @@ export default function PlayerDetailsModal({
           )}
 
            {/* Selected character tags with delete button (Player Tracker mode) */}
-           {(allowMultipleRoles || p.isTheLunatic) && displayRoles.length > 0 && !isSearchingRole && (
+           {allowMultipleRoles && displayRoles.length > 0 && !isSearchingRole && (
              <div className="flex flex-wrap gap-1.5 justify-center mt-4 px-4 relative z-30">
                {displayRoles.map((roleId) => {
                  const rObj = (rolesData as Role[]).find(r => r.id === roleId);
@@ -502,7 +507,7 @@ export default function PlayerDetailsModal({
            )}
 
            {/* Ability text display (only for standard single role mode) */}
-           {!(allowMultipleRoles || p.isTheLunatic) && roleObj && officialRole?.ability && !isSearchingRole && (
+           {!allowMultipleRoles && roleObj && officialRole?.ability && !isSearchingRole && (
              <div className="text-center px-4 mt-2">
                <p className={cn(
                  'text-xs leading-relaxed italic font-medium',

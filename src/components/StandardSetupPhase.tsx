@@ -14,6 +14,8 @@ interface StandardSetupPhaseProps {
   players: Player[];
   customScriptRoles: Role[] | null;
   scriptName: string;
+  selectedCharacterIds: Set<string>;
+  setSelectedCharacterIds: React.Dispatch<React.SetStateAction<Set<string>>>;
   newPlayerName: string;
   setNewPlayerName: (name: string) => void;
   addPlayer: () => void;
@@ -56,6 +58,8 @@ export default function StandardSetupPhase({
   players,
   customScriptRoles,
   scriptName,
+  selectedCharacterIds,
+  setSelectedCharacterIds,
   newPlayerName,
   setNewPlayerName,
   addPlayer,
@@ -96,13 +100,6 @@ export default function StandardSetupPhase({
   const [showGrimoireWarning, setShowGrimoireWarning] = useState(false);
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
   const [isSelectCharactersModalOpen, setIsSelectCharactersModalOpen] = useState(false);
-  const [selectedCharacterIds, setSelectedCharacterIds] = useState<Set<string>>(() => new Set(scriptRoles.map(r => r.id)));
-  const [prevScriptRoles, setPrevScriptRoles] = useState<Role[]>(scriptRoles);
-
-  if (prevScriptRoles !== scriptRoles) {
-    setPrevScriptRoles(scriptRoles);
-    setSelectedCharacterIds(new Set(scriptRoles.map(r => r.id)));
-  }
 
   const sortedRoles = useMemo(() => {
     const baseRoles = customScriptRoles || (rolesData as Role[]);

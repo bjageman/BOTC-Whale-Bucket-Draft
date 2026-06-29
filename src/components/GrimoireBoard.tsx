@@ -107,6 +107,10 @@ export default function GrimoireBoard({
     players.forEach(p => {
       if (p.roleId) ids.add(p.roleId);
       p.roleIds?.forEach(id => ids.add(id));
+      if (p.isTheDrunk) ids.add('drunk');
+      if (p.isTheMarionette) ids.add('marionette');
+      if (p.isTheLunatic) ids.add('lunatic');
+      if (p.isTheLilMonsta) ids.add('lilmonsta');
     });
     return [...ids];
   }, [players]);
@@ -635,7 +639,17 @@ export default function GrimoireBoard({
                 >
                   {/* Render fanned character tokens */}
                   {(() => {
-                    const displayRoles = p.roleIds && p.roleIds.length > 0 ? p.roleIds : (p.roleId ? [p.roleId] : [null]);
+                    const displayRoles = p.roleIds && p.roleIds.length > 0 
+                      ? p.roleIds 
+                      : (p.isTheDrunk 
+                          ? ['drunk'] 
+                          : p.isTheMarionette 
+                            ? ['marionette'] 
+                            : p.isTheLunatic 
+                              ? ['lunatic'] 
+                              : p.roleId 
+                                ? [p.roleId] 
+                                : [null]);
                     return displayRoles.map((roleId, idx) => {
                       const roleObj = roleId ? rolesData.find((r) => r.id === roleId) : null;
                       const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
@@ -783,31 +797,31 @@ export default function GrimoireBoard({
 
                   {p.isTheDrunk && (
                     <span
-                      style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
+                      style={{ fontSize: '1.7cqw', padding: '0.3cqw 0.8cqw', borderRadius: '0.4cqw', borderWidth: '0.12cqw' }}
                       className="absolute bottom-0 bg-yellow-600 text-black font-black border-yellow-700 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
                     >
-                      THE DRUNK
+                      DRUNK {p.roleId ? `(${(rolesData.find(r => r.id === p.roleId)?.name || p.roleId)})` : ''}
                     </span>
                   )}
                   {p.isTheMarionette && (
                     <span
-                      style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
+                      style={{ fontSize: '1.7cqw', padding: '0.3cqw 0.8cqw', borderRadius: '0.4cqw', borderWidth: '0.12cqw' }}
                       className="absolute bottom-0 bg-clocktower-minion text-white font-black border-clocktower-minion/40 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
                     >
-                      THE MARIONETTE
+                      MARIONETTE {p.roleId ? `(${(rolesData.find(r => r.id === p.roleId)?.name || p.roleId)})` : ''}
                     </span>
                   )}
                   {p.isTheLunatic && (
                     <span
-                      style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
+                      style={{ fontSize: '1.7cqw', padding: '0.3cqw 0.8cqw', borderRadius: '0.4cqw', borderWidth: '0.12cqw' }}
                       className="absolute bottom-0 bg-clocktower-outsider text-white font-black border-clocktower-outsider/40 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
                     >
-                      THE LUNATIC
+                      LUNATIC {p.roleId ? `(${(rolesData.find(r => r.id === p.roleId)?.name || p.roleId)})` : ''}
                     </span>
                   )}
                   {p.isTheLilMonsta && (
                     <span
-                      style={{ fontSize: '1.9cqw', padding: '0.3cqw 1cqw', borderRadius: '0.4cqw', borderWidth: '0.15cqw' }}
+                      style={{ fontSize: '1.7cqw', padding: '0.3cqw 0.8cqw', borderRadius: '0.4cqw', borderWidth: '0.12cqw' }}
                       className="absolute bottom-0 bg-clocktower-demon text-white font-black border-clocktower-demon/40 shadow-sm leading-none translate-y-1/2 z-30 whitespace-nowrap"
                     >
                       LIL' MONSTA
