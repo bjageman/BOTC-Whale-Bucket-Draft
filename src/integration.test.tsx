@@ -37,7 +37,7 @@ vi.mock('./hooks/useGameSocket', () => {
         // Run callbacks in act since they update component state
         act(() => {
           activeSubscriptions.forEach((sub) => {
-            if (sub.gameCode.toLowerCase() === gameCode.toLowerCase()) {
+            if (sub.gameCode.toLowerCase() === gameCode.toLowerCase() && sub.onMessage !== onMessage) {
               sub.onMessage(payload);
             }
           });
@@ -430,5 +430,159 @@ describe('Storyteller Device Sync', () => {
 
     primary.unmount();
     secondary.unmount();
+  });
+});
+
+describe('Storyteller Grimoire Bug Fixes', () => {
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = vi.fn();
+    window.history.replaceState({}, '', '#/standard');
+    localStorage.clear();
+    sessionStorage.clear();
+    activeSubscriptions.length = 0;
+    sentPayloads.length = 0;
+    vi.clearAllMocks();
+  });
+
+  it('preserves player alignment on role updates during game phase', async () => {
+    const PLAYERS = [
+      { id: 'p1', name: 'Alice', isDead: false, roleId: 'washerwoman', isEvil: true },
+      { id: 'p2', name: 'Bob', isDead: false, roleId: 'poisoner', isEvil: false }
+    ];
+    
+    seedPrimary({
+      players: PLAYERS,
+      phase: 'game',
+      timeOfDay: 'night',
+      dayNumber: 1,
+    });
+
+    window.location.hash = '#/standard';
+    const storyteller = render(<StandardSetup theme="dark" toggleTheme={vi.fn()} />);
+
+    // Open details modal for Alice (Washerwoman, isEvil: true)
+    const aliceRow = storyteller.container.querySelector('#ledger-player-p1');
+    expect(aliceRow).not.toBeNull();
+    
+    await act(async () => {
+      fireEvent.click(aliceRow!);
+      await new Promise(resolve => setTimeout(resolve, 100));
+    });
+
+    // Enter character search/selection mode
+    const changeRoleBtn = storyteller.container.querySelector('#detail-change-role-button');
+    expect(changeRoleBtn).not.toBeNull();
+    fireEvent.click(changeRoleBtn!);
+
+    // Update Alice's role to Empath
+    const empathBtn = storyteller.container.querySelector('#detail-role-option-empath');
+    expect(empathBtn).not.toBeNull();
+    
+    await act(async () => {
+      fireEvent.click(empathBtn!);
+      await new Promise(resolve => setTimeout(resolve, 50));
+    });
+
+    // Verify Alice's role is updated but alignment (isEvil: true) is preserved
+    const saved = JSON.parse(localStorage.getItem('standard-botc-game') || '{}');
+    const alice = saved.players.find((p: any) => p.id === 'p1');
+    expect(alice.roleId).toBe('empath');
+    expect(alice.isEvil).toBe(true);
+
+    storyteller.unmount();
+  });
+
+  it('clears checklist checkboxes on day/night transitions', async () => {
+    const PLAYERS = [
+      { id: 'p1', name: 'Alice', isDead: false, roleId: 'washerwoman' }
+    ];
+    
+    seedPrimary({
+      players: PLAYERS,
+      phase: 'game',
+      timeOfDay: 'night',
+      dayNumber: 1,
+      checkedItems: { 'washerwoman-p1': true }
+    });
+
+    window.location.hash = '#/standard';
+    const storyteller = render(<StandardSetup theme="dark" toggleTheme={vi.fn()} />);
+
+    // Click the time-of-day badge to toggle from Night 1 to Day 1
+    const timeBadge = storyteller.container.querySelector('#grimoire-info-row');
+    expect(timeBadge).not.toBeNull();
+
+    await act(async () => {
+      fireEvent.click(timeBadge!);
+      await new Promise(resolve => setTimeout(resolve, 50));
+    });
+
+    // Verify checkedItems is empty in local storage
+    const saved = JSON.parse(localStorage.getItem('standard-botc-game') || '{}');
+    expect(saved.checkedItems).toEqual({});
+
+    storyteller.unmount();
+  });
+
+  it('renders correct character tokens (Drunk/Marionette/Lunatic) with fake role name on board', async () => {
+    const PLAYERS = [
+      { id: 'p1', name: 'Alice', isDead: false, roleId: 'imp', isTheLunatic: true },
+      { id: 'p2', name: 'Bob', isDead: false, roleId: 'empath', isTheMarionette: true },
+      { id: 'p3', name: 'Carol', isDead: false, roleId: 'washerwoman', isTheDrunk: true },
+    ];
+    
+    seedPrimary({
+      players: PLAYERS,
+      phase: 'game',
+      timeOfDay: 'night',
+      dayNumber: 1,
+    });
+
+    window.location.hash = '#/standard';
+    const storyteller = render(<StandardSetup theme="dark" toggleTheme={vi.fn()} />);
+
+    // Verify that the text on the board shows the underlying character token
+    expect(within(storyteller.container).getByText('LUNATIC (Imp)')).toBeInTheDocument();
+    expect(within(storyteller.container).getByText('MARIONETTE (Empath)')).toBeInTheDocument();
+    expect(within(storyteller.container).getByText('DRUNK (Washerwoman)')).toBeInTheDocument();
+
+    storyteller.unmount();
+  });
+
+  it('preserves bag setup state (selectedCharacterIds) in standard setup when switching phases', async () => {
+    const PLAYERS = [
+      { id: 'p1', name: 'Alice', roleId: 'imp' },
+      { id: 'p2', name: 'Bob', roleId: 'washerwoman' },
+      { id: 'p3', name: 'Carol', roleId: 'empath' },
+      { id: 'p4', name: 'Dave', roleId: 'poisoner' },
+      { id: 'p5', name: 'Eve', roleId: 'butler' }
+    ];
+    
+    localStorage.setItem('standard-botc-game', JSON.stringify({
+      players: PLAYERS,
+      phase: 'setup',
+      timeOfDay: 'night',
+      dayNumber: 1,
+      selectedCharacterIds: ['imp', 'poisoner'],
+    }));
+
+    window.location.hash = '#/standard';
+    const storyteller = render(<StandardSetup theme="dark" toggleTheme={vi.fn()} />);
+
+    const startButton = storyteller.container.querySelector('#open-grimoire-button');
+
+    expect(startButton).not.toBeNull();
+    
+    await act(async () => {
+      fireEvent.click(startButton!);
+      await new Promise(resolve => setTimeout(resolve, 150));
+    });
+
+    // Verify phase is now game and selectedCharacterIds is still ['imp', 'poisoner']
+    const saved = JSON.parse(localStorage.getItem('standard-botc-game') || '{}');
+    expect(saved.phase).toBe('game');
+    expect(saved.selectedCharacterIds).toEqual(['imp', 'poisoner']);
+
+    storyteller.unmount();
   });
 });
