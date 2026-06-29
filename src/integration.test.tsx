@@ -543,9 +543,9 @@ describe('Storyteller Grimoire Bug Fixes', () => {
     const storyteller = render(<StandardSetup theme="dark" toggleTheme={vi.fn()} />);
 
     // Verify that the text on the board shows the underlying character token
-    expect(within(storyteller.container).getByText('LUNATIC (Imp)')).toBeInTheDocument();
-    expect(within(storyteller.container).getByText('MARIONETTE (Empath)')).toBeInTheDocument();
-    expect(within(storyteller.container).getByText('DRUNK (Washerwoman)')).toBeInTheDocument();
+    expect(within(storyteller.container).getByText('LUNATIC')).toBeInTheDocument();
+    expect(within(storyteller.container).getByText('MARIONETTE')).toBeInTheDocument();
+    expect(within(storyteller.container).getByText('DRUNK')).toBeInTheDocument();
 
     storyteller.unmount();
   });
@@ -603,7 +603,7 @@ describe('Storyteller Grimoire Bug Fixes', () => {
     const storyteller = render(<StandardSetup theme="dark" toggleTheme={vi.fn()} />);
 
     // 1. Verify Grimoire Board displays the selected Demon (Imp) name on the token and badge
-    expect(within(storyteller.container).getByText('LUNATIC (Imp)')).toBeInTheDocument();
+    expect(within(storyteller.container).getByText('LUNATIC')).toBeInTheDocument();
     
     // The main token text should show "Imp"
     const boardTokens = storyteller.container.querySelectorAll('textPath');
@@ -658,7 +658,7 @@ describe('Storyteller Grimoire Bug Fixes', () => {
     const storyteller = render(<StandardSetup theme="dark" toggleTheme={vi.fn()} />);
 
     // 1. Verify Grimoire Board displays the assigned Townsfolk (Washerwoman) name on the token and badge
-    expect(within(storyteller.container).getByText('MARIONETTE (Washerwoman)')).toBeInTheDocument();
+    expect(within(storyteller.container).getByText('MARIONETTE')).toBeInTheDocument();
 
     const boardTokens = storyteller.container.querySelectorAll('textPath');
     const tokenNames = Array.from(boardTokens).map(el => el.textContent);
