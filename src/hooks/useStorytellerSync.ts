@@ -33,6 +33,7 @@ export function useStorytellerSync<T>({
     setHasReceivedSync(!isSecondary);
   }
   const sendSyncRef = useRef<((payload: unknown) => Promise<void>) | null>(null);
+  const lastAppliedSyncRef = useRef<string | null>(null);
 
   const onApplySyncRef = useRef(onApplySync);
   useEffect(() => {
@@ -58,7 +59,8 @@ export function useStorytellerSync<T>({
         });
       }
     } else if (payload.type === 'storyteller_state_sync' && payload.state) {
-      if (!isSecondary) return;
+      const incomingStr = JSON.stringify(payload.state);
+      lastAppliedSyncRef.current = incomingStr;
       onApplySyncRef.current(payload.state);
       setHasReceivedSync(true);
     }
@@ -79,18 +81,20 @@ export function useStorytellerSync<T>({
     }
   }, [isSecondary, sendSyncMessage]);
 
-
-
   const localStateStr = JSON.stringify(localState);
 
   useEffect(() => {
-    if (!isSecondary && sendSyncMessage && hasReceivedSync) {
+    if (sendSyncMessage && hasReceivedSync) {
+      if (localStateStr === lastAppliedSyncRef.current) {
+        return;
+      }
       sendSyncMessage({
         type: 'storyteller_state_sync',
         state: localState,
       });
+      lastAppliedSyncRef.current = localStateStr;
     }
-  }, [localStateStr, sendSyncMessage, hasReceivedSync, isSecondary, localState]);
+  }, [localStateStr, sendSyncMessage, hasReceivedSync, localState]);
 
   return {
     hasReceivedSync,

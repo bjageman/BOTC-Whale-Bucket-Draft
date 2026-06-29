@@ -1094,7 +1094,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           onSetCheckedItems={setCheckedItems}
           rotationOffset={rotationOffset}
           onRotationChange={setRotationOffset}
-          isSynced={isSecondary}
         />
       )}
 
