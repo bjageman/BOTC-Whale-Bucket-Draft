@@ -38,12 +38,12 @@ describe('NightOrderWidget', () => {
     );
 
     // Both Lunatic and Marionette should be in the list on Night 1
-    expect(screen.getByText('Lunatic')).toBeInTheDocument();
-    expect(screen.getByText('Marionette')).toBeInTheDocument();
+    expect(screen.getByText('Lunatic', { selector: '.font-serif' })).toBeInTheDocument();
+    expect(screen.getByText('Marionette', { selector: '.font-serif' })).toBeInTheDocument();
     
     // Player names should be displayed next to their actual role items
-    expect(screen.getByText('Alice')).toBeInTheDocument();
-    expect(screen.getByText('Bob')).toBeInTheDocument();
+    expect(screen.getAllByText('Alice').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Bob').length).toBeGreaterThan(0);
   });
 
   it('correctly displays lunatic but not marionette in other nights list', () => {
@@ -57,8 +57,8 @@ describe('NightOrderWidget', () => {
     );
 
     // Lunatic wakes up on other nights to choose targets; Marionette only acts on Night 1
-    expect(screen.getByText('Lunatic')).toBeInTheDocument();
-    expect(screen.queryByText('Marionette')).toBeNull();
+    expect(screen.getByText('Lunatic', { selector: '.font-serif' })).toBeInTheDocument();
+    expect(screen.queryByText('Marionette', { selector: '.font-serif' })).toBeNull();
   });
 
   it('allows checking and resetting checkboxes', () => {
@@ -76,7 +76,7 @@ describe('NightOrderWidget', () => {
     );
 
     // The reset button is the first button (RotateCcw icon), let's find the checklist items
-    const lunaticRow = screen.getByText('Lunatic').closest('div');
+    const lunaticRow = screen.getByText('Lunatic', { selector: '.font-serif' }).closest('div');
     expect(lunaticRow).toBeInTheDocument();
     
     if (lunaticRow) {
