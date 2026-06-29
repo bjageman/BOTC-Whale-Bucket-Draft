@@ -14,6 +14,7 @@ import PreferenceSelectionModal from './components/PreferenceSelectionModal';
 import ManualOverrideModal from './components/ManualOverrideModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
+import { useStorytellerSync, getSyncParams } from './hooks/useStorytellerSync';
 import PageLayout from './components/PageLayout';
 import DialogModal from './components/DialogModal';
 import RoomCodeModal from './components/RoomCodeModal';
@@ -31,15 +32,12 @@ interface SetupProps {
 }
 
 export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
-  const [isSecondary] = useState<boolean>(() => {
-    const params = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.search);
-    return params.has('syncCode');
-  });
+  const [{ isSecondary, urlSync, urlGame }] = useState(() => getSyncParams());
+
+  const [showSyncModal, setShowSyncModal] = useState(false);
 
   const [syncCode, setSyncCode] = useState<string>(() => {
-    const params = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.search);
-    const urlSync = params.get('syncCode');
-    if (urlSync) return urlSync.toUpperCase();
+    if (isSecondary && urlSync) return urlSync.toUpperCase();
 
     const saved = localStorage.getItem('whale-bucket-sync-code');
     if (saved) return saved;
@@ -48,12 +46,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     return newSync;
   });
 
-  const [showSyncModal, setShowSyncModal] = useState(false);
-  const [hasReceivedSync, setHasReceivedSync] = useState(!isSecondary);
-
   const [gameCode, setGameCode] = useState<string>(() => {
-    const params = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.search);
-    const urlGame = params.get('gameCode');
     if (isSecondary && urlGame) return urlGame.toUpperCase();
 
     const saved = localStorage.getItem('whale-bucket-game-code');
@@ -282,7 +275,18 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   }, [excludedRoleIds]);
 
   // Preference modal states
-  const [rotationOffset, setRotationOffset] = useState(0);
+  const [rotationOffset, setRotationOffset] = useState<number>(() => {
+    const saved = localStorage.getItem('whalebucket-botc-game');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.rotationOffset || 0;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return 0;
+  });
   const [activePrefModal, setActivePrefModal] = useState<{ playerId: string; team: Role['team'] } | null>(null);
   const [prefSearchTerm, setPrefSearchTerm] = useState('');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
@@ -448,122 +452,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   }, [phase, players, broadcastSetupUpdate, isSecondary]);
 
   // Storyteller Sync channel (laptop <-> phone)
-  const syncChannelCode = syncCode;
-  const sendSyncRef = useRef<((payload: unknown) => Promise<void>) | null>(null);
-
-  const handleIncomingSyncMessage = useCallback((data: unknown) => {
-    const payload = data as {
-      type: string;
-      state?: {
-        players: Player[];
-        phase: Phase;
-        timeOfDay: 'night' | 'day';
-        dayNumber: number;
-        allowTravelers: boolean;
-        isLilMonstaGame: boolean;
-        excludedRoleIds: string[];
-        demonBluffs: string[];
-        reminderTokens: PlacedReminder[];
-        checkedItems: Record<string, boolean>;
-        rotationOffset?: number;
-      };
-    };
-
-    if (payload.type === 'storyteller_sync_request') {
-      if (!isSecondary && sendSyncRef.current) {
-        sendSyncRef.current({
-          type: 'storyteller_state_sync',
-          state: {
-            players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
-            phase,
-            timeOfDay,
-            dayNumber,
-            allowTravelers,
-            isLilMonstaGame,
-            excludedRoleIds,
-            demonBluffs,
-            reminderTokens,
-            checkedItems,
-            rotationOffset,
-          }
-        });
-      }
-    } else if (payload.type === 'storyteller_state_sync' && payload.state) {
-      const incoming = payload.state;
-      const localStateStr = JSON.stringify({
-        players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
-        phase,
-        timeOfDay,
-        dayNumber,
-        allowTravelers,
-        isLilMonstaGame,
-        excludedRoleIds,
-        demonBluffs,
-        reminderTokens,
-        checkedItems,
-        rotationOffset,
-      });
-
-      const incomingStateStr = JSON.stringify({
-        players: incoming.players || [],
-        phase: incoming.phase || 'setup',
-        timeOfDay: incoming.timeOfDay || 'night',
-        dayNumber: incoming.dayNumber || 1,
-        allowTravelers: incoming.allowTravelers !== undefined ? incoming.allowTravelers : true,
-        isLilMonstaGame: incoming.isLilMonstaGame || false,
-        excludedRoleIds: incoming.excludedRoleIds || [],
-        demonBluffs: incoming.demonBluffs || [],
-        reminderTokens: incoming.reminderTokens || [],
-        checkedItems: incoming.checkedItems || {},
-        rotationOffset: incoming.rotationOffset ?? 0,
-      });
-
-      if (localStateStr !== incomingStateStr) {
-        setPlayers(incoming.players || []);
-        setPhase(incoming.phase || 'setup');
-        setTimeOfDay(incoming.timeOfDay || 'night');
-        setDayNumber(incoming.dayNumber || 1);
-        setAllowTravelers(incoming.allowTravelers !== undefined ? incoming.allowTravelers : true);
-        setIsLilMonstaGame(incoming.isLilMonstaGame || false);
-        setExcludedRoleIds(incoming.excludedRoleIds || ['drunk', 'marionette', 'lunatic']);
-        setDemonBluffs(incoming.demonBluffs || []);
-        setReminderTokens(incoming.reminderTokens || []);
-        setCheckedItems(incoming.checkedItems || {});
-        setRotationOffset(incoming.rotationOffset ?? 0);
-      }
-      setHasReceivedSync(true);
-    }
-  }, [
-    isSecondary,
-    players,
-    phase,
-    timeOfDay,
-    dayNumber,
-    allowTravelers,
-    isLilMonstaGame,
-    excludedRoleIds,
-    demonBluffs,
-    reminderTokens,
-    checkedItems,
-    rotationOffset,
-  ]);
-
-  const { sendMessage: sendSyncMessage } = useGameSocket(syncChannelCode, handleIncomingSyncMessage);
-
-  useEffect(() => {
-    sendSyncRef.current = sendSyncMessage;
-  }, [sendSyncMessage]);
-
-  useEffect(() => {
-    if (isSecondary && sendSyncMessage) {
-      const timer = setTimeout(() => {
-        sendSyncMessage({ type: 'storyteller_sync_request' });
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [isSecondary, sendSyncMessage]);
-
-  const localStateStr = JSON.stringify({
+  const syncState = useMemo(() => ({
     players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
     phase,
     timeOfDay,
@@ -575,28 +464,36 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     reminderTokens,
     checkedItems,
     rotationOffset,
-  });
+  }), [
+    players, phase, timeOfDay, dayNumber, allowTravelers, isLilMonstaGame, excludedRoleIds, demonBluffs, reminderTokens, checkedItems, rotationOffset
+  ]);
 
-  useEffect(() => {
-    if (sendSyncMessage && hasReceivedSync) {
-      sendSyncMessage({
-        type: 'storyteller_state_sync',
-        state: {
-          players: phase === 'game' ? players.map(({ preferences, ...rest }) => rest) : players,
-          phase,
-          timeOfDay,
-          dayNumber,
-          allowTravelers,
-          isLilMonstaGame,
-          excludedRoleIds,
-          demonBluffs,
-          reminderTokens,
-          checkedItems,
-          rotationOffset,
-        }
-      });
+  const handleApplySync = useCallback((incoming: typeof syncState) => {
+    const localStateStr = JSON.stringify(syncState);
+    const incomingStateStr = JSON.stringify(incoming);
+
+    if (localStateStr !== incomingStateStr) {
+      setPlayers(incoming.players || []);
+      setPhase(incoming.phase || 'setup');
+      setTimeOfDay(incoming.timeOfDay || 'night');
+      setDayNumber(incoming.dayNumber || 1);
+      setAllowTravelers(incoming.allowTravelers !== undefined ? incoming.allowTravelers : true);
+      setIsLilMonstaGame(incoming.isLilMonstaGame || false);
+      setExcludedRoleIds(incoming.excludedRoleIds || ['drunk', 'marionette', 'lunatic']);
+      setDemonBluffs(incoming.demonBluffs || []);
+      setReminderTokens(incoming.reminderTokens || []);
+      setCheckedItems(incoming.checkedItems || {});
+      setRotationOffset(incoming.rotationOffset ?? 0);
     }
-  }, [localStateStr, sendSyncMessage, hasReceivedSync]);
+  }, [syncState]);
+
+  useStorytellerSync({
+    isSecondary,
+    syncCode,
+    gameType: 'whale-bucket',
+    localState: syncState,
+    onApplySync: handleApplySync,
+  });
 
   // Save to localStorage
   useEffect(() => {
@@ -1233,6 +1130,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           onSetCheckedItems={setCheckedItems}
           rotationOffset={rotationOffset}
           onRotationChange={setRotationOffset}
+          isSynced={isSecondary}
         />
       )}
 

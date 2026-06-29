@@ -45,9 +45,16 @@ export default function GrimoireBoard({
   onRotationChange,
 }: GrimoireBoardProps) {
   const [internalRotation, setInternalRotation] = useState(0);
+  // Ref accumulates rapid clicks before the parent re-render delivers the new prop
+  const rotationRef = useRef(controlledRotation ?? 0);
   const rotationOffset = controlledRotation !== undefined ? controlledRotation : internalRotation;
+  // Keep ref in sync when the controlled prop is updated by the parent
+  useEffect(() => {
+    if (controlledRotation !== undefined) rotationRef.current = controlledRotation;
+  }, [controlledRotation]);
   const handleRotate = (delta: number) => {
-    const next = rotationOffset + delta;
+    rotationRef.current += delta;
+    const next = rotationRef.current;
     setInternalRotation(next);
     onRotationChange?.(next);
   };
