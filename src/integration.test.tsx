@@ -485,9 +485,10 @@ describe('Storyteller Grimoire Bug Fixes', () => {
 
     // Verify Alice's role is updated but alignment (isEvil: true) is preserved
     const saved = JSON.parse(localStorage.getItem('standard-botc-game') || '{}');
-    const alice = saved.players.find((p: any) => p.id === 'p1');
-    expect(alice.roleId).toBe('empath');
-    expect(alice.isEvil).toBe(true);
+    const alice = saved.players.find((p: { id: string; roleId?: string; isEvil?: boolean }) => p.id === 'p1');
+    expect(alice).toBeDefined();
+    expect(alice!.roleId).toBe('empath');
+    expect(alice!.isEvil).toBe(true);
 
     storyteller.unmount();
   });
@@ -582,6 +583,113 @@ describe('Storyteller Grimoire Bug Fixes', () => {
     const saved = JSON.parse(localStorage.getItem('standard-botc-game') || '{}');
     expect(saved.phase).toBe('game');
     expect(saved.selectedCharacterIds).toEqual(['imp', 'poisoner']);
+
+    storyteller.unmount();
+  });
+
+  it('renders selected demon for Lunatic in details modal, grimoire board, and game phase list', async () => {
+    const PLAYERS = [
+      { id: 'p1', name: 'Alice', isDead: false, roleId: 'imp', isTheLunatic: true },
+    ];
+    
+    seedPrimary({
+      players: PLAYERS,
+      phase: 'game',
+      timeOfDay: 'night',
+      dayNumber: 1,
+    });
+
+    window.location.hash = '#/standard';
+    const storyteller = render(<StandardSetup theme="dark" toggleTheme={vi.fn()} />);
+
+    // 1. Verify Grimoire Board displays the selected Demon (Imp) name on the token and badge
+    expect(within(storyteller.container).getByText('LUNATIC (Imp)')).toBeInTheDocument();
+    
+    // The main token text should show "Imp"
+    const boardTokens = storyteller.container.querySelectorAll('textPath');
+    const tokenNames = Array.from(boardTokens).map(el => el.textContent);
+    expect(tokenNames).toContain('Imp');
+    expect(tokenNames).not.toContain('Lunatic');
+
+    // 2. Open details modal for Alice
+    const playerToken = storyteller.container.querySelector('#grimoire-player-p1');
+    expect(playerToken).not.toBeNull();
+    await act(async () => {
+      fireEvent.click(playerToken!);
+      await new Promise(resolve => setTimeout(resolve, 150));
+    });
+
+    // Verify Details Modal shows "Imp" instead of "Lunatic" as the character title
+    const modalTextPaths = storyteller.container.querySelectorAll('textPath');
+    const modalTokenNames = Array.from(modalTextPaths).map(el => el.textContent);
+    expect(modalTokenNames).toContain('Imp');
+
+    // Close details modal
+    const closeBtn = storyteller.container.querySelector('#detail-close-button');
+    expect(closeBtn).not.toBeNull();
+    await act(async () => {
+      fireEvent.click(closeBtn!);
+      await new Promise(resolve => setTimeout(resolve, 50));
+    });
+
+    // 3. Switch to Game Phase view / check player list
+    const sidebarRoleNames = Array.from(storyteller.container.querySelectorAll('.truncate')).map(el => el.textContent);
+    // Should show the Demon role name (Imp) next to the player name
+    expect(sidebarRoleNames).toContain('Imp');
+    expect(sidebarRoleNames).not.toContain('Lunatic');
+
+    storyteller.unmount();
+  });
+
+  it('renders assigned good role for Marionette in details modal, grimoire board, and game phase list', async () => {
+    // Marionette is always assigned a good role (Townsfolk/Outsider) — they think they are that character
+    const PLAYERS = [
+      { id: 'p1', name: 'Bob', isDead: false, roleId: 'washerwoman', isTheMarionette: true },
+    ];
+
+    seedPrimary({
+      players: PLAYERS,
+      phase: 'game',
+      timeOfDay: 'night',
+      dayNumber: 1,
+    });
+
+    window.location.hash = '#/standard';
+    const storyteller = render(<StandardSetup theme="dark" toggleTheme={vi.fn()} />);
+
+    // 1. Verify Grimoire Board displays the assigned Townsfolk (Washerwoman) name on the token and badge
+    expect(within(storyteller.container).getByText('MARIONETTE (Washerwoman)')).toBeInTheDocument();
+
+    const boardTokens = storyteller.container.querySelectorAll('textPath');
+    const tokenNames = Array.from(boardTokens).map(el => el.textContent);
+    expect(tokenNames).toContain('Washerwoman');
+    expect(tokenNames).not.toContain('Marionette');
+
+    // 2. Open details modal for Bob
+    const playerToken = storyteller.container.querySelector('#grimoire-player-p1');
+    expect(playerToken).not.toBeNull();
+    await act(async () => {
+      fireEvent.click(playerToken!);
+      await new Promise(resolve => setTimeout(resolve, 150));
+    });
+
+    // Verify Details Modal shows "Washerwoman" instead of "Marionette" as the character title
+    const modalTextPaths = storyteller.container.querySelectorAll('textPath');
+    const modalTokenNames = Array.from(modalTextPaths).map(el => el.textContent);
+    expect(modalTokenNames).toContain('Washerwoman');
+
+    // Close details modal
+    const closeBtn = storyteller.container.querySelector('#detail-close-button');
+    expect(closeBtn).not.toBeNull();
+    await act(async () => {
+      fireEvent.click(closeBtn!);
+      await new Promise(resolve => setTimeout(resolve, 50));
+    });
+
+    // 3. Check player list in sidebar
+    const sidebarRoleNames = Array.from(storyteller.container.querySelectorAll('.truncate')).map(el => el.textContent);
+    expect(sidebarRoleNames).toContain('Washerwoman');
+    expect(sidebarRoleNames).not.toContain('Marionette');
 
     storyteller.unmount();
   });
