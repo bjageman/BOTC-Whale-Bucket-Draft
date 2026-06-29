@@ -399,4 +399,36 @@ describe('Storyteller Device Sync', () => {
     primary.unmount();
     secondary.unmount();
   });
+
+  it('syncs the time and day multiple times in a row up to Night 10', async () => {
+    seedPrimary();
+    const { primary, secondary } = await renderSyncedPair();
+
+    const clickTimeBadge = async () => {
+      await act(async () => {
+        fireEvent.click(primary.container.querySelector('#grimoire-info-row')!);
+        await new Promise(resolve => setTimeout(resolve, 150));
+      });
+    };
+
+    // Toggle repeatedly: Night 1 -> Day 1 -> Night 2 -> Day 2 -> ... -> Night 10
+    // Starting at Night 1, we need 18 toggles to reach Night 10.
+    const targetToggles = 18;
+    for (let i = 0; i < targetToggles; i++) {
+      sentPayloads.length = 0;
+      await clickTimeBadge();
+
+      const lastSync = lastSyncState();
+      expect(lastSync).toBeDefined();
+
+      const expectedTime = i % 2 === 0 ? 'day' : 'night';
+      const expectedDay = Math.floor(i / 2) + 1 + (i % 2 === 0 ? 0 : 1);
+
+      expect(lastSync!.timeOfDay).toBe(expectedTime);
+      expect(lastSync!.dayNumber).toBe(expectedDay);
+    }
+
+    primary.unmount();
+    secondary.unmount();
+  });
 });
