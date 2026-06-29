@@ -22,5 +22,5 @@ jobs:
             cd /home/neurobomber/Apps-Docker/vibes/botc-grimoire-companion
             git fetch origin
             git checkout dev
-            git pull origin dev
+            git reset --hard origin/dev
             BUILDKIT_PROGRESS=plain docker compose -f docker-compose.dev.yml up -d --build --remove-orphans
