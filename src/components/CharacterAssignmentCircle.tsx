@@ -45,6 +45,7 @@ export default function CharacterAssignmentCircle({
   return (
     <div className="w-full flex flex-col items-center">
       <div
+        id="character-assignment-board"
         ref={boardRef}
         className={cn(
           "relative border shadow-inner overflow-visible mx-auto",
