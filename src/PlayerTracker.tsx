@@ -9,6 +9,7 @@ import { parseScriptFile } from './utils/scriptUtils';
 import PlayerDetailsModal from './components/PlayerDetailsModal';
 import GamePhase from './components/GamePhase';
 import PlayerTrackerSetupPhase from './components/PlayerTrackerSetupPhase';
+import PlayerTrackerNameEditModal from './components/PlayerTrackerNameEditModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
 import PageLayout from './components/PageLayout';
@@ -79,6 +80,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
 
   // Details modal states
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [activeTrackerPlayerId, setActiveTrackerPlayerId] = useState<string | null>(null);
   const [isSearchingRole, setIsSearchingRole] = useState(false);
   const [modalRoleSearch, setModalRoleSearch] = useState('');
 
@@ -256,7 +258,6 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
     handleTouchStart,
     handleTouchMove,
     handleTouchEnd,
-    movePlayer,
   } = usePlayerDragAndDrop(players, setPlayers);
 
   // Save to localStorage
@@ -487,8 +488,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
           newPlayerName={newPlayerName}
           setNewPlayerName={setNewPlayerName}
           addPlayer={addPlayer}
-          removePlayer={removePlayer}
-          updatePlayerName={updatePlayerName}
+          setActiveTrackerPlayerId={setActiveTrackerPlayerId}
           fileInputRef={fileInputRef}
           handleScriptUpload={handleScriptUpload}
           clearCustomScript={clearCustomScript}
@@ -504,8 +504,18 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
           handleTouchStart={handleTouchStart}
           handleTouchMove={handleTouchMove}
           handleTouchEnd={handleTouchEnd}
-          movePlayer={movePlayer}
           isSynced={isSynced}
+        />
+      )}
+
+      {/* Player Edit Modal (setup phase) */}
+      {activeTrackerPlayerId && (
+        <PlayerTrackerNameEditModal
+          activePlayerId={activeTrackerPlayerId}
+          players={players}
+          updatePlayerName={updatePlayerName}
+          removePlayer={removePlayer}
+          onClose={() => setActiveTrackerPlayerId(null)}
         />
       )}
 

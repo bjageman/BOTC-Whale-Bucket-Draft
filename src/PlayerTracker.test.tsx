@@ -34,7 +34,7 @@ describe('PlayerTracker', () => {
     fireEvent.change(input, { target: { value: 'Alice' } });
     fireEvent.click(addButton);
 
-    expect(screen.getByDisplayValue('Alice')).toBeInTheDocument();
+    expect(screen.getAllByText('Alice')[0]).toBeInTheDocument();
     expect(screen.getByText('Start Game').closest('button')).not.toBeDisabled();
   });
 
@@ -92,12 +92,13 @@ describe('PlayerTracker', () => {
     });
 
     // Verify players are displayed
-    expect(screen.getByDisplayValue('Alice')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Bob')).toBeInTheDocument();
+    expect(screen.getAllByText('Alice')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Bob')[0]).toBeInTheDocument();
 
-    // Verify player names are read-only/disabled
-    expect(screen.getByDisplayValue('Alice')).toBeDisabled();
-    expect(screen.getByDisplayValue('Bob')).toBeDisabled();
+    // Verify player tokens are read-only: not draggable and clicking doesn't open the edit modal
+    expect(document.querySelector('[data-drag-index="0"]')).toHaveAttribute('draggable', 'false');
+    fireEvent.click(screen.getByTitle('Alice'));
+    expect(screen.queryByText('Edit Player')).toBeNull();
 
     // Verify drag handle / grip icons are not in the document
     expect(screen.queryByTitle('Drag to seat player')).toBeNull();

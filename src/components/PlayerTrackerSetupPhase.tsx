@@ -3,7 +3,7 @@ import { Plus, Upload } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player, Role } from '../types';
 import { getScriptStats } from '../utils/scriptUtils';
-import PlayerTrackerSetupPlayerRow from './PlayerTrackerSetupPlayerRow';
+import PlayerTrackerCircle from './PlayerTrackerCircle';
 
 interface PlayerTrackerSetupPhaseProps {
   players: Player[];
@@ -12,8 +12,7 @@ interface PlayerTrackerSetupPhaseProps {
   newPlayerName: string;
   setNewPlayerName: (name: string) => void;
   addPlayer: () => void;
-  removePlayer: (id: string) => void;
-  updatePlayerName: (id: string, name: string) => void;
+  setActiveTrackerPlayerId: (id: string | null) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleScriptUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   clearCustomScript: () => void;
@@ -29,7 +28,6 @@ interface PlayerTrackerSetupPhaseProps {
   handleTouchStart: (e: React.TouchEvent, index: number) => void;
   handleTouchMove: (e: React.TouchEvent) => void;
   handleTouchEnd: () => void;
-  movePlayer: (index: number, direction: 'up' | 'down') => void;
   isSynced?: boolean;
   isLightModeActive?: boolean;
 }
@@ -41,8 +39,7 @@ export default function PlayerTrackerSetupPhase({
   newPlayerName,
   setNewPlayerName,
   addPlayer,
-  removePlayer,
-  updatePlayerName,
+  setActiveTrackerPlayerId,
   fileInputRef,
   handleScriptUpload,
   clearCustomScript,
@@ -58,7 +55,6 @@ export default function PlayerTrackerSetupPhase({
   handleTouchStart,
   handleTouchMove,
   handleTouchEnd,
-  movePlayer,
   isSynced = false,
   isLightModeActive = false,
 }: PlayerTrackerSetupPhaseProps) {
@@ -191,36 +187,29 @@ export default function PlayerTrackerSetupPhase({
             </div>
           )}
 
-          <div className="space-y-2.5">
-            {players.map((p, index) => (
-              <PlayerTrackerSetupPlayerRow
-                key={p.id}
-                player={p}
-                index={index}
-                players={players}
-                draggedIndex={draggedIndex}
-                dragOverIndex={dragOverIndex}
-                handleMouseDown={handleMouseDown}
-                handleDragStart={handleDragStart}
-                handleDragOver={handleDragOver}
-                handleDragLeave={handleDragLeave}
-                handleDrop={handleDrop}
-                handleDragEnd={handleDragEnd}
-                handleTouchStart={handleTouchStart}
-                handleTouchMove={handleTouchMove}
-                handleTouchEnd={handleTouchEnd}
-                movePlayer={movePlayer}
-                removePlayer={removePlayer}
-                updatePlayerName={updatePlayerName}
-                isSynced={isSynced}
-              />
-            ))}
-            {players.length === 0 && (
-              <div className="p-8 border border-dashed border-gray-800 rounded-lg text-center text-gray-500 text-sm italic">
-                Add players to get started.
-              </div>
-            )}
-          </div>
+          {players.length === 0 ? (
+            <div className="p-8 border border-dashed border-gray-800 rounded-lg text-center text-gray-500 text-sm italic">
+              Add players to get started.
+            </div>
+          ) : (
+            <PlayerTrackerCircle
+              players={players}
+              isLightModeActive={isLightModeActive}
+              isSynced={isSynced}
+              setActiveTrackerPlayerId={setActiveTrackerPlayerId}
+              draggedIndex={draggedIndex}
+              dragOverIndex={dragOverIndex}
+              handleMouseDown={handleMouseDown}
+              handleDragStart={handleDragStart}
+              handleDragOver={handleDragOver}
+              handleDragLeave={handleDragLeave}
+              handleDrop={handleDrop}
+              handleDragEnd={handleDragEnd}
+              handleTouchStart={handleTouchStart}
+              handleTouchMove={handleTouchMove}
+              handleTouchEnd={handleTouchEnd}
+            />
+          )}
         </section>
       </div>
 
