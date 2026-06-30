@@ -11,7 +11,7 @@ import { getValidationSummary } from './utils/whaleBucketValidation';
 import PlayerDetailsModal from './components/PlayerDetailsModal';
 import GamePhase from './components/GamePhase';
 import StandardSetupPhase from './components/StandardSetupPhase';
-import StandardRoleSelectionModal from './components/StandardRoleSelectionModal';
+import SetupPlayerEditModal from './components/SetupPlayerEditModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
 import { useStorytellerSync, getSyncParams } from './hooks/useStorytellerSync';
@@ -337,7 +337,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     handleTouchStart,
     handleTouchMove,
     handleTouchEnd,
-    movePlayer,
   } = usePlayerDragAndDrop(players, setPlayers);
 
   const handleIncomingMessage = (data: unknown) => {
@@ -1034,8 +1033,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           newPlayerName={newPlayerName}
           setNewPlayerName={setNewPlayerName}
           addPlayer={addPlayer}
-          removePlayer={removePlayer}
-          updatePlayerName={updatePlayerName}
           fileInputRef={fileInputRef}
           handleScriptUpload={handleScriptUpload}
           clearCustomScript={clearCustomScript}
@@ -1044,10 +1041,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           scriptRoles={customScriptRoles || (rolesData as Role[])}
           setActivePlayerId={setActivePlayerId}
           setSearchTerm={setSearchTerm}
-          togglePlayerTheDrunk={togglePlayerTheDrunk}
-          togglePlayerTheMarionette={togglePlayerTheMarionette}
-          togglePlayerTheLunatic={togglePlayerTheLunatic}
-          togglePlayerTheLilMonsta={togglePlayerTheLilMonsta}
           validationSummary={validationSummary}
           isLightModeActive={isLightModeActive}
           allAssigned={allAssigned}
@@ -1065,7 +1058,6 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           handleTouchStart={handleTouchStart}
           handleTouchMove={handleTouchMove}
           handleTouchEnd={handleTouchEnd}
-          movePlayer={movePlayer}
         />
       )}
 
@@ -1148,17 +1140,24 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
         />
       )}
 
-      {/* Role Selection Modal */}
+      {/* Player Edit Modal (setup phase) */}
       {activePlayerId && (
-        <StandardRoleSelectionModal
+        <SetupPlayerEditModal
           activePlayerId={activePlayerId}
           players={players}
+          customScriptRoles={customScriptRoles}
+          selectionRoles={selectionRoles}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-          updatePlayerRole={updatePlayerRole}
-          setActivePlayerId={setActivePlayerId}
           isLightModeActive={isLightModeActive}
-          selectionRoles={selectionRoles}
+          updatePlayerName={updatePlayerName}
+          updatePlayerRole={updatePlayerRole}
+          removePlayer={removePlayer}
+          togglePlayerTheDrunk={togglePlayerTheDrunk}
+          togglePlayerTheMarionette={togglePlayerTheMarionette}
+          togglePlayerTheLunatic={togglePlayerTheLunatic}
+          togglePlayerTheLilMonsta={togglePlayerTheLilMonsta}
+          onClose={() => { setActivePlayerId(null); setSearchTerm(''); }}
         />
       )}
 
