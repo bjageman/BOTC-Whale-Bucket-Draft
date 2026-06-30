@@ -1,3 +1,4 @@
+import { Star } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player } from '../WhaleBucket';
 import type { Role } from '../types';
@@ -37,6 +38,13 @@ export default function WhaleBucketDraftCircle({
           const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
           const isEvil = p.isTheLunatic ? false : p.isTheMarionette ? true : defaultEvil;
 
+          const dx = 50 - pos.left;
+          const dy = 50 - pos.top;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const inwardDx = dist > 0 ? dx / dist : 0;
+          const inwardDy = dist > 0 ? dy / dist : -1;
+          const starRotation = Math.atan2(inwardDy, inwardDx) * (180 / Math.PI) + 90;
+
           return (
             <div
               key={p.id}
@@ -60,10 +68,15 @@ export default function WhaleBucketDraftCircle({
 
                 {p.assignedFromPref && (
                   <span
-                    className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 text-amber-500 text-sm leading-none"
+                    className="absolute z-30 pointer-events-none"
                     title="Assigned from preference"
+                    style={{
+                      left: `calc(50% + ${(inwardDx * 60).toFixed(1)}%)`,
+                      top: `calc(50% + ${(inwardDy * 60).toFixed(1)}%)`,
+                      transform: `translate(-50%, -50%) rotate(${starRotation.toFixed(1)}deg)`,
+                    }}
                   >
-                    ★
+                    <Star size={14} className="text-amber-500 fill-amber-500" />
                   </span>
                 )}
 
