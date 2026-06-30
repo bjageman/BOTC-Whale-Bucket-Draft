@@ -10,7 +10,7 @@ import PlayerDetailsModal from './components/PlayerDetailsModal';
 import WhaleBucketSetupPhase from './components/WhaleBucketSetupPhase';
 import WhaleBucketDraftPhase from './components/WhaleBucketDraftPhase';
 import GamePhase from './components/GamePhase';
-import PreferenceSelectionModal from './components/PreferenceSelectionModal';
+import WhaleBucketPlayerPreferenceModal from './components/WhaleBucketPlayerPreferenceModal';
 import ManualOverrideModal from './components/ManualOverrideModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
@@ -287,8 +287,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     }
     return 0;
   });
-  const [activePrefModal, setActivePrefModal] = useState<{ playerId: string; team: Role['team'] } | null>(null);
-  const [prefSearchTerm, setPrefSearchTerm] = useState('');
+  const [activePreferencePlayerId, setActivePreferencePlayerId] = useState<string | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [isSearchingRole, setIsSearchingRole] = useState(false);
   const [modalRoleSearch, setModalRoleSearch] = useState('');
@@ -306,7 +305,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     handleTouchStart,
     handleTouchMove,
     handleTouchEnd,
-    movePlayer,
   } = usePlayerDragAndDrop(players, setPlayers);
 
   const handleIncomingMessage = (data: unknown) => {
@@ -1055,15 +1053,10 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           handleTouchStart={handleTouchStart}
           handleTouchMove={handleTouchMove}
           handleTouchEnd={handleTouchEnd}
-          movePlayer={movePlayer}
           addPlayer={addPlayer}
-          removePlayer={removePlayer}
-          updatePlayerName={updatePlayerName}
-          autoFillPlayerPreferences={autoFillPlayerPreferences}
           autoFillAllPreferences={autoFillAllPreferences}
           clearAllPreferences={clearAllPreferences}
-          setActivePrefModal={setActivePrefModal}
-          setPrefSearchTerm={setPrefSearchTerm}
+          setActivePreferencePlayerId={setActivePreferencePlayerId}
           runAssignment={runAssignment}
           isLightModeActive={isLightModeActive}
           excludedRoleIds={excludedRoleIds}
@@ -1155,17 +1148,19 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         />
       )}
 
-      {/* Preference Selection Modal */}
-      {activePrefModal && (
-        <PreferenceSelectionModal
-          activePrefModal={activePrefModal}
+      {/* Player Preference Modal (setup phase) */}
+      {activePreferencePlayerId && (
+        <WhaleBucketPlayerPreferenceModal
+          activePlayerId={activePreferencePlayerId}
           players={players}
-          prefSearchTerm={prefSearchTerm}
-          setPrefSearchTerm={setPrefSearchTerm}
-          togglePreference={togglePreference}
           setPlayers={setPlayers}
-          setActivePrefModal={setActivePrefModal}
+          allowTravelers={allowTravelers}
           excludedRoleIds={excludedRoleIds}
+          updatePlayerName={updatePlayerName}
+          removePlayer={removePlayer}
+          togglePreference={togglePreference}
+          autoFillPlayerPreferences={autoFillPlayerPreferences}
+          onClose={() => setActivePreferencePlayerId(null)}
         />
       )}
 

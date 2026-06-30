@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Plus, Trash2, ChevronUp, ChevronDown, GripVertical, Shuffle, Sparkles } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player } from '../WhaleBucket';
 import type { Role } from '../types';
 import { getDistribution } from '../constants';
-import { getPreferenceLabel } from '../utils/assignment';
+import WhaleBucketPreferenceCircle from './WhaleBucketPreferenceCircle';
 import rolesData from '../official_roles.json';
 
 
@@ -25,15 +25,10 @@ interface WhaleBucketSetupPhaseProps {
   handleTouchStart: (e: React.TouchEvent, index: number) => void;
   handleTouchMove: (e: React.TouchEvent) => void;
   handleTouchEnd: () => void;
-  movePlayer: (index: number, direction: 'up' | 'down') => void;
   addPlayer: () => void;
-  removePlayer: (id: string) => void;
-  updatePlayerName: (id: string, name: string) => void;
-  autoFillPlayerPreferences: (playerId: string) => void;
   autoFillAllPreferences: () => void;
   clearAllPreferences: () => void;
-  setActivePrefModal: (val: { playerId: string; team: Role['team'] } | null) => void;
-  setPrefSearchTerm: (term: string) => void;
+  setActivePreferencePlayerId: (id: string | null) => void;
   runAssignment: () => void;
   isLightModeActive: boolean;
   excludedRoleIds: string[];
@@ -56,15 +51,10 @@ export default function WhaleBucketSetupPhase({
   handleTouchStart,
   handleTouchMove,
   handleTouchEnd,
-  movePlayer,
   addPlayer,
-  removePlayer,
-  updatePlayerName,
-  autoFillPlayerPreferences,
   autoFillAllPreferences,
   clearAllPreferences,
-  setActivePrefModal,
-  setPrefSearchTerm,
+  setActivePreferencePlayerId,
   runAssignment,
   isLightModeActive,
   excludedRoleIds,
@@ -143,157 +133,23 @@ export default function WhaleBucketSetupPhase({
             </button>
           </div>
 
-          <div className="space-y-3">
-            {players.map((p, index) => (
-              <div
-                key={p.id}
-                data-drag-index={index}
-                draggable={true}
-                onMouseDown={handleMouseDown}
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, index)}
-                onDragEnd={handleDragEnd}
-                className={cn(
-                  "bg-gray-900/60 p-3 rounded-lg border border-gray-800/50 space-y-2 transition-all duration-200",
-                  draggedIndex === index && "opacity-20 border-2 border-dashed border-clocktower-blood bg-black/40 scale-[0.96]",
-                  dragOverIndex === index && draggedIndex !== index && "border-t-4 border-t-clocktower-blood bg-clocktower-blood/10 shadow-[0_4px_12px_rgba(139,0,0,0.15)] translate-y-1"
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    onTouchStart={(e) => handleTouchStart(e, index)}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
-                    className="text-gray-600 cursor-grab active:cursor-grabbing hover:text-gray-400 p-0.5 shrink-0 flex items-center select-none touch-none drag-handle"
-                  >
-                    <GripVertical size={14} />
-                  </div>
-                  <span className="text-xs text-gray-500 font-mono w-5">#{index + 1}</span>
-                  <input
-                    type="text"
-                    value={p.name}
-                    onChange={(e) => updatePlayerName(p.id, e.target.value)}
-                    onFocus={(e) => e.target.select()}
-                    autoCapitalize="words"
-                    className="flex-grow min-w-0 font-semibold text-gray-200 bg-transparent border-b border-transparent hover:border-gray-800/80 focus:border-clocktower-blood focus:outline-none px-1.5 py-0.5 rounded transition-all"
-                  />
-                  <button
-                    onClick={() => autoFillPlayerPreferences(p.id)}
-                    className="text-[10px] text-clocktower-townsfolk hover:underline flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-clocktower-townsfolk/5 border border-clocktower-townsfolk/20"
-                    title="Auto-fill random preferences for this player"
-                  >
-                    <Shuffle size={10} /> Auto
-                  </button>
-                  <div className="flex gap-0.5 items-center bg-gray-955/45 px-1 py-0.5 rounded border border-gray-800">
-                    <button
-                      type="button"
-                      disabled={index === 0}
-                      onClick={() => movePlayer(index, 'up')}
-                      className="text-gray-500 hover:text-gray-200 disabled:opacity-20 disabled:hover:text-gray-500 transition-colors p-0.5"
-                      title="Move player up"
-                    >
-                      <ChevronUp size={12} />
-                    </button>
-                    <button
-                      type="button"
-                      disabled={index === players.length - 1}
-                      onClick={() => movePlayer(index, 'down')}
-                      className="text-gray-500 hover:text-gray-200 disabled:opacity-20 disabled:hover:text-gray-500 transition-colors p-0.5"
-                      title="Move player down"
-                    >
-                      <ChevronDown size={12} />
-                    </button>
-                  </div>
-                  <button onClick={() => removePlayer(p.id)} className="text-gray-600 hover:text-red-500 p-1 transition-colors">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-                
-                {/* Preference buttons */}
-                <div className={cn("grid gap-1.5 pt-1", allowTravelers ? "grid-cols-5" : "grid-cols-4")}>
-                  <button
-                    onClick={() => {
-                      setActivePrefModal({ playerId: p.id, team: 'townsfolk' });
-                      setPrefSearchTerm('');
-                    }}
-                    title={getPreferenceLabel(p.preferences.townsfolk, "No Townsfolk preference")}
-                    className={cn(
-                      "text-[10px] font-bold py-1.5 px-0.5 rounded border transition-all text-center truncate block w-full whitespace-nowrap",
-                      p.preferences.townsfolk.length > 0
-                        ? "bg-clocktower-townsfolk/15 border-clocktower-townsfolk/40 text-clocktower-townsfolk"
-                        : "bg-gray-950/40 border-gray-800 text-gray-550 hover:border-gray-700"
-                    )}
-                  >
-                    {getPreferenceLabel(p.preferences.townsfolk, "TF")}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActivePrefModal({ playerId: p.id, team: 'outsider' });
-                      setPrefSearchTerm('');
-                    }}
-                    title={getPreferenceLabel(p.preferences.outsider, "No Outsider preference")}
-                    className={cn(
-                      "text-[10px] font-bold py-1.5 px-0.5 rounded border transition-all text-center truncate block w-full whitespace-nowrap",
-                      p.preferences.outsider.length > 0
-                        ? "bg-clocktower-outsider/15 border-clocktower-outsider/40 text-clocktower-outsider"
-                        : "bg-gray-950/40 border-gray-800 text-gray-550 hover:border-gray-700"
-                    )}
-                  >
-                    {getPreferenceLabel(p.preferences.outsider, "OUT")}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActivePrefModal({ playerId: p.id, team: 'minion' });
-                      setPrefSearchTerm('');
-                    }}
-                    title={getPreferenceLabel(p.preferences.minion, "No Minion preference")}
-                    className={cn(
-                      "text-[10px] font-bold py-1.5 px-0.5 rounded border transition-all text-center truncate block w-full whitespace-nowrap",
-                      p.preferences.minion.length > 0
-                        ? "bg-clocktower-minion/15 border-clocktower-minion/40 text-clocktower-minion"
-                        : "bg-gray-950/40 border-gray-800 text-gray-550 hover:border-gray-700"
-                    )}
-                  >
-                    {getPreferenceLabel(p.preferences.minion, "MIN")}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActivePrefModal({ playerId: p.id, team: 'demon' });
-                      setPrefSearchTerm('');
-                    }}
-                    title={getPreferenceLabel(p.preferences.demon, "No Demon preference")}
-                    className={cn(
-                      "text-[10px] font-bold py-1.5 px-0.5 rounded border transition-all text-center truncate block w-full whitespace-nowrap",
-                      p.preferences.demon.length > 0
-                        ? "bg-clocktower-demon/15 border-clocktower-demon/40 text-clocktower-demon"
-                        : "bg-gray-950/40 border-gray-800 text-gray-550 hover:border-gray-700"
-                    )}
-                  >
-                    {getPreferenceLabel(p.preferences.demon, "DEM")}
-                  </button>
-                  {allowTravelers && (
-                    <button
-                      onClick={() => {
-                        setActivePrefModal({ playerId: p.id, team: 'traveler' });
-                        setPrefSearchTerm('');
-                      }}
-                      title={getPreferenceLabel(p.preferences.traveler || [], "No Traveler preference")}
-                      className={cn(
-                        "text-[10px] font-bold py-1.5 px-0.5 rounded border transition-all text-center truncate block w-full whitespace-nowrap",
-                        p.preferences.traveler && p.preferences.traveler.length > 0
-                          ? "bg-clocktower-traveler/15 border-clocktower-traveler/40 text-clocktower-traveler"
-                          : "bg-gray-950/40 border-gray-800 text-gray-550 hover:border-gray-700"
-                      )}
-                    >
-                      {getPreferenceLabel(p.preferences.traveler || [], "TRV")}
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <WhaleBucketPreferenceCircle
+            players={players}
+            allowTravelers={allowTravelers}
+            isLightModeActive={isLightModeActive}
+            setActivePreferencePlayerId={setActivePreferencePlayerId}
+            draggedIndex={draggedIndex}
+            dragOverIndex={dragOverIndex}
+            handleMouseDown={handleMouseDown}
+            handleDragStart={handleDragStart}
+            handleDragOver={handleDragOver}
+            handleDragLeave={handleDragLeave}
+            handleDrop={handleDrop}
+            handleDragEnd={handleDragEnd}
+            handleTouchStart={handleTouchStart}
+            handleTouchMove={handleTouchMove}
+            handleTouchEnd={handleTouchEnd}
+          />
         </section>
       </div>
 
