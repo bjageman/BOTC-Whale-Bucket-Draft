@@ -11,7 +11,7 @@ import WhaleBucketSetupPhase from './components/WhaleBucketSetupPhase';
 import WhaleBucketDraftPhase from './components/WhaleBucketDraftPhase';
 import GamePhase from './components/GamePhase';
 import WhaleBucketPlayerPreferenceModal from './components/WhaleBucketPlayerPreferenceModal';
-import ManualOverrideModal from './components/ManualOverrideModal';
+import WhaleBucketDraftEditModal from './components/WhaleBucketDraftEditModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
 import { useStorytellerSync, getSyncParams } from './hooks/useStorytellerSync';
@@ -1073,10 +1073,6 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           onStartGame={handleStartGame}
           runAssignment={runAssignment}
           setActiveDraftPlayerId={setActiveDraftPlayerId}
-          togglePlayerTheDrunk={togglePlayerTheDrunk}
-          togglePlayerTheMarionette={togglePlayerTheMarionette}
-          togglePlayerTheLunatic={togglePlayerTheLunatic}
-          togglePlayerTheLilMonsta={togglePlayerTheLilMonsta}
         />
       )}
 
@@ -1164,16 +1160,20 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
         />
       )}
 
-      {/* Manual Override Modal */}
+      {/* Draft Player Edit Modal */}
       {activeDraftPlayerId && (
-        <ManualOverrideModal
+        <WhaleBucketDraftEditModal
           activeDraftPlayerId={activeDraftPlayerId}
           players={players}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           updatePlayerRole={updatePlayerRole}
-          setActiveDraftPlayerId={setActiveDraftPlayerId}
+          togglePlayerTheDrunk={togglePlayerTheDrunk}
+          togglePlayerTheMarionette={togglePlayerTheMarionette}
+          togglePlayerTheLunatic={togglePlayerTheLunatic}
+          togglePlayerTheLilMonsta={togglePlayerTheLilMonsta}
           isLightModeActive={isLightModeActive}
+          onClose={() => { setActiveDraftPlayerId(null); setSearchTerm(''); }}
         />
       )}
 

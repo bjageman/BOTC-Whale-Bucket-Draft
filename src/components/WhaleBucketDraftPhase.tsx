@@ -1,8 +1,7 @@
 import { Shuffle, AlertTriangle, CheckCircle } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Player } from '../WhaleBucket';
-import type { Role } from '../types';
-import rolesData from '../official_roles.json';
+import WhaleBucketDraftCircle from './WhaleBucketDraftCircle';
 
 import type { ValidationSummary } from '../utils/whaleBucketValidation';
 
@@ -14,10 +13,6 @@ interface WhaleBucketDraftPhaseProps {
   onStartGame: () => void;
   runAssignment: () => void;
   setActiveDraftPlayerId: (id: string | null) => void;
-  togglePlayerTheDrunk: (id: string) => void;
-  togglePlayerTheMarionette: (id: string) => void;
-  togglePlayerTheLunatic: (id: string) => void;
-  togglePlayerTheLilMonsta: (id: string) => void;
 }
 
 export default function WhaleBucketDraftPhase({
@@ -28,10 +23,6 @@ export default function WhaleBucketDraftPhase({
   onStartGame,
   runAssignment,
   setActiveDraftPlayerId,
-  togglePlayerTheDrunk,
-  togglePlayerTheMarionette,
-  togglePlayerTheLunatic,
-  togglePlayerTheLilMonsta,
 }: WhaleBucketDraftPhaseProps) {
   return (
     <div className="space-y-5">
@@ -176,189 +167,11 @@ export default function WhaleBucketDraftPhase({
         </div>
       )}
 
-      <div className="space-y-2.5">
-        {players.map((p, idx) => {
-          const roleObj = (rolesData as Role[]).find(r => r.id === p.roleId);
-          
-          const isTownsfolk = roleObj?.team === 'townsfolk';
-          const isGood = roleObj?.team === 'townsfolk' || roleObj?.team === 'outsider';
-
-          const N = players.length;
-          const leftNeighbor = players[(idx - 1 + N) % N];
-          const rightNeighbor = players[(idx + 1) % N];
-          const leftRoleObj = (rolesData as Role[]).find(r => r.id === leftNeighbor?.roleId);
-          const rightRoleObj = (rolesData as Role[]).find(r => r.id === rightNeighbor?.roleId);
-          const isLeftDemon = leftRoleObj?.team === 'demon' && !leftNeighbor?.isTheLunatic;
-          const isRightDemon = rightRoleObj?.team === 'demon' && !rightNeighbor?.isTheLunatic;
-          const isNextToDemon = isLeftDemon || isRightDemon;
-          const canBeDrunk = p.isTheDrunk || isTownsfolk;
-          const canBeMarionette = p.isTheMarionette || (isGood && isNextToDemon);
-
-          const isDemon = roleObj?.team === 'demon';
-          const canBeLunatic = p.isTheLunatic || isDemon;
-
-          const isMinion = roleObj?.team === 'minion';
-          const canBeLilMonsta = p.isTheLilMonsta || isMinion;
-
-          const isDrunkSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheDrunk);
-          const isMarionetteSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheMarionette);
-          const isLunaticSelectedElsewhere = players.some(pl => pl.id !== p.id && pl.isTheLunatic);
-          return (
-            <div key={p.id} className="bg-gray-900 p-3 rounded-lg border border-gray-855 space-y-2">
-               <div className="flex justify-between items-center">
-                <span className="font-bold text-gray-200">{p.name}</span>
-                <div className="flex items-center gap-2">
-                  {p.isTheDrunk && (
-                    <span className="text-[8px] font-black text-black bg-yellow-600 border border-yellow-750 px-1 py-0.5 rounded uppercase">
-                      THE DRUNK
-                    </span>
-                  )}
-                  {p.isTheMarionette && (
-                    <span className="text-[8px] font-black text-white bg-clocktower-minion border border-clocktower-minion/30 px-1 py-0.5 rounded uppercase">
-                      THE MARIONETTE
-                    </span>
-                  )}
-                  {p.isTheLunatic && (
-                    <span className="text-[8px] font-black text-white bg-clocktower-outsider border border-clocktower-outsider/30 px-1 py-0.5 rounded uppercase">
-                      THE LUNATIC
-                    </span>
-                  )}
-                  {p.isTheLilMonsta && (
-                    <span className="text-[8px] font-black text-white bg-clocktower-demon border border-clocktower-demon/30 px-1 py-0.5 rounded uppercase">
-                      LIL' MONSTA
-                    </span>
-                  )}
-                  {p.assignedFromPref ? (
-                    <span className="text-[8px] font-black text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1 rounded flex items-center gap-0.5">
-                      ★ PREF
-                    </span>
-                  ) : (
-                    <span className="text-[8px] font-medium text-gray-500 bg-gray-955 px-1 rounded border border-gray-850">
-                      FALLBACK
-                    </span>
-                  )}
-                  <span className={cn(
-                    "text-[9px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded border",
-                    roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk border-clocktower-townsfolk/40 bg-clocktower-townsfolk/5",
-                    roleObj?.team === 'outsider' && "text-clocktower-outsider border-clocktower-outsider/40 bg-clocktower-outsider/5",
-                    roleObj?.team === 'minion' && "text-clocktower-minion border-clocktower-minion/40 bg-clocktower-minion/5",
-                    roleObj?.team === 'demon' && "text-clocktower-demon border-clocktower-demon/40 bg-clocktower-demon/5",
-                  )}>
-                    {roleObj?.team || 'N/A'}
-                  </span>
-                </div>
-              </div>
-
-              {!p.roleId ? (
-                <div className="relative">
-                  <div 
-                    onClick={() => setActiveDraftPlayerId(p.id)}
-                    className="flex items-center bg-gray-800/50 rounded px-3 py-1.5 border border-gray-700/60 cursor-text text-sm text-gray-400"
-                  >
-                    Tap to select character...
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div
-                    onClick={() => setActiveDraftPlayerId(p.id)}
-                    className="flex items-center justify-between bg-gray-955/40 px-3 py-2 rounded border border-gray-850 cursor-pointer hover:bg-gray-900/40 hover:border-gray-800 transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      {roleObj && (
-                        <span className="w-5.5 h-5.5 bg-white rounded-full flex items-center justify-center shrink-0">
-                          <img
-                            src={`/icons/${roleObj.id}.svg`}
-                            alt={roleObj.name}
-                            className="w-4 h-4 object-contain"
-                            onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
-                          />
-                        </span>
-                      )}
-                      <span className={cn(
-                        "font-semibold text-sm",
-                        roleObj?.team === 'townsfolk' && "text-clocktower-townsfolk",
-                        roleObj?.team === 'outsider' && "text-clocktower-outsider",
-                        roleObj?.team === 'minion' && "text-clocktower-minion",
-                        roleObj?.team === 'demon' && "text-clocktower-demon",
-                      )}>
-                        {roleObj?.name}
-                      </span>
-                    </div>
-                    <button onClick={() => setActiveDraftPlayerId(p.id)} className="text-gray-500 hover:text-gray-300 text-xs underline font-medium">
-                      Change
-                    </button>
-                  </div>
-                  {/* Secret Role Draft Toggles */}
-                  {(canBeDrunk || canBeMarionette || canBeLunatic || canBeLilMonsta) && (
-                    <div className="flex flex-wrap gap-2 justify-end">
-                      {canBeDrunk && (
-                        <button
-                          type="button"
-                          disabled={isDrunkSelectedElsewhere}
-                          onClick={() => togglePlayerTheDrunk(p.id)}
-                          className={cn(
-                            "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-gray-500",
-                            p.isTheDrunk
-                              ? "bg-yellow-600 border-yellow-755 text-black font-black"
-                              : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
-                          )}
-                        >
-                          🍺 The Drunk
-                        </button>
-                      )}
-                      {canBeMarionette && (
-                        <button
-                          type="button"
-                          disabled={isMarionetteSelectedElsewhere}
-                          onClick={() => togglePlayerTheMarionette(p.id)}
-                          className={cn(
-                            "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-gray-500",
-                            p.isTheMarionette
-                              ? "bg-clocktower-minion border-clocktower-minion/40 text-white font-black"
-                              : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
-                          )}
-                        >
-                          🎭 The Marionette
-                        </button>
-                      )}
-                      {canBeLunatic && (
-                        <button
-                          type="button"
-                          disabled={isLunaticSelectedElsewhere}
-                          onClick={() => togglePlayerTheLunatic(p.id)}
-                          className={cn(
-                            "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-gray-500",
-                            p.isTheLunatic
-                              ? "bg-clocktower-outsider border-clocktower-outsider/40 text-white font-black"
-                              : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
-                          )}
-                        >
-                          👹 The Lunatic
-                        </button>
-                      )}
-                      {canBeLilMonsta && (
-                        <button
-                          type="button"
-                          onClick={() => togglePlayerTheLilMonsta(p.id)}
-                          className={cn(
-                            "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1",
-                            p.isTheLilMonsta
-                              ? "bg-clocktower-demon border-clocktower-demon/40 text-white font-black"
-                              : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
-                          )}
-                        >
-                          😈 Lil' Monsta
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <WhaleBucketDraftCircle
+        players={players}
+        isLightModeActive={isLightModeActive}
+        setActiveDraftPlayerId={setActiveDraftPlayerId}
+      />
       <div className="flex gap-2">
         <button
           id="back-to-setup-button"
