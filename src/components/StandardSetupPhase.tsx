@@ -7,7 +7,7 @@ import rolesData from '../roles.json';
 import ScriptCharactersModal from './ScriptCharactersModal';
 import SelectCharactersModal from './SelectCharactersModal';
 import { getDistribution } from '../constants';
-import StandardSetupPlayerRow from './StandardSetupPlayerRow';
+import CharacterAssignmentCircle from './CharacterAssignmentCircle';
 import type { ValidationSummary } from '../utils/whaleBucketValidation';
 
 interface StandardSetupPhaseProps {
@@ -19,8 +19,6 @@ interface StandardSetupPhaseProps {
   newPlayerName: string;
   setNewPlayerName: (name: string) => void;
   addPlayer: () => void;
-  removePlayer: (id: string) => void;
-  updatePlayerName: (id: string, name: string) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleScriptUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   clearCustomScript: () => void;
@@ -29,10 +27,6 @@ interface StandardSetupPhaseProps {
   scriptRoles: Role[];
   setActivePlayerId: (id: string | null) => void;
   setSearchTerm: (term: string) => void;
-  togglePlayerTheDrunk: (id: string) => void;
-  togglePlayerTheMarionette: (id: string) => void;
-  togglePlayerTheLunatic: (id: string) => void;
-  togglePlayerTheLilMonsta: (id: string) => void;
   allAssigned: boolean;
   remotePlayerCount?: number;
   grimoireConfirmed?: boolean;
@@ -49,7 +43,6 @@ interface StandardSetupPhaseProps {
   handleTouchStart: (e: React.TouchEvent, index: number) => void;
   handleTouchMove: (e: React.TouchEvent) => void;
   handleTouchEnd: () => void;
-  movePlayer: (index: number, direction: 'up' | 'down') => void;
   validationSummary: ValidationSummary | null;
   isLightModeActive: boolean;
 }
@@ -63,8 +56,6 @@ export default function StandardSetupPhase({
   newPlayerName,
   setNewPlayerName,
   addPlayer,
-  removePlayer,
-  updatePlayerName,
   fileInputRef,
   handleScriptUpload,
   clearCustomScript,
@@ -73,10 +64,6 @@ export default function StandardSetupPhase({
   scriptRoles,
   setActivePlayerId,
   setSearchTerm,
-  togglePlayerTheDrunk,
-  togglePlayerTheMarionette,
-  togglePlayerTheLunatic,
-  togglePlayerTheLilMonsta,
   allAssigned,
   setPhase,
   draggedIndex,
@@ -90,7 +77,6 @@ export default function StandardSetupPhase({
   handleTouchStart,
   handleTouchMove,
   handleTouchEnd,
-  movePlayer,
   validationSummary,
   isLightModeActive,
   remotePlayerCount = 0,
@@ -264,37 +250,23 @@ export default function StandardSetupPhase({
             </button>
           </div>
 
-          <div className="space-y-2.5">
-            {players.map((p, index) => (
-              <StandardSetupPlayerRow
-                key={p.id}
-                player={p}
-                index={index}
-                players={players}
-                customScriptRoles={customScriptRoles}
-                draggedIndex={draggedIndex}
-                dragOverIndex={dragOverIndex}
-                handleMouseDown={handleMouseDown}
-                handleDragStart={handleDragStart}
-                handleDragOver={handleDragOver}
-                handleDragLeave={handleDragLeave}
-                handleDrop={handleDrop}
-                handleDragEnd={handleDragEnd}
-                handleTouchStart={handleTouchStart}
-                handleTouchMove={handleTouchMove}
-                handleTouchEnd={handleTouchEnd}
-                movePlayer={movePlayer}
-                removePlayer={removePlayer}
-                updatePlayerName={updatePlayerName}
-                setActivePlayerId={setActivePlayerId}
-                setSearchTerm={setSearchTerm}
-                togglePlayerTheDrunk={togglePlayerTheDrunk}
-                togglePlayerTheMarionette={togglePlayerTheMarionette}
-                togglePlayerTheLunatic={togglePlayerTheLunatic}
-                togglePlayerTheLilMonsta={togglePlayerTheLilMonsta}
-              />
-            ))}
-          </div>
+          <CharacterAssignmentCircle
+            players={players}
+            isLightModeActive={isLightModeActive}
+            draggedIndex={draggedIndex}
+            dragOverIndex={dragOverIndex}
+            handleMouseDown={handleMouseDown}
+            handleDragStart={handleDragStart}
+            handleDragOver={handleDragOver}
+            handleDragLeave={handleDragLeave}
+            handleDrop={handleDrop}
+            handleDragEnd={handleDragEnd}
+            handleTouchStart={handleTouchStart}
+            handleTouchMove={handleTouchMove}
+            handleTouchEnd={handleTouchEnd}
+            setActivePlayerId={setActivePlayerId}
+            setSearchTerm={setSearchTerm}
+          />
         </section>
       </div>
 
