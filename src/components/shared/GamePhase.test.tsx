@@ -163,3 +163,65 @@ describe('GamePhase - Demon Bluffs candidate list', () => {
     expect(picker.queryByText('Poisoner')).toBeNull();
   });
 });
+
+describe('GamePhase - Reset Reminders confirmation', () => {
+  const mockPlayers: Player[] = [
+    { id: '1', name: 'Alice', roleId: 'washerwoman', isDead: false },
+  ];
+
+  const defaultProps = {
+    players: mockPlayers,
+    timeOfDay: 'night' as const,
+    dayNumber: 1,
+    newTravelerName: '',
+    newTravelerRoleId: 'beggar',
+    isLightModeActive: false,
+    draggedIndex: null,
+    dragOverIndex: null,
+    handleMouseDown: vi.fn(),
+    handleDragStart: vi.fn(),
+    handleDragOver: vi.fn(),
+    handleDragLeave: vi.fn(),
+    handleDrop: vi.fn(),
+    handleDragEnd: vi.fn(),
+    handleTouchStart: vi.fn(),
+    handleTouchMove: vi.fn(),
+    handleTouchEnd: vi.fn(),
+    setSelectedPlayerId: vi.fn(),
+    toggleTimeOfDay: vi.fn(),
+    addTravelerGamePhase: vi.fn(),
+    setNewTravelerName: vi.fn(),
+    setNewTravelerRoleId: vi.fn(),
+    isSynced: false,
+    reminderTokens: [{ id: 'r1', sourceCharId: 'washerwoman', text: 'Townsfolk', targetPlayerId: '1' }],
+    onSetReminderTokens: vi.fn(),
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('asks for confirmation before clearing reminders, and only clears them once confirmed', () => {
+    render(<GamePhase {...defaultProps} />);
+
+    fireEvent.click(screen.getByText('Reset Reminders'));
+
+    // Not cleared yet — waiting on confirmation
+    expect(defaultProps.onSetReminderTokens).not.toHaveBeenCalled();
+    expect(screen.getByRole('heading', { name: 'Reset Reminders' })).toBeInTheDocument();
+    expect(screen.getByText('Remove all reminder tokens?')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Confirm'));
+
+    expect(defaultProps.onSetReminderTokens).toHaveBeenCalledWith([]);
+  });
+
+  it('does not clear reminders when the confirmation is cancelled', () => {
+    render(<GamePhase {...defaultProps} />);
+
+    fireEvent.click(screen.getByText('Reset Reminders'));
+    fireEvent.click(screen.getByText('Cancel'));
+
+    expect(defaultProps.onSetReminderTokens).not.toHaveBeenCalled();
+  });
+});

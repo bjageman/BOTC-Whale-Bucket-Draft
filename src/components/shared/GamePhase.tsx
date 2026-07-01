@@ -9,6 +9,8 @@ import { getScriptStats } from '../../utils/scriptUtils';
 import GrimoireBoard from './GrimoireBoard';
 import NightOrderWidget from './NightOrderWidget';
 import ScriptCharactersModal from './ScriptCharactersModal';
+import DialogModal from './DialogModal';
+import { useDialog } from '../../hooks/useDialog';
 
 interface Props {
   players: Player[];
@@ -114,9 +116,13 @@ export default function GamePhase({
     }
     setReminderTokens(prev => prev.filter(r => r.id !== reminderId));
   };
+  const { dialogProps, showConfirm } = useDialog();
+
   const handleRemoveAllReminders = () => {
-    if (reminderTokens.length > 0) onLogEvent?.(`All reminders cleared`);
-    setReminderTokens([]);
+    showConfirm('Remove all reminder tokens?', () => {
+      if (reminderTokens.length > 0) onLogEvent?.(`All reminders cleared`);
+      setReminderTokens([]);
+    }, 'Reset Reminders');
   };
 
   const sortedRoles = useMemo(() => {
@@ -212,6 +218,8 @@ export default function GamePhase({
   };
 
   return (
+    <>
+    <DialogModal {...dialogProps} isLightModeActive={isLightModeActive} />
     <div className="space-y-6 animate-fadeIn md:grid md:grid-cols-[3fr_2fr] md:gap-8 md:space-y-0 md:items-start landscape:grid landscape:grid-cols-[3fr_2fr] landscape:gap-6 landscape:space-y-0 landscape:items-start">
       {/* Column 1: Board & Night Order */}
       <div className="space-y-6">
@@ -701,5 +709,6 @@ export default function GamePhase({
         </div>
       )}
     </div>
+    </>
   );
 }
