@@ -644,8 +644,8 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
 
             <div className="space-y-2">
               <p className={cn("text-[10px] uppercase font-bold tracking-wider text-center", isLight ? "text-gray-400" : "text-gray-500")}>Pronouns (optional)</p>
-              <div className="flex gap-2 justify-center">
-                {['He/Him', 'She/Her', 'They/Them'].map(p => (
+              <div className="flex justify-center gap-1.5">
+                {['He/Him', 'She/Her', 'They/Them', 'Ask Me'].map(p => (
                   <button
                     key={p}
                     type="button"
@@ -656,7 +656,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
                       sendMessage({ type: 'player_join', name, id: playerId, pronouns: next || undefined });
                     }}
                     className={cn(
-                      "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all",
+                      "px-2 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap",
                       pronouns === p
                         ? "bg-clocktower-blood text-white border-clocktower-blood"
                         : isLight
