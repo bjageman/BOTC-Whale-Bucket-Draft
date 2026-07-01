@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { useScrollLock } from '../hooks/useScrollLock';
-import type { Player } from '../types';
+import { useScrollLock } from '../../hooks/useScrollLock';
+import type { Player } from '../../types';
 
 interface PlayerTrackerNameEditModalProps {
   activePlayerId: string;

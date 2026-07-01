@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useScrollLock } from '../hooks/useScrollLock';
-import { cn } from '../utils/cn';
+import { useScrollLock } from '../../hooks/useScrollLock';
+import { cn } from '../../utils/cn';
 
 interface DialogModalProps {
   isOpen: boolean;

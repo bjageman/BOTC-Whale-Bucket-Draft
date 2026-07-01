@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import GamePhase from './GamePhase';
-import type { Player } from '../types';
+import type { Player } from '../../types';
 
 describe('GamePhase - Script Modal Integration', () => {
   const mockPlayers: Player[] = [

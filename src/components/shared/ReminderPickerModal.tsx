@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useScrollLock } from '../hooks/useScrollLock';
-import { cn } from '../utils/cn';
-import type { Role } from '../types';
-import remindersData from '../reminders.json';
+import { useScrollLock } from '../../hooks/useScrollLock';
+import { cn } from '../../utils/cn';
+import type { Role } from '../../types';
+import remindersData from '../../reminders.json';
 
 interface ReminderOption {
   sourceCharId: string;

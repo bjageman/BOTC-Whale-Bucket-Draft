@@ -2,8 +2,8 @@ import { useMemo, useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronRight, RotateCcw, RotateCw } from 'lucide-react';
 import type { CSSProperties } from 'react';
-import type { Player, Role, PlacedReminder } from '../types';
-import { cn } from '../utils/cn';
+import type { Player, Role, PlacedReminder } from '../../types';
+import { cn } from '../../utils/cn';
 import ReminderPickerModal from './ReminderPickerModal';
 import ReminderTokenModal from './ReminderTokenModal';
 

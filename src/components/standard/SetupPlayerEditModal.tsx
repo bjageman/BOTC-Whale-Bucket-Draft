@@ -1,9 +1,9 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { Search, Trash2 } from 'lucide-react';
-import { useScrollLock } from '../hooks/useScrollLock';
-import { cn } from '../utils/cn';
-import type { Player, Role } from '../types';
-import rolesData from '../roles.json';
+import { useScrollLock } from '../../hooks/useScrollLock';
+import { cn } from '../../utils/cn';
+import type { Player, Role } from '../../types';
+import rolesData from '../../roles.json';
 
 interface SetupPlayerEditModalProps {
   activePlayerId: string;

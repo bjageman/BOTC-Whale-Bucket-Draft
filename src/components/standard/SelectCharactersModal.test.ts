@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { computeBalance } from '../utils/computeBalance';
-import type { Role } from '../types';
+import { computeBalance } from '../../utils/computeBalance';
+import type { Role } from '../../types';
 
 const r = (id: string, team: Role['team']): Role => ({ id, name: id, team });
 

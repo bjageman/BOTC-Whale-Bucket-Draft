@@ -1,9 +1,9 @@
 import React from 'react';
-import { cn } from '../utils/cn';
-import type { Player, Role } from '../types';
-import rolesData from '../roles.json';
-import CharacterToken from './CharacterToken';
-import { useGrimoireLayout } from '../hooks/useGrimoireLayout';
+import { cn } from '../../utils/cn';
+import type { Player, Role } from '../../types';
+import rolesData from '../../roles.json';
+import CharacterToken from '../shared/CharacterToken';
+import { useGrimoireLayout } from '../../hooks/useGrimoireLayout';
 
 interface CharacterAssignmentCircleProps {
   players: Player[];

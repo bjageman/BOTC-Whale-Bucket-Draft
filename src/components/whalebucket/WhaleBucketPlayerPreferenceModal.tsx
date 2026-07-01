@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Shuffle, Trash2 } from 'lucide-react';
-import { useScrollLock } from '../hooks/useScrollLock';
-import { cn } from '../utils/cn';
-import type { Player } from '../WhaleBucket';
-import type { Role } from '../types';
-import rolesData from '../official_roles.json';
+import { useScrollLock } from '../../hooks/useScrollLock';
+import { cn } from '../../utils/cn';
+import type { Player } from '../../WhaleBucket';
+import type { Role } from '../../types';
+import rolesData from '../../official_roles.json';
 
 interface WhaleBucketPlayerPreferenceModalProps {
   activePlayerId: string;

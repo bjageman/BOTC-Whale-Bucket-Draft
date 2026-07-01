@@ -8,17 +8,17 @@ import { parseScriptFile } from './utils/scriptUtils';
 
 import { performStandardAssignment } from './utils/standardAssignment';
 import { getValidationSummary } from './utils/whaleBucketValidation';
-import PlayerDetailsModal from './components/PlayerDetailsModal';
-import GamePhase from './components/GamePhase';
-import StandardSetupPhase from './components/StandardSetupPhase';
-import SetupPlayerEditModal from './components/SetupPlayerEditModal';
+import PlayerDetailsModal from './components/shared/PlayerDetailsModal';
+import GamePhase from './components/shared/GamePhase';
+import StandardSetupPhase from './components/standard/StandardSetupPhase';
+import SetupPlayerEditModal from './components/standard/SetupPlayerEditModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
 import { useStorytellerSync, getSyncParams } from './hooks/useStorytellerSync';
-import PageLayout from './components/PageLayout';
-import DialogModal from './components/DialogModal';
+import PageLayout from './components/shared/PageLayout';
+import DialogModal from './components/shared/DialogModal';
 import { useDialog } from './hooks/useDialog';
-import RoomCodeModal from './components/RoomCodeModal';
+import RoomCodeModal from './components/shared/RoomCodeModal';
 
 type Phase = 'setup' | 'game';
 

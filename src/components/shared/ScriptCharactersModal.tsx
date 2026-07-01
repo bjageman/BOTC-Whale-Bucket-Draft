@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useScrollLock } from '../hooks/useScrollLock';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import { Search, X, Scroll } from 'lucide-react';
-import { cn } from '../utils/cn';
-import type { Role } from '../types';
-import officialRoles from '../official_roles.json';
+import { cn } from '../../utils/cn';
+import type { Role } from '../../types';
+import officialRoles from '../../official_roles.json';
 
 interface Props {
   isOpen: boolean;

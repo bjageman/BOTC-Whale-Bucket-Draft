@@ -1,12 +1,12 @@
 import { useRef, useMemo, useState, useEffect } from 'react';
-import { useScrollLock } from '../hooks/useScrollLock';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import { ChevronLeft, ChevronRight, X, Search } from 'lucide-react';
-import { cn } from '../utils/cn';
-import type { Role } from '../types';
-import rolesData from '../roles.json';
-import officialRoles from '../official_roles.json';
+import { cn } from '../../utils/cn';
+import type { Role } from '../../types';
+import rolesData from '../../roles.json';
+import officialRoles from '../../official_roles.json';
 import DialogModal from './DialogModal';
-import { useDialog } from '../hooks/useDialog';
+import { useDialog } from '../../hooks/useDialog';
 
 interface Player {
   id: string;

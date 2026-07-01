@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import NightOrderWidget from './NightOrderWidget';
-import type { Player } from '../types';
+import type { Player } from '../../types';
 
 describe('NightOrderWidget', () => {
   const mockPlayers: Player[] = [

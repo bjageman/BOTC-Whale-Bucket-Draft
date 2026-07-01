@@ -6,18 +6,18 @@ import type { Role, Player as BasePlayer, PlayerPreferences, PlacedReminder } fr
 import { TEAM_ORDER } from './types';
 import { assignCharacters } from './utils/assignment';
 import { getValidationSummary } from './utils/whaleBucketValidation';
-import PlayerDetailsModal from './components/PlayerDetailsModal';
-import WhaleBucketSetupPhase from './components/WhaleBucketSetupPhase';
-import WhaleBucketDraftPhase from './components/WhaleBucketDraftPhase';
-import GamePhase from './components/GamePhase';
-import WhaleBucketPlayerPreferenceModal from './components/WhaleBucketPlayerPreferenceModal';
-import WhaleBucketDraftEditModal from './components/WhaleBucketDraftEditModal';
+import PlayerDetailsModal from './components/shared/PlayerDetailsModal';
+import WhaleBucketSetupPhase from './components/whalebucket/WhaleBucketSetupPhase';
+import WhaleBucketDraftPhase from './components/whalebucket/WhaleBucketDraftPhase';
+import GamePhase from './components/shared/GamePhase';
+import WhaleBucketPlayerPreferenceModal from './components/whalebucket/WhaleBucketPlayerPreferenceModal';
+import WhaleBucketDraftEditModal from './components/whalebucket/WhaleBucketDraftEditModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
 import { useStorytellerSync, getSyncParams } from './hooks/useStorytellerSync';
-import PageLayout from './components/PageLayout';
-import DialogModal from './components/DialogModal';
-import RoomCodeModal from './components/RoomCodeModal';
+import PageLayout from './components/shared/PageLayout';
+import DialogModal from './components/shared/DialogModal';
+import RoomCodeModal from './components/shared/RoomCodeModal';
 import { useDialog } from './hooks/useDialog';
 
 export type Player = Omit<BasePlayer, 'preferences'> & {

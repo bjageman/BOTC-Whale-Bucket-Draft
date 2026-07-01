@@ -1,6 +1,6 @@
-import { useScrollLock } from '../hooks/useScrollLock';
-import { cn } from '../utils/cn';
-import type { PlacedReminder, Role } from '../types';
+import { useScrollLock } from '../../hooks/useScrollLock';
+import { cn } from '../../utils/cn';
+import type { PlacedReminder, Role } from '../../types';
 
 interface ReminderTokenModalProps {
   reminder: PlacedReminder;

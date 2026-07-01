@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Plus, Shuffle, Upload, CheckCircle, AlertTriangle, Package } from 'lucide-react';
-import { cn } from '../utils/cn';
-import type { Player, Role } from '../types';
-import { getScriptStats } from '../utils/scriptUtils';
-import rolesData from '../roles.json';
-import ScriptCharactersModal from './ScriptCharactersModal';
+import { cn } from '../../utils/cn';
+import type { Player, Role } from '../../types';
+import { getScriptStats } from '../../utils/scriptUtils';
+import rolesData from '../../roles.json';
+import ScriptCharactersModal from '../shared/ScriptCharactersModal';
 import SelectCharactersModal from './SelectCharactersModal';
-import { getDistribution } from '../constants';
+import { getDistribution } from '../../constants';
 import CharacterAssignmentCircle from './CharacterAssignmentCircle';
-import type { ValidationSummary } from '../utils/whaleBucketValidation';
+import type { ValidationSummary } from '../../utils/whaleBucketValidation';
 
 interface StandardSetupPhaseProps {
   players: Player[];

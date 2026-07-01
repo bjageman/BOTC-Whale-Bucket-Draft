@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import WhaleBucketPlayerPreferenceModal from './WhaleBucketPlayerPreferenceModal';
-import type { Player } from '../WhaleBucket';
+import type { Player } from '../../WhaleBucket';
 
 describe('WhaleBucketPlayerPreferenceModal', () => {
   const mockPlayers: Player[] = [
