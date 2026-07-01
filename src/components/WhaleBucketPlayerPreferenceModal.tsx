@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Shuffle, Trash2 } from 'lucide-react';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { cn } from '../utils/cn';
@@ -57,6 +57,30 @@ export default function WhaleBucketPlayerPreferenceModal({
   const [searchTerm, setSearchTerm] = useState('');
 
   const player = players.find(p => p.id === activePlayerId);
+
+  const [editedName, setEditedName] = useState(player?.name ?? '');
+  const lastPlayerId = useRef(activePlayerId);
+  const lastEditedName = useRef(editedName);
+
+  useEffect(() => {
+    lastEditedName.current = editedName;
+  }, [editedName]);
+
+  useEffect(() => {
+    lastPlayerId.current = activePlayerId;
+  }, [activePlayerId]);
+
+  useEffect(() => {
+    return () => {
+      const currentId = lastPlayerId.current;
+      const currentName = lastEditedName.current;
+      const currentPlayer = players.find(x => x.id === currentId);
+      if (currentPlayer && currentPlayer.name !== currentName) {
+        updatePlayerName(currentId, currentName);
+      }
+    };
+  }, [updatePlayerName, players]);
+
   if (!player) return null;
 
   const visibleTeams: Role['team'][] = allowTravelers
@@ -199,8 +223,8 @@ export default function WhaleBucketPlayerPreferenceModal({
           <input
             id="edit-preference-player-name-input"
             type="text"
-            value={player.name}
-            onChange={(e) => updatePlayerName(player.id, e.target.value)}
+            value={editedName}
+            onChange={(e) => setEditedName(e.target.value)}
             onFocus={(e) => e.target.select()}
             autoFocus={!isMobile}
             autoCapitalize="words"

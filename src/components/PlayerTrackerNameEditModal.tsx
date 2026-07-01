@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { useScrollLock } from '../hooks/useScrollLock';
 import type { Player } from '../types';
@@ -25,6 +25,30 @@ export default function PlayerTrackerNameEditModal({
   }, []);
 
   const player = players.find(p => p.id === activePlayerId);
+
+  const [editedName, setEditedName] = useState(player?.name ?? '');
+  const lastPlayerId = useRef(activePlayerId);
+  const lastEditedName = useRef(editedName);
+
+  useEffect(() => {
+    lastEditedName.current = editedName;
+  }, [editedName]);
+
+  useEffect(() => {
+    lastPlayerId.current = activePlayerId;
+  }, [activePlayerId]);
+
+  useEffect(() => {
+    return () => {
+      const currentId = lastPlayerId.current;
+      const currentName = lastEditedName.current;
+      const currentPlayer = players.find(x => x.id === currentId);
+      if (currentPlayer && currentPlayer.name !== currentName) {
+        updatePlayerName(currentId, currentName);
+      }
+    };
+  }, [updatePlayerName, players]);
+
   if (!player) return null;
 
   return (
@@ -47,23 +71,15 @@ export default function PlayerTrackerNameEditModal({
           <input
             id="edit-tracker-player-name-input"
             type="text"
-            value={player.name}
-            onChange={(e) => updatePlayerName(player.id, e.target.value)}
+            value={editedName}
+            onChange={(e) => setEditedName(e.target.value)}
             onFocus={(e) => e.target.select()}
             autoFocus={!isMobile}
             autoCapitalize="words"
             placeholder="Player name"
             className="flex-1 min-w-0 bg-gray-955 border border-gray-800 rounded px-3 py-2 text-white focus:outline-none focus:border-clocktower-blood text-sm font-semibold"
           />
-          <button
-            id="remove-tracker-player-button"
-            type="button"
-            onClick={() => { removePlayer(player.id); onClose(); }}
-            className="shrink-0 p-2 rounded border border-gray-800 text-gray-500 hover:text-red-500 hover:border-red-500/40 transition-colors"
-            title="Remove player"
-          >
-            <Trash2 size={16} />
-          </button>
+          
         </div>
       </div>
     </div>
