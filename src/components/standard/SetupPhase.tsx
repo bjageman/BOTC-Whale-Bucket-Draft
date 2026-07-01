@@ -30,6 +30,7 @@ interface StandardSetupPhaseProps {
   setSearchTerm: (term: string) => void;
   allAssigned: boolean;
   remotePlayerCount?: number;
+  remotePlayerIds?: Set<string>;
   grimoireConfirmed?: boolean;
   onGrimoireConfirmed?: () => void;
   setPhase: (phase: 'setup' | 'game') => void;
@@ -81,6 +82,7 @@ export default function StandardSetupPhase({
   validationSummary,
   isLightModeActive,
   remotePlayerCount = 0,
+  remotePlayerIds,
   grimoireConfirmed = false,
   onGrimoireConfirmed,
 }: StandardSetupPhaseProps) {
@@ -269,6 +271,7 @@ export default function StandardSetupPhase({
             handleTouchEnd={handleTouchEnd}
             setActivePlayerId={setActivePlayerId}
             setSearchTerm={setSearchTerm}
+            remotePlayerIds={remotePlayerIds}
           />
         </section>
       </div>

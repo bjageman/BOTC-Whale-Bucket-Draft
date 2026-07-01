@@ -1,4 +1,5 @@
 import React from 'react';
+import { Wifi } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import type { Player, Role } from '../../types';
 import rolesData from '../../roles.json';
@@ -21,6 +22,7 @@ interface CharacterAssignmentCircleProps {
   handleTouchStart: (e: React.TouchEvent, index: number) => void;
   handleTouchMove: (e: React.TouchEvent) => void;
   handleTouchEnd: () => void;
+  remotePlayerIds?: Set<string>;
 }
 
 export default function CharacterAssignmentCircle({
@@ -39,6 +41,7 @@ export default function CharacterAssignmentCircle({
   handleTouchStart,
   handleTouchMove,
   handleTouchEnd,
+  remotePlayerIds,
 }: CharacterAssignmentCircleProps) {
   const { boardRef, boardClass, btnStyle, nameStyle, positions, getDynamicFontSize } = useGrimoireLayout(players.length);
 
@@ -112,11 +115,14 @@ export default function CharacterAssignmentCircle({
                       : '0 1px 2px rgba(0,0,0,0.9), 0 -1px 2px rgba(0,0,0,0.9), 1px 0 2px rgba(0,0,0,0.9), -1px 0 2px rgba(0,0,0,0.9)',
                   }}
                   className={cn(
-                    "font-bold font-sans tracking-tighter text-center leading-[1.05] z-20 relative select-none break-words whitespace-normal max-w-[82%] inline-block align-middle",
+                    "font-bold font-sans tracking-tighter text-center leading-[1.05] z-20 relative select-none max-w-[82%] inline-flex items-center justify-center gap-1 align-middle",
                     roleObj ? "text-[#1a1a1a]" : "text-white"
                   )}
                 >
-                  {p.name}
+                  {remotePlayerIds?.has(p.id) && (
+                    <Wifi size={10} className="shrink-0" strokeWidth={3} />
+                  )}
+                  <span className="break-words whitespace-normal">{p.name}</span>
                 </span>
 
                 {p.isTheDrunk && (
