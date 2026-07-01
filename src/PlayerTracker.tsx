@@ -215,6 +215,24 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
     setModalRoleSearch('');
   };
 
+  const disconnectSync = () => {
+    showConfirm('Disconnect from this synced session? You\'ll keep your current players and notes locally, but stop receiving updates from the Storyteller.', () => {
+      sessionStorage.removeItem('joined-code');
+      sessionStorage.removeItem('joined-name');
+      const saved = localStorage.getItem('player-tracker-botc-game');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          delete parsed.code;
+          localStorage.setItem('player-tracker-botc-game', JSON.stringify(parsed));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      setGameCode(null);
+    }, 'Disconnect Sync');
+  };
+
   const resetGame = () => {
     showConfirm('Are you sure you want to reset the tracker? This clears all players and settings.', () => {
       setPlayers([]);
@@ -469,7 +487,43 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
       toggleTheme={toggleTheme}
       backHref={phase === 'setup' ? "#/" : undefined}
       onBack={phase !== 'setup' ? () => setPhase('setup') : undefined}
-      title="Game Notes"
+      titleContent={
+        <div className="flex items-center justify-center gap-2">
+          <h1 className="font-display text-xl font-bold text-clocktower-blood tracking-widest uppercase">
+            Game Notes
+          </h1>
+          {isSynced && (
+            <div
+              onClick={disconnectSync}
+              className={cn(
+                "hidden md:flex cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none items-baseline gap-1",
+                isLightModeActive
+                  ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
+                  : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
+              )}
+              title="Click to disconnect from the Storyteller's live game"
+            >
+              Sync with <span className="text-clocktower-blood font-mono uppercase tracking-wider">{gameCode}</span>
+            </div>
+          )}
+        </div>
+      }
+      headerExtra={
+        isSynced ? (
+          <div
+            onClick={disconnectSync}
+            className={cn(
+              "md:hidden cursor-pointer text-xs font-bold px-2 py-0.5 rounded border transition-all duration-200 select-none flex items-baseline gap-1",
+              isLightModeActive
+                ? "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
+                : "bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-850"
+            )}
+            title="Click to disconnect from the Storyteller's live game"
+          >
+            Sync with <span className="text-clocktower-blood font-mono uppercase tracking-wider">{gameCode}</span>
+          </div>
+        ) : undefined
+      }
       extraControls={
         <button
           id="reset-game-button"

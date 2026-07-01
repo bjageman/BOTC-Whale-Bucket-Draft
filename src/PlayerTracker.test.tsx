@@ -160,6 +160,27 @@ describe('PlayerTracker', () => {
     expect(screen.queryByText(/seating arrangement and player list are synced/i)).toBeNull();
   });
 
+  it('shows a "Sync with {code}" badge when synced, and disconnects (keeping local data) on confirm', () => {
+    sessionStorage.setItem('joined-code', 'TEST');
+    sessionStorage.setItem('joined-name', 'Alice');
+
+    render(<PlayerTracker theme="dark" toggleTheme={vi.fn()} />);
+
+    expect(screen.getAllByText(/Sync with/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByText('TEST')[0]).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByTitle("Click to disconnect from the Storyteller's live game")[0]);
+
+    expect(screen.getByText(/Disconnect from this synced session/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+    // No longer synced — badge is gone, but local tracker (with its data) remains usable
+    expect(screen.queryByText(/Sync with/i)).toBeNull();
+    expect(sessionStorage.getItem('joined-code')).toBeNull();
+    expect(screen.getByPlaceholderText('Enter player name in seating order...')).toBeInTheDocument();
+  });
+
   it('resets the tracker and returns to the main menu when clicking the reset button', () => {
     window.location.hash = '#/tracker';
 
