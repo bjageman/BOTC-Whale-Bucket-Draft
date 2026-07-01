@@ -146,12 +146,6 @@ export default function CharacterAssignmentCircle({
                   </span>
                 )}
               </button>
-
-              {!roleObj && (
-                <span className="absolute left-1/2 -translate-x-1/2 -bottom-4 text-[9px] text-gray-500 whitespace-nowrap pointer-events-none">
-                  Tap to select role
-                </span>
-              )}
             </div>
           );
         })}

@@ -619,7 +619,15 @@ export default function PlayerDetailsModal({
                        : 'bg-gray-955/40 border-gray-800 text-gray-550 hover:text-gray-300'
                  )}
                >
-                 😈 Lil' Monsta
+                 <span className="w-4 h-4 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm border border-gray-100">
+                   <img
+                     src="/icons/lilmonsta.svg"
+                     alt=""
+                     className="w-3 h-3 object-contain"
+                     onError={e => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                   />
+                 </span>
+                 Lil' Monsta
                </button>
              )}
            </div>
