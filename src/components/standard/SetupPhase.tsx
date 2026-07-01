@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Shuffle, Upload, CheckCircle, AlertTriangle, Package, HelpCircle } from 'lucide-react';
+import { Plus, Shuffle, Upload, CheckCircle, AlertTriangle, Package } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import type { Player, Role } from '../../types';
 import { getScriptStats } from '../../utils/scriptUtils';
 import rolesData from '../../roles.json';
 import ScriptCharactersModal from '../shared/ScriptCharactersModal';
 import SelectCharactersModal from './SelectCharactersModal';
-import DialogModal from '../shared/DialogModal';
+import ScriptHelpButton from '../shared/ScriptHelpButton';
 import { getDistribution } from '../../constants';
 import CharacterAssignmentCircle from './CharacterAssignmentCircle';
 import type { ValidationSummary } from '../../utils/whaleBucketValidation';
@@ -87,7 +87,6 @@ export default function StandardSetupPhase({
   const [showGrimoireWarning, setShowGrimoireWarning] = useState(false);
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
   const [isSelectCharactersModalOpen, setIsSelectCharactersModalOpen] = useState(false);
-  const [isScriptHelpOpen, setIsScriptHelpOpen] = useState(false);
 
   const sortedRoles = useMemo(() => {
     const baseRoles = customScriptRoles || (rolesData as Role[]);
@@ -156,20 +155,7 @@ export default function StandardSetupPhase({
                 {customScriptRoles ? `${getScriptStats(customScriptRoles)} — Click to change` : "Click to upload .json"}
               </span>
             </button>
-            <button
-              id="script-upload-help-button"
-              type="button"
-              onClick={() => setIsScriptHelpOpen(true)}
-              className={cn(
-                "absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center border transition-colors",
-                isLightModeActive
-                  ? "bg-white/80 border-gray-300 text-gray-500 hover:text-clocktower-blood hover:border-clocktower-blood/40"
-                  : "bg-gray-900/80 border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"
-              )}
-              title="What is this?"
-            >
-              <HelpCircle size={13} />
-            </button>
+            <ScriptHelpButton isLightModeActive={isLightModeActive} />
           </div>
           {customScriptRoles && (
             <button
@@ -503,17 +489,6 @@ export default function StandardSetupPhase({
       onAssign={randomlyAssignWithRoles}
       selectedIds={selectedCharacterIds}
       setSelectedIds={setSelectedCharacterIds}
-    />
-    <DialogModal
-      isOpen={isScriptHelpOpen}
-      type="alert"
-      title="Script"
-      message="Upload a script JSON file (exported from the Official Script Tool) to limit which characters can be assigned to players. The active script controls what shows up in View Characters, the Setup Bag, Randomly Assign, and the role search when assigning a character. If you don't upload one, every character from every script is available."
-      confirmLabel="Got it"
-      cancelLabel="Close"
-      onConfirm={() => setIsScriptHelpOpen(false)}
-      onCancel={() => setIsScriptHelpOpen(false)}
-      isLightModeActive={isLightModeActive}
     />
     </>
   );
