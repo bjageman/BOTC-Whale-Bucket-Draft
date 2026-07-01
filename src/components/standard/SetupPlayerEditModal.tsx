@@ -1,6 +1,7 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
-import { Search, Trash2 } from 'lucide-react';
 import { useScrollLock } from '../../hooks/useScrollLock';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { useBufferedField } from '../../hooks/useBufferedField';
+import { Search, Trash2 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import type { Player, Role } from '../../types';
 import rolesData from '../../roles.json';
@@ -49,36 +50,12 @@ export default function SetupPlayerEditModal({
   onClose,
 }: SetupPlayerEditModalProps) {
   useScrollLock();
-  const isMobile = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  }, []);
+  const isMobile = useIsMobile();
 
   const player = players.find(p => p.id === activePlayerId);
   const index = players.findIndex(p => p.id === activePlayerId);
 
-  const [editedName, setEditedName] = useState(player?.name ?? '');
-  const lastPlayerId = useRef(activePlayerId);
-  const lastEditedName = useRef(editedName);
-
-  useEffect(() => {
-    lastEditedName.current = editedName;
-  }, [editedName]);
-
-  useEffect(() => {
-    lastPlayerId.current = activePlayerId;
-  }, [activePlayerId]);
-
-  useEffect(() => {
-    return () => {
-      const currentId = lastPlayerId.current;
-      const currentName = lastEditedName.current;
-      const currentPlayer = players.find(x => x.id === currentId);
-      if (currentPlayer && currentPlayer.name !== currentName) {
-        updatePlayerName(currentId, currentName);
-      }
-    };
-  }, [updatePlayerName, players]);
+  const [editedName, setEditedName] = useBufferedField(activePlayerId, player?.name ?? '', updatePlayerName);
 
   if (!player) return null;
 

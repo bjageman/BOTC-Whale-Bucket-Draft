@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Search, Shuffle, Trash2 } from 'lucide-react';
 import { useScrollLock } from '../../hooks/useScrollLock';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { useBufferedField } from '../../hooks/useBufferedField';
 import { cn } from '../../utils/cn';
 import type { Player } from '../../WhaleBucket';
 import type { Role } from '../../types';
@@ -48,38 +50,14 @@ export default function WhaleBucketPlayerPreferenceModal({
   onClose,
 }: WhaleBucketPlayerPreferenceModalProps) {
   useScrollLock();
-  const isMobile = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  }, []);
+  const isMobile = useIsMobile();
 
   const [pickingTeam, setPickingTeam] = useState<Role['team'] | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const player = players.find(p => p.id === activePlayerId);
 
-  const [editedName, setEditedName] = useState(player?.name ?? '');
-  const lastPlayerId = useRef(activePlayerId);
-  const lastEditedName = useRef(editedName);
-
-  useEffect(() => {
-    lastEditedName.current = editedName;
-  }, [editedName]);
-
-  useEffect(() => {
-    lastPlayerId.current = activePlayerId;
-  }, [activePlayerId]);
-
-  useEffect(() => {
-    return () => {
-      const currentId = lastPlayerId.current;
-      const currentName = lastEditedName.current;
-      const currentPlayer = players.find(x => x.id === currentId);
-      if (currentPlayer && currentPlayer.name !== currentName) {
-        updatePlayerName(currentId, currentName);
-      }
-    };
-  }, [updatePlayerName, players]);
+  const [editedName, setEditedName] = useBufferedField(activePlayerId, player?.name ?? '', updatePlayerName);
 
   if (!player) return null;
 

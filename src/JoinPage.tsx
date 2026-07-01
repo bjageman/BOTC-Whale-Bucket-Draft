@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useScrollLock } from './hooks/useScrollLock';
 import { useGameSocket } from './hooks/useGameSocket';
+import { useIsMobile } from './hooks/useIsMobile';
 import rolesData from './official_roles.json';
 import { cn } from './utils/cn';
 import { ShieldAlert, Sparkles, ArrowRight, Eye, EyeOff, Settings, CheckCircle2, RotateCcw, Plus, Search, Moon, Scroll, QrCode } from 'lucide-react';
@@ -322,7 +323,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
     });
   };
 
-  const isMobile = useMemo(() => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent), []);
+  const isMobile = useIsMobile();
   const isLight = theme === 'light';
 
 
