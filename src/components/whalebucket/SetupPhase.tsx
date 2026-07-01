@@ -33,6 +33,7 @@ interface WhaleBucketSetupPhaseProps {
   isLightModeActive: boolean;
   excludedRoleIds: string[];
   setExcludedRoleIds: React.Dispatch<React.SetStateAction<string[]>>;
+  remotePlayerIds?: Set<string>;
 }
 
 export default function WhaleBucketSetupPhase({
@@ -59,6 +60,7 @@ export default function WhaleBucketSetupPhase({
   isLightModeActive,
   excludedRoleIds,
   setExcludedRoleIds,
+  remotePlayerIds,
 }: WhaleBucketSetupPhaseProps) {
   const [excludeSearchTerm, setExcludeSearchTerm] = useState('');
   const [isExcludeFocused, setIsExcludeFocused] = useState(false);
@@ -149,6 +151,7 @@ export default function WhaleBucketSetupPhase({
             handleTouchStart={handleTouchStart}
             handleTouchMove={handleTouchMove}
             handleTouchEnd={handleTouchEnd}
+            remotePlayerIds={remotePlayerIds}
           />
         </section>
       </div>

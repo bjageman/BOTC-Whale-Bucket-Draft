@@ -1061,6 +1061,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           isLightModeActive={isLightModeActive}
           excludedRoleIds={excludedRoleIds}
           setExcludedRoleIds={setExcludedRoleIds}
+          remotePlayerIds={remotePlayerIds}
         />
       )}
 
@@ -1073,6 +1074,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           onStartGame={handleStartGame}
           runAssignment={runAssignment}
           setActiveDraftPlayerId={setActiveDraftPlayerId}
+          remotePlayerIds={remotePlayerIds}
         />
       )}
 

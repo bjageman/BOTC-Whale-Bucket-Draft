@@ -13,6 +13,7 @@ interface WhaleBucketDraftPhaseProps {
   onStartGame: () => void;
   runAssignment: () => void;
   setActiveDraftPlayerId: (id: string | null) => void;
+  remotePlayerIds?: Set<string>;
 }
 
 export default function WhaleBucketDraftPhase({
@@ -23,6 +24,7 @@ export default function WhaleBucketDraftPhase({
   onStartGame,
   runAssignment,
   setActiveDraftPlayerId,
+  remotePlayerIds,
 }: WhaleBucketDraftPhaseProps) {
   return (
     <div className="space-y-5">
@@ -171,6 +173,7 @@ export default function WhaleBucketDraftPhase({
         players={players}
         isLightModeActive={isLightModeActive}
         setActiveDraftPlayerId={setActiveDraftPlayerId}
+        remotePlayerIds={remotePlayerIds}
       />
       <div className="flex gap-2">
         <button

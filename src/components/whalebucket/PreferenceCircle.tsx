@@ -1,4 +1,5 @@
 import React from 'react';
+import { Wifi } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import type { Player } from '../../WhaleBucket';
 import CharacterToken from '../shared/CharacterToken';
@@ -20,6 +21,7 @@ interface WhaleBucketPreferenceCircleProps {
   handleTouchStart: (e: React.TouchEvent, index: number) => void;
   handleTouchMove: (e: React.TouchEvent) => void;
   handleTouchEnd: () => void;
+  remotePlayerIds?: Set<string>;
 }
 
 export default function WhaleBucketPreferenceCircle({
@@ -38,6 +40,7 @@ export default function WhaleBucketPreferenceCircle({
   handleTouchStart,
   handleTouchMove,
   handleTouchEnd,
+  remotePlayerIds,
 }: WhaleBucketPreferenceCircleProps) {
   const { boardRef, boardClass, btnStyle, nameStyle, positions, getDynamicFontSize } = useGrimoireLayout(players.length);
   const totalTeams = allowTravelers ? 5 : 4;
@@ -112,9 +115,12 @@ export default function WhaleBucketPreferenceCircle({
                     fontSize: getDynamicFontSize(p.name),
                     textShadow: '0 1px 2px rgba(0,0,0,0.9), 0 -1px 2px rgba(0,0,0,0.9), 1px 0 2px rgba(0,0,0,0.9), -1px 0 2px rgba(0,0,0,0.9)',
                   }}
-                  className="font-bold font-sans tracking-tighter text-center leading-[1.05] z-20 relative select-none break-words whitespace-normal max-w-[82%] inline-block align-middle text-white"
+                  className="font-bold font-sans tracking-tighter text-center leading-[1.05] z-20 relative select-none max-w-[82%] inline-flex items-center justify-center gap-1 align-middle text-white"
                 >
-                  {p.name}
+                  {remotePlayerIds?.has(p.id) && (
+                    <Wifi size={10} className="shrink-0" strokeWidth={3} />
+                  )}
+                  <span className="break-words whitespace-normal">{p.name}</span>
                 </span>
 
                 <span
