@@ -1,16 +1,17 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useScrollLock } from './hooks/useScrollLock';
 import { useGameSocket } from './hooks/useGameSocket';
+import { useIsMobile } from './hooks/useIsMobile';
 import rolesData from './official_roles.json';
 import { cn } from './utils/cn';
 import { ShieldAlert, Sparkles, ArrowRight, Eye, EyeOff, Settings, CheckCircle2, RotateCcw, Plus, Search, Moon, Scroll, QrCode } from 'lucide-react';
 import type { Role, Player } from './types';
-import ScriptCharactersModal from './components/ScriptCharactersModal';
-import GrimoireBoard from './components/GrimoireBoard';
-import PageLayout from './components/PageLayout';
-import DialogModal from './components/DialogModal';
+import ScriptCharactersModal from './components/shared/ScriptCharactersModal';
+import GrimoireBoard from './components/shared/GrimoireBoard';
+import PageLayout from './components/shared/PageLayout';
+import DialogModal from './components/shared/DialogModal';
 import { useDialog } from './hooks/useDialog';
-import RoomCodeModal from './components/RoomCodeModal';
+import RoomCodeModal from './components/shared/RoomCodeModal';
 
 export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: () => void }) {
   const [code, setCode] = useState(() => {
@@ -322,7 +323,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
     });
   };
 
-  const isMobile = useMemo(() => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent), []);
+  const isMobile = useIsMobile();
   const isLight = theme === 'light';
 
 

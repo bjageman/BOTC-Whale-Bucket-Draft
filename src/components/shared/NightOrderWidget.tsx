@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { Check, RotateCcw, Moon, Award, ChevronRight } from 'lucide-react';
-import { cn } from '../utils/cn';
-import type { Player } from '../types';
-import nightSheet from '../nightsheet.json';
-import officialRoles from '../official_roles.json';
+import { cn } from '../../utils/cn';
+import type { Player } from '../../types';
+import nightSheet from '../../nightsheet.json';
+import officialRoles from '../../official_roles.json';
 
 interface NightOrderWidgetProps {
   players: Player[];

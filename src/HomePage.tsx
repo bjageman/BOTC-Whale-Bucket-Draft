@@ -1,6 +1,6 @@
 import { UserPlus, BookOpen, Scroll } from 'lucide-react';
 import { cn } from './utils/cn';
-import PageLayout from './components/PageLayout';
+import PageLayout from './components/shared/PageLayout';
 
 interface HomeProps {
   theme: 'light' | 'dark';

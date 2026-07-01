@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Plus, Sparkles } from 'lucide-react';
-import { cn } from '../utils/cn';
-import type { Player } from '../WhaleBucket';
-import type { Role } from '../types';
-import { getDistribution } from '../constants';
+import { cn } from '../../utils/cn';
+import type { Player } from '../../WhaleBucket';
+import type { Role } from '../../types';
+import { getDistribution } from '../../constants';
 import WhaleBucketPreferenceCircle from './WhaleBucketPreferenceCircle';
-import rolesData from '../official_roles.json';
+import rolesData from '../../official_roles.json';
 
 
 

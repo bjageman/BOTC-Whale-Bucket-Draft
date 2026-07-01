@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import WhaleBucketPlayerPreferenceModal from './WhaleBucketPlayerPreferenceModal';
-import type { Player } from '../WhaleBucket';
+import type { Player } from '../../WhaleBucket';
 
 describe('WhaleBucketPlayerPreferenceModal', () => {
   const mockPlayers: Player[] = [
@@ -53,9 +53,16 @@ describe('WhaleBucketPlayerPreferenceModal', () => {
     expect(screen.getByText('Traveler')).toBeInTheDocument();
   });
 
-  it('calls updatePlayerName on name change', () => {
+  it('buffers name edits locally and flushes via updatePlayerName when the modal closes', () => {
     render(<WhaleBucketPlayerPreferenceModal {...defaultProps} />);
     fireEvent.change(screen.getByDisplayValue('Player One'), { target: { value: 'Renamed' } });
+
+    // Not written immediately — only buffered locally
+    expect(defaultProps.updatePlayerName).not.toHaveBeenCalled();
+    expect(screen.getByDisplayValue('Renamed')).toBeInTheDocument();
+
+    // Flushed once the modal unmounts (e.g. on close)
+    cleanup();
     expect(defaultProps.updatePlayerName).toHaveBeenCalledWith('1', 'Renamed');
   });
 

@@ -1,11 +1,11 @@
 import { Search } from 'lucide-react';
-import { useMemo } from 'react';
-import { useScrollLock } from '../hooks/useScrollLock';
-import { cn } from '../utils/cn';
-import type { Player } from '../WhaleBucket';
-import type { Role } from '../types';
-import { TEAM_ORDER } from '../types';
-import rolesData from '../roles.json';
+import { useScrollLock } from '../../hooks/useScrollLock';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { cn } from '../../utils/cn';
+import type { Player } from '../../WhaleBucket';
+import type { Role } from '../../types';
+import { TEAM_ORDER } from '../../types';
+import rolesData from '../../roles.json';
 
 interface WhaleBucketDraftEditModalProps {
   activeDraftPlayerId: string;
@@ -35,7 +35,7 @@ export default function WhaleBucketDraftEditModal({
   onClose,
 }: WhaleBucketDraftEditModalProps) {
   useScrollLock();
-  const isMobile = useMemo(() => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent), []);
+  const isMobile = useIsMobile();
 
   const index = players.findIndex(p => p.id === activeDraftPlayerId);
   const player = players[index];

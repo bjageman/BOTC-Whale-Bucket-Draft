@@ -1,8 +1,8 @@
 import React from 'react';
 import { Plus, Upload } from 'lucide-react';
-import { cn } from '../utils/cn';
-import type { Player, Role } from '../types';
-import { getScriptStats } from '../utils/scriptUtils';
+import { cn } from '../../utils/cn';
+import type { Player, Role } from '../../types';
+import { getScriptStats } from '../../utils/scriptUtils';
 import PlayerTrackerCircle from './PlayerTrackerCircle';
 
 interface PlayerTrackerSetupPhaseProps {

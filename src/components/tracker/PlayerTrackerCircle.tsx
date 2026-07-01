@@ -1,14 +1,14 @@
 import React from 'react';
-import { cn } from '../utils/cn';
-import type { Player } from '../WhaleBucket';
-import CharacterToken from './CharacterToken';
-import { useGrimoireLayout } from '../hooks/useGrimoireLayout';
+import { cn } from '../../utils/cn';
+import type { Player } from '../../types';
+import CharacterToken from '../shared/CharacterToken';
+import { useGrimoireLayout } from '../../hooks/useGrimoireLayout';
 
-interface WhaleBucketPreferenceCircleProps {
+interface PlayerTrackerCircleProps {
   players: Player[];
-  allowTravelers: boolean;
   isLightModeActive: boolean;
-  setActivePreferencePlayerId: (id: string | null) => void;
+  isSynced: boolean;
+  setActiveTrackerPlayerId: (id: string | null) => void;
   draggedIndex: number | null;
   dragOverIndex: number | null;
   handleMouseDown: (e: React.MouseEvent) => void;
@@ -22,11 +22,11 @@ interface WhaleBucketPreferenceCircleProps {
   handleTouchEnd: () => void;
 }
 
-export default function WhaleBucketPreferenceCircle({
+export default function PlayerTrackerCircle({
   players,
-  allowTravelers,
   isLightModeActive,
-  setActivePreferencePlayerId,
+  isSynced,
+  setActiveTrackerPlayerId,
   draggedIndex,
   dragOverIndex,
   handleMouseDown,
@@ -38,9 +38,8 @@ export default function WhaleBucketPreferenceCircle({
   handleTouchStart,
   handleTouchMove,
   handleTouchEnd,
-}: WhaleBucketPreferenceCircleProps) {
+}: PlayerTrackerCircleProps) {
   const { boardRef, boardClass, btnStyle, nameStyle, positions, getDynamicFontSize } = useGrimoireLayout(players.length);
-  const totalTeams = allowTravelers ? 5 : 4;
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -57,29 +56,22 @@ export default function WhaleBucketPreferenceCircle({
       >
         {players.map((p, index) => {
           const pos = positions[index] ?? { left: 50, top: 50 };
-          const isDropTarget = dragOverIndex === index && draggedIndex !== index;
-          const filledCount = [
-            p.preferences.townsfolk,
-            p.preferences.outsider,
-            p.preferences.minion,
-            p.preferences.demon,
-            ...(allowTravelers ? [p.preferences.traveler || []] : []),
-          ].filter(arr => arr.length > 0).length;
+          const isDropTarget = !isSynced && dragOverIndex === index && draggedIndex !== index;
 
           return (
             <div
               key={p.id}
               data-drag-index={index}
-              draggable={true}
-              onMouseDown={handleMouseDown}
-              onDragStart={(e) => handleDragStart(e, index)}
-              onDragOver={(e) => handleDragOver(e, index)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, index)}
-              onDragEnd={handleDragEnd}
-              onTouchStart={(e) => handleTouchStart(e, index)}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
+              draggable={!isSynced}
+              onMouseDown={isSynced ? undefined : handleMouseDown}
+              onDragStart={isSynced ? undefined : (e) => handleDragStart(e, index)}
+              onDragOver={isSynced ? undefined : (e) => handleDragOver(e, index)}
+              onDragLeave={isSynced ? undefined : handleDragLeave}
+              onDrop={isSynced ? undefined : (e) => handleDrop(e, index)}
+              onDragEnd={isSynced ? undefined : handleDragEnd}
+              onTouchStart={isSynced ? undefined : (e) => handleTouchStart(e, index)}
+              onTouchMove={isSynced ? undefined : handleTouchMove}
+              onTouchEnd={isSynced ? undefined : handleTouchEnd}
               style={{
                 position: 'absolute',
                 left: `${pos.left}%`,
@@ -88,21 +80,23 @@ export default function WhaleBucketPreferenceCircle({
                 zIndex: draggedIndex === index ? 40 : isDropTarget ? 35 : 10,
               }}
               className={cn(
-                "drag-handle cursor-grab active:cursor-grabbing touch-none transition-all duration-200",
+                "transition-all duration-200",
+                !isSynced && "drag-handle cursor-grab active:cursor-grabbing touch-none",
                 draggedIndex === index && "opacity-30 scale-95",
                 isDropTarget && "scale-110"
               )}
             >
               <button
                 type="button"
-                id={`edit-preferences-button-${p.id}`}
-                onClick={() => setActivePreferencePlayerId(p.id)}
+                id={`edit-tracker-player-button-${p.id}`}
+                onClick={isSynced ? undefined : () => setActiveTrackerPlayerId(p.id)}
                 style={btnStyle}
                 className={cn(
-                  "rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-md relative select-none hover:bg-[#fafafa]",
+                  "rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-md relative select-none",
+                  isSynced ? "cursor-default" : "hover:bg-[#fafafa]",
                   isDropTarget && "ring-4 ring-clocktower-blood shadow-[0_0_16px_rgba(139,0,0,0.5)]"
                 )}
-                title="Edit preferences"
+                title={isSynced ? p.name : "Edit player"}
               >
                 <CharacterToken role={null} idPrefix={p.id} className="absolute inset-0" />
 
@@ -115,17 +109,6 @@ export default function WhaleBucketPreferenceCircle({
                   className="font-bold font-sans tracking-tighter text-center leading-[1.05] z-20 relative select-none break-words whitespace-normal max-w-[82%] inline-block align-middle text-white"
                 >
                   {p.name}
-                </span>
-
-                <span
-                  className={cn(
-                    "absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-30 px-1.5 py-0.5 rounded text-[9px] font-black border shadow-sm leading-none whitespace-nowrap",
-                    filledCount === 0 && "bg-gray-800 border-gray-700 text-gray-400",
-                    filledCount > 0 && filledCount < totalTeams && "bg-amber-600 border-amber-700 text-black",
-                    filledCount === totalTeams && "bg-clocktower-townsfolk border-clocktower-townsfolk/40 text-white"
-                  )}
-                >
-                  {filledCount}/{totalTeams} PREFS
                 </span>
               </button>
             </div>

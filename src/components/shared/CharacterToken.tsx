@@ -1,5 +1,5 @@
-import { cn } from '../utils/cn';
-import type { Role } from '../types';
+import { cn } from '../../utils/cn';
+import type { Role } from '../../types';
 
 interface CharacterTokenProps {
   role?: Role | null;

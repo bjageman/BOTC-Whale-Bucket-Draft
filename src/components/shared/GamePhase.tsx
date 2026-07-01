@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { GripVertical, Search, X } from 'lucide-react';
-import { cn } from '../utils/cn';
-import type { Player, Role, PlacedReminder } from '../types';
-import rolesData from '../roles.json';
-import officialRoles from '../official_roles.json';
-import { getScriptStats } from '../utils/scriptUtils';
+import { cn } from '../../utils/cn';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import type { Player, Role, PlacedReminder } from '../../types';
+import rolesData from '../../roles.json';
+import officialRoles from '../../official_roles.json';
+import { getScriptStats } from '../../utils/scriptUtils';
 import GrimoireBoard from './GrimoireBoard';
 import NightOrderWidget from './NightOrderWidget';
 import ScriptCharactersModal from './ScriptCharactersModal';
@@ -157,7 +158,7 @@ export default function GamePhase({
     );
   }, [bluffCandidates, bluffSearch]);
 
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (bluffPickerSlot !== null && !isMobile) {

@@ -1,10 +1,10 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useScrollLock } from '../../hooks/useScrollLock';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { useBufferedField } from '../../hooks/useBufferedField';
 import { Search, Trash2 } from 'lucide-react';
-import { useScrollLock } from '../hooks/useScrollLock';
-import { cn } from '../utils/cn';
-import type { Player, Role } from '../types';
-import rolesData from '../roles.json';
-import CharacterToken from './CharacterToken';
+import { cn } from '../../utils/cn';
+import type { Player, Role } from '../../types';
+import rolesData from '../../roles.json';
 
 interface SetupPlayerEditModalProps {
   activePlayerId: string;
@@ -50,36 +50,12 @@ export default function SetupPlayerEditModal({
   onClose,
 }: SetupPlayerEditModalProps) {
   useScrollLock();
-  const isMobile = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  }, []);
+  const isMobile = useIsMobile();
 
   const player = players.find(p => p.id === activePlayerId);
   const index = players.findIndex(p => p.id === activePlayerId);
 
-  const [editedName, setEditedName] = useState(player?.name ?? '');
-  const lastPlayerId = useRef(activePlayerId);
-  const lastEditedName = useRef(editedName);
-
-  useEffect(() => {
-    lastEditedName.current = editedName;
-  }, [editedName]);
-
-  useEffect(() => {
-    lastPlayerId.current = activePlayerId;
-  }, [activePlayerId]);
-
-  useEffect(() => {
-    return () => {
-      const currentId = lastPlayerId.current;
-      const currentName = lastEditedName.current;
-      const currentPlayer = players.find(x => x.id === currentId);
-      if (currentPlayer && currentPlayer.name !== currentName) {
-        updatePlayerName(currentId, currentName);
-      }
-    };
-  }, [updatePlayerName, players]);
+  const [editedName, setEditedName] = useBufferedField(activePlayerId, player?.name ?? '', updatePlayerName);
 
   if (!player) return null;
 
@@ -107,9 +83,6 @@ export default function SetupPlayerEditModal({
   const isDrunkSelectedElsewhere = players.some(pl => pl.id !== player.id && pl.isTheDrunk);
   const isMarionetteSelectedElsewhere = players.some(pl => pl.id !== player.id && pl.isTheMarionette);
   const isLunaticSelectedElsewhere = players.some(pl => pl.id !== player.id && pl.isTheLunatic);
-
-  const defaultEvil = roleObj ? (roleObj.team === 'minion' || roleObj.team === 'demon') : false;
-  const isEvil = player.isTheLunatic ? false : player.isTheMarionette ? true : defaultEvil;
 
   const filteredRoles = selectionRoles
     .filter(r =>
@@ -145,7 +118,15 @@ export default function SetupPlayerEditModal({
         </div>
 
         <div className="flex items-center gap-3">
-          <CharacterToken role={roleObj} isEvil={isEvil} idPrefix={`edit-${player.id}`} size={56} className="shrink-0" />
+          <button
+            id="remove-player-button"
+            type="button"
+            onClick={() => { removePlayer(player.id); onClose(); }}
+            className="shrink-0 p-2 rounded border border-gray-800 text-gray-500 hover:text-red-500 hover:border-red-500/40 transition-colors"
+            title="Remove player"
+          >
+            <Trash2 size={16} />
+          </button>
           <input
             id="edit-player-name-input"
             type="text"
@@ -157,19 +138,10 @@ export default function SetupPlayerEditModal({
             placeholder="Player name"
             className="flex-1 min-w-0 bg-gray-955 border border-gray-800 rounded px-3 py-2 text-white focus:outline-none focus:border-clocktower-blood text-sm font-semibold"
           />
-          <button
-            id="remove-player-button"
-            type="button"
-            onClick={() => { removePlayer(player.id); onClose(); }}
-            className="shrink-0 p-2 rounded border border-gray-800 text-gray-500 hover:text-red-500 hover:border-red-500/40 transition-colors"
-            title="Remove player"
-          >
-            <Trash2 size={16} />
-          </button>
         </div>
 
         {(canBeDrunk || canBeMarionette || canBeLunatic || canBeLilMonsta) && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap justify-end gap-1.5">
             {canBeDrunk && (
               <button
                 id={`toggle-drunk-button-${player.id}`}
@@ -177,7 +149,7 @@ export default function SetupPlayerEditModal({
                 disabled={isDrunkSelectedElsewhere}
                 onClick={() => togglePlayerTheDrunk(player.id)}
                 className={cn(
-                  "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed",
+                  "px-2.5 py-1 rounded text-[14px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed",
                   player.isTheDrunk
                     ? "bg-yellow-600 border-yellow-755 text-black font-black"
                     : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
@@ -193,7 +165,7 @@ export default function SetupPlayerEditModal({
                 disabled={isMarionetteSelectedElsewhere}
                 onClick={() => togglePlayerTheMarionette(player.id)}
                 className={cn(
-                  "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed",
+                  "px-2.5 py-1 rounded text-[14px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed",
                   player.isTheMarionette
                     ? "bg-clocktower-minion border-clocktower-minion/40 text-white font-black"
                     : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
@@ -209,7 +181,7 @@ export default function SetupPlayerEditModal({
                 disabled={isLunaticSelectedElsewhere}
                 onClick={() => togglePlayerTheLunatic(player.id)}
                 className={cn(
-                  "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed",
+                  "px-2.5 py-1 rounded text-[14px] font-bold border transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed",
                   player.isTheLunatic
                     ? "bg-clocktower-outsider border-clocktower-outsider/40 text-white font-black"
                     : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
@@ -224,7 +196,7 @@ export default function SetupPlayerEditModal({
                 type="button"
                 onClick={() => togglePlayerTheLilMonsta(player.id)}
                 className={cn(
-                  "px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1",
+                  "px-2.5 py-1 rounded text-[14px] font-bold border transition-all flex items-center gap-1",
                   player.isTheLilMonsta
                     ? "bg-clocktower-demon border-clocktower-demon/40 text-white font-black"
                     : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"

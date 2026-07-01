@@ -1,12 +1,14 @@
-import { useRef, useMemo, useState, useEffect } from 'react';
-import { useScrollLock } from '../hooks/useScrollLock';
+import { useRef, useMemo } from 'react';
+import { useScrollLock } from '../../hooks/useScrollLock';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { useBufferedField } from '../../hooks/useBufferedField';
 import { ChevronLeft, ChevronRight, X, Search } from 'lucide-react';
-import { cn } from '../utils/cn';
-import type { Role } from '../types';
-import rolesData from '../roles.json';
-import officialRoles from '../official_roles.json';
+import { cn } from '../../utils/cn';
+import type { Role } from '../../types';
+import rolesData from '../../roles.json';
+import officialRoles from '../../official_roles.json';
 import DialogModal from './DialogModal';
-import { useDialog } from '../hooks/useDialog';
+import { useDialog } from '../../hooks/useDialog';
 
 interface Player {
   id: string;
@@ -83,50 +85,9 @@ export default function PlayerDetailsModal({
   useScrollLock();
   const originalName = useRef('');
   const originalNotes = useRef('');
-  const [editedName, setEditedName] = useState(p.name);
-  const lastPlayerId = useRef(p.id);
-  const lastEditedName = useRef(editedName);
-
-  // Keep ref updated so cleanup function has access to the latest values
-  useEffect(() => {
-    lastEditedName.current = editedName;
-  }, [editedName]);
-
-  useEffect(() => {
-    lastPlayerId.current = p.id;
-  }, [p.id]);
-
-  // When p.id changes, it means we navigated to another player.
-  // Save the name of the previous player and update local state to the new player's name.
-  useEffect(() => {
-    if (p.id !== lastPlayerId.current) {
-      // Save previous player's name if it was changed
-      const prevId = lastPlayerId.current;
-      const prevName = lastEditedName.current;
-      const prevPlayer = players.find(x => x.id === prevId);
-      if (prevPlayer && prevPlayer.name !== prevName) {
-        onUpdateName(prevId, prevName);
-      }
-      // Update local state for new player
-      setEditedName(p.name);
-    }
-  }, [p.id, p.name, onUpdateName, players]);
-
-  // Save on unmount (when modal is closed)
-  useEffect(() => {
-    return () => {
-      const currentId = lastPlayerId.current;
-      const currentName = lastEditedName.current;
-      const currentPlayer = players.find(x => x.id === currentId);
-      if (currentPlayer && currentPlayer.name !== currentName) {
-        onUpdateName(currentId, currentName);
-      }
-    };
-  }, [onUpdateName, players]);
-  const isMobile = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  }, []);
+  const [editedName, setEditedName] = useBufferedField(p.id, p.name, onUpdateName);
+  const [editedNotes, setEditedNotes] = useBufferedField(p.id, p.notes ?? '', (id, notes) => onUpdateNotes?.(id, notes));
+  const isMobile = useIsMobile();
 
   const modalNameInputRef = useRef<HTMLInputElement | null>(null);
   const { dialogProps, showAlert } = useDialog();
@@ -234,9 +195,9 @@ export default function PlayerDetailsModal({
                 <input
                   type="text"
                   placeholder="Notes..."
-                  value={p.notes ?? ''}
+                  value={editedNotes}
                   onFocus={(e) => { originalNotes.current = e.target.value; }}
-                  onChange={(e) => onUpdateNotes(p.id, e.target.value)}
+                  onChange={(e) => setEditedNotes(e.target.value)}
                   onBlur={(e) => { if (onLogEvent && e.target.value.trim() && e.target.value !== originalNotes.current) onLogEvent(`Note — ${p.name}: ${e.target.value}`); }}
                   onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                   className={cn(

@@ -1,10 +1,10 @@
 import { Star } from 'lucide-react';
-import { cn } from '../utils/cn';
-import type { Player } from '../WhaleBucket';
-import type { Role } from '../types';
-import CharacterToken from './CharacterToken';
-import { useGrimoireLayout } from '../hooks/useGrimoireLayout';
-import rolesData from '../official_roles.json';
+import { cn } from '../../utils/cn';
+import type { Player } from '../../WhaleBucket';
+import type { Role } from '../../types';
+import CharacterToken from '../shared/CharacterToken';
+import { useGrimoireLayout } from '../../hooks/useGrimoireLayout';
+import rolesData from '../../official_roles.json';
 
 interface WhaleBucketDraftCircleProps {
   players: Player[];

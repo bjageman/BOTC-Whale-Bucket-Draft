@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
 import { X, Shuffle, AlertTriangle } from 'lucide-react';
-import { cn } from '../utils/cn';
-import type { Role } from '../types';
-import { useScrollLock } from '../hooks/useScrollLock';
-import { computeBalance } from '../utils/computeBalance';
+import { cn } from '../../utils/cn';
+import type { Role } from '../../types';
+import { useScrollLock } from '../../hooks/useScrollLock';
+import { computeBalance } from '../../utils/computeBalance';
 
 interface Props {
   isOpen: boolean;

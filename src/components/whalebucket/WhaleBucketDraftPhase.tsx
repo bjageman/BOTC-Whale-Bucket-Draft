@@ -1,9 +1,9 @@
 import { Shuffle, AlertTriangle, CheckCircle } from 'lucide-react';
-import { cn } from '../utils/cn';
-import type { Player } from '../WhaleBucket';
+import { cn } from '../../utils/cn';
+import type { Player } from '../../WhaleBucket';
 import WhaleBucketDraftCircle from './WhaleBucketDraftCircle';
 
-import type { ValidationSummary } from '../utils/whaleBucketValidation';
+import type { ValidationSummary } from '../../utils/whaleBucketValidation';
 
 interface WhaleBucketDraftPhaseProps {
   players: Player[];

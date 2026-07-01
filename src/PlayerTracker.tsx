@@ -6,14 +6,14 @@ import type { Player, Role } from './types';
 import { TEAM_ORDER } from './types';
 import { parseScriptFile } from './utils/scriptUtils';
 
-import PlayerDetailsModal from './components/PlayerDetailsModal';
-import GamePhase from './components/GamePhase';
-import PlayerTrackerSetupPhase from './components/PlayerTrackerSetupPhase';
-import PlayerTrackerNameEditModal from './components/PlayerTrackerNameEditModal';
+import PlayerDetailsModal from './components/shared/PlayerDetailsModal';
+import GamePhase from './components/shared/GamePhase';
+import PlayerTrackerSetupPhase from './components/tracker/PlayerTrackerSetupPhase';
+import PlayerTrackerNameEditModal from './components/tracker/PlayerTrackerNameEditModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
-import PageLayout from './components/PageLayout';
-import DialogModal from './components/DialogModal';
+import PageLayout from './components/shared/PageLayout';
+import DialogModal from './components/shared/DialogModal';
 import { useDialog } from './hooks/useDialog';
 
 type Phase = 'setup' | 'game';

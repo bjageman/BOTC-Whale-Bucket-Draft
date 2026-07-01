@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Search, Shuffle, Trash2 } from 'lucide-react';
-import { useScrollLock } from '../hooks/useScrollLock';
-import { cn } from '../utils/cn';
-import type { Player } from '../WhaleBucket';
-import type { Role } from '../types';
-import rolesData from '../official_roles.json';
+import { useScrollLock } from '../../hooks/useScrollLock';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { useBufferedField } from '../../hooks/useBufferedField';
+import { cn } from '../../utils/cn';
+import type { Player } from '../../WhaleBucket';
+import type { Role } from '../../types';
+import rolesData from '../../official_roles.json';
 
 interface WhaleBucketPlayerPreferenceModalProps {
   activePlayerId: string;
@@ -48,15 +50,15 @@ export default function WhaleBucketPlayerPreferenceModal({
   onClose,
 }: WhaleBucketPlayerPreferenceModalProps) {
   useScrollLock();
-  const isMobile = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  }, []);
+  const isMobile = useIsMobile();
 
   const [pickingTeam, setPickingTeam] = useState<Role['team'] | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const player = players.find(p => p.id === activePlayerId);
+
+  const [editedName, setEditedName] = useBufferedField(activePlayerId, player?.name ?? '', updatePlayerName);
+
   if (!player) return null;
 
   const visibleTeams: Role['team'][] = allowTravelers
@@ -199,8 +201,8 @@ export default function WhaleBucketPlayerPreferenceModal({
           <input
             id="edit-preference-player-name-input"
             type="text"
-            value={player.name}
-            onChange={(e) => updatePlayerName(player.id, e.target.value)}
+            value={editedName}
+            onChange={(e) => setEditedName(e.target.value)}
             onFocus={(e) => e.target.select()}
             autoFocus={!isMobile}
             autoCapitalize="words"

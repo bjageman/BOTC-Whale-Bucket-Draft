@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { Sun, Moon, ArrowLeft, GitBranch, Coffee } from 'lucide-react';
-import { cn } from '../utils/cn';
+import { cn } from '../../utils/cn';
 
 interface PageLayoutProps {
   theme: 'light' | 'dark';
