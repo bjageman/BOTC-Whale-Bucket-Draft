@@ -1045,6 +1045,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
           isLightModeActive={isLightModeActive}
           allAssigned={allAssigned}
           remotePlayerCount={remotePlayerIds.size}
+          remotePlayerIds={remotePlayerIds}
           grimoireConfirmed={grimoireConfirmed}
           onGrimoireConfirmed={() => setGrimoireConfirmed(true)}
           draggedIndex={draggedIndex}
