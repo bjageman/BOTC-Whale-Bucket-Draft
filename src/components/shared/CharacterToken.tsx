@@ -42,7 +42,7 @@ export default function CharacterToken({ role, isEvil, size, idPrefix, className
       <svg viewBox="0 0 200 200" className="w-full h-full absolute inset-0 z-0 select-none pointer-events-none">
         <defs>
           <path id={`token-top-${idPrefix}`} d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
-          <path id={`token-bottom-${idPrefix}`} d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
+          <path id={`token-bottom-${idPrefix}`} d="M 32,100 A 68,68 0 0,0 168,100" fill="none" />
         </defs>
         <circle cx="100" cy="100" r="90" fill="#ffffff" className={cn('stroke-[6px]', evil ? 'stroke-clocktower-minion' : 'stroke-clocktower-townsfolk')} />
         <circle cx="100" cy="100" r="58" fill="none" stroke="#e4e4e7" strokeWidth="1" strokeDasharray="3 3" />
