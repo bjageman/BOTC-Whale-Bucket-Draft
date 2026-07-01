@@ -25,6 +25,7 @@ describe('WhaleBucketPlayerPreferenceModal', () => {
     setPlayers: vi.fn(),
     allowTravelers: false,
     excludedRoleIds: [],
+    isLightModeActive: false,
     updatePlayerName: vi.fn(),
     removePlayer: vi.fn(),
     togglePreference: vi.fn(),
@@ -140,5 +141,18 @@ describe('WhaleBucketPlayerPreferenceModal', () => {
     render(<WhaleBucketPlayerPreferenceModal {...defaultProps} />);
     fireEvent.click(screen.getByText('Close'));
     expect(defaultProps.onClose).toHaveBeenCalled();
+  });
+
+  it('never renders a solid-dark background class while in light mode', () => {
+    const { container } = render(<WhaleBucketPlayerPreferenceModal {...defaultProps} isLightModeActive={true} />);
+    const modal = container.querySelector('#whalebucket-player-preference-modal')!;
+    expect(modal.className).not.toContain('bg-gray-900');
+    expect(modal.className).toContain('bg-[#fdfaf2]');
+  });
+
+  it('uses the dark background class when light mode is off', () => {
+    const { container } = render(<WhaleBucketPlayerPreferenceModal {...defaultProps} isLightModeActive={false} />);
+    const modal = container.querySelector('#whalebucket-player-preference-modal')!;
+    expect(modal.className).toContain('bg-gray-900');
   });
 });

@@ -14,6 +14,7 @@ interface WhaleBucketPlayerPreferenceModalProps {
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   allowTravelers: boolean;
   excludedRoleIds: string[];
+  isLightModeActive: boolean;
   updatePlayerName: (id: string, name: string) => void;
   removePlayer: (id: string) => void;
   togglePreference: (playerId: string, team: Role['team'], roleId: string) => void;
@@ -43,6 +44,7 @@ export default function WhaleBucketPlayerPreferenceModal({
   setPlayers,
   allowTravelers,
   excludedRoleIds,
+  isLightModeActive,
   updatePlayerName,
   removePlayer,
   togglePreference,
@@ -78,7 +80,12 @@ export default function WhaleBucketPlayerPreferenceModal({
     return (
       <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
         <div
-          className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[85vh] flex flex-col shadow-2xl"
+          className={cn(
+            "w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[85vh] flex flex-col shadow-2xl",
+            isLightModeActive
+              ? "bg-[#fdfaf2] border border-clocktower-blood/30 text-clocktower-night"
+              : "bg-gray-900 border border-gray-800"
+          )}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex justify-between items-center">
@@ -185,7 +192,12 @@ export default function WhaleBucketPlayerPreferenceModal({
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
       <div
         id="whalebucket-player-preference-modal"
-        className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[85vh] flex flex-col shadow-2xl"
+        className={cn(
+          "w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[85vh] flex flex-col shadow-2xl",
+          isLightModeActive
+            ? "bg-[#fdfaf2] border border-clocktower-blood/30 text-clocktower-night"
+            : "bg-gray-900 border border-gray-800"
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center">

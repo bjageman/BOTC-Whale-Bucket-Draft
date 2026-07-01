@@ -105,7 +105,12 @@ export default function SetupPlayerEditModal({
     <div className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
       <div
         id="setup-player-edit-modal"
-        className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[85vh] flex flex-col shadow-2xl"
+        className={cn(
+          "w-full max-w-sm rounded-lg p-4 space-y-3 max-h-[85vh] flex flex-col shadow-2xl",
+          isLightModeActive
+            ? "bg-[#fdfaf2] border border-clocktower-blood/30 text-clocktower-night"
+            : "bg-gray-900 border border-gray-800"
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center">
@@ -263,7 +268,7 @@ export default function SetupPlayerEditModal({
               <button
                 id={`role-option-${role.id}`}
                 key={role.id}
-                onClick={() => updatePlayerRole(activePlayerId, role.id)}
+                onClick={() => { updatePlayerRole(activePlayerId, role.id); onClose(); }}
                 className={cn(
                   "w-full text-left px-3 py-2.5 hover:bg-gray-800 text-xs transition-colors flex justify-between items-center",
                   isCurrent && (isLightModeActive ? "bg-amber-100/80 border-l-2 border-l-amber-600" : "bg-amber-500/10 border-l-2 border-l-amber-500")

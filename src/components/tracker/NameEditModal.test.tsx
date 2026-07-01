@@ -9,6 +9,7 @@ describe('PlayerTrackerNameEditModal', () => {
   const defaultProps = {
     activePlayerId: 'p1',
     players: [alice],
+    isLightModeActive: false,
     updatePlayerName: vi.fn(),
     removePlayer: vi.fn(),
     onClose: vi.fn(),
@@ -58,5 +59,18 @@ describe('PlayerTrackerNameEditModal', () => {
   it('renders nothing when the active player cannot be found', () => {
     const { container } = render(<PlayerTrackerNameEditModal {...defaultProps} activePlayerId="missing" />);
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('never renders a solid-dark background class while in light mode', () => {
+    const { container } = render(<PlayerTrackerNameEditModal {...defaultProps} isLightModeActive={true} />);
+    const modal = container.querySelector('#player-tracker-name-edit-modal')!;
+    expect(modal.className).not.toContain('bg-gray-900');
+    expect(modal.className).toContain('bg-[#fdfaf2]');
+  });
+
+  it('uses the dark background class when light mode is off', () => {
+    const { container } = render(<PlayerTrackerNameEditModal {...defaultProps} isLightModeActive={false} />);
+    const modal = container.querySelector('#player-tracker-name-edit-modal')!;
+    expect(modal.className).toContain('bg-gray-900');
   });
 });

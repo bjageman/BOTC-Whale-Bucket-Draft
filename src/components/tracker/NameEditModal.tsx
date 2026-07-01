@@ -8,6 +8,7 @@ import type { Player } from '../../types';
 interface PlayerTrackerNameEditModalProps {
   activePlayerId: string;
   players: Player[];
+  isLightModeActive: boolean;
   updatePlayerName: (id: string, name: string) => void;
   removePlayer: (id: string) => void;
   onClose: () => void;
@@ -16,6 +17,7 @@ interface PlayerTrackerNameEditModalProps {
 export default function PlayerTrackerNameEditModal({
   activePlayerId,
   players,
+  isLightModeActive,
   updatePlayerName,
   removePlayer,
   onClose,
@@ -39,7 +41,12 @@ export default function PlayerTrackerNameEditModal({
     >
       <div
         id="player-tracker-name-edit-modal"
-        className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-lg p-4 space-y-3 shadow-2xl"
+        className={cn(
+          "w-full max-w-sm rounded-lg p-4 space-y-3 shadow-2xl",
+          isLightModeActive
+            ? "bg-[#fdfaf2] border border-clocktower-blood/30 text-clocktower-night"
+            : "bg-gray-900 border border-gray-800"
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center">

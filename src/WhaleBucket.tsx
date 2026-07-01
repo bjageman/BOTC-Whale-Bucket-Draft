@@ -1154,6 +1154,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           setPlayers={setPlayers}
           allowTravelers={allowTravelers}
           excludedRoleIds={excludedRoleIds}
+          isLightModeActive={isLightModeActive}
           updatePlayerName={updatePlayerName}
           removePlayer={removePlayer}
           togglePreference={togglePreference}

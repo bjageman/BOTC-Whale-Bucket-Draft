@@ -76,10 +76,11 @@ describe('SetupPlayerEditModal', () => {
     expect(defaultProps.onClose).toHaveBeenCalled();
   });
 
-  it('selecting a role calls updatePlayerRole with the active player id', () => {
+  it('selecting a role calls updatePlayerRole with the active player id and closes the modal', () => {
     render(<SetupPlayerEditModal {...defaultProps} />);
     fireEvent.click(screen.getByText('Chef'));
     expect(defaultProps.updatePlayerRole).toHaveBeenCalledWith('p1', 'chef');
+    expect(defaultProps.onClose).toHaveBeenCalled();
   });
 
   it('shows a "Taken" badge for roles already assigned to another player', () => {
@@ -137,5 +138,18 @@ describe('SetupPlayerEditModal', () => {
   it('renders nothing when the active player cannot be found', () => {
     const { container } = render(<SetupPlayerEditModal {...defaultProps} activePlayerId="missing" />);
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('never renders a solid-dark background class while in light mode', () => {
+    const { container } = render(<SetupPlayerEditModal {...defaultProps} isLightModeActive={true} />);
+    const modal = container.querySelector('#setup-player-edit-modal')!;
+    expect(modal.className).not.toContain('bg-gray-900');
+    expect(modal.className).toContain('bg-[#fdfaf2]');
+  });
+
+  it('uses the dark background class when light mode is off', () => {
+    const { container } = render(<SetupPlayerEditModal {...defaultProps} isLightModeActive={false} />);
+    const modal = container.querySelector('#setup-player-edit-modal')!;
+    expect(modal.className).toContain('bg-gray-900');
   });
 });

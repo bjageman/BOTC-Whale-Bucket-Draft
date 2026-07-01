@@ -513,6 +513,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
         <PlayerTrackerNameEditModal
           activePlayerId={activeTrackerPlayerId}
           players={players}
+          isLightModeActive={isLightModeActive}
           updatePlayerName={updatePlayerName}
           removePlayer={removePlayer}
           onClose={() => setActiveTrackerPlayerId(null)}
