@@ -1135,10 +1135,18 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
           }}
           onLogEvent={addLogEntry}
           onDeclareWinner={(team) => {
-            const label = team === 'good' ? '🌟 Good wins!' : '😈 Evil wins!';
-            addLogEntry(`Game over ${label}`);
-            if (sendMessageRef.current) {
-              sendMessageRef.current({ type: 'game_winner', team });
+            const broadcast = () => {
+              const label = team === 'good' ? '🌟 Good wins!' : '😈 Evil wins!';
+              addLogEntry(`Game over ${label}`);
+              if (sendMessageRef.current) {
+                sendMessageRef.current({ type: 'game_winner', team });
+              }
+            };
+            if (remotePlayerIds.size > 0) {
+              const teamLabel = team === 'good' ? 'Good' : 'Evil';
+              showConfirm(`Declare ${teamLabel} the winner? This will notify all ${remotePlayerIds.size} connected player${remotePlayerIds.size === 1 ? '' : 's'}.`, broadcast);
+            } else {
+              broadcast();
             }
           }}
           reminderTokens={reminderTokens}

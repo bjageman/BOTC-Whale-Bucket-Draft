@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent, act, within } from '@testing-library/react';
 import { useEffect } from 'react';
 import StandardSetup from './StandardSetup';
+import WhaleBucket from './WhaleBucket';
 import PlayerTracker from './PlayerTracker';
 import JoinPage from './JoinPage';
 import type { PlacedReminder } from './types';
@@ -491,6 +492,68 @@ describe('Storyteller Grimoire Bug Fixes', () => {
     expect(alice!.isEvil).toBe(true);
 
     storyteller.unmount();
+  });
+
+  it('warns before declaring a winner when a player is synced in (regression check)', async () => {
+    const PLAYERS = [
+      { id: 'p1', name: 'Alice', isDead: false, roleId: 'washerwoman' },
+    ];
+
+    seedPrimary({
+      players: PLAYERS,
+      phase: 'game',
+      timeOfDay: 'night',
+      dayNumber: 1,
+    });
+
+    window.location.hash = '#/standard';
+    const storyteller = render(<StandardSetup theme="dark" toggleTheme={vi.fn()} />);
+    const gameCode = localStorage.getItem('standard-botc-game-code');
+
+    // Alice joins remotely, matching the existing seeded player by name
+    sessionStorage.setItem('joined-code', gameCode!);
+    sessionStorage.setItem('joined-name', 'Alice');
+    const joinPage = render(<JoinPage theme="dark" toggleTheme={vi.fn()} />);
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    });
+
+    fireEvent.click(within(storyteller.container).getByText('🌟 Good Wins'));
+
+    expect(within(storyteller.container).getByText(/Declare Good the winner\?/i)).toBeInTheDocument();
+
+    storyteller.unmount();
+    joinPage.unmount();
+  });
+
+  it('warns before declaring a winner in Whale Bucket mode too (parity with Standard)', async () => {
+    const preferences = { townsfolk: [], outsider: [], minion: [], demon: [], traveler: [] };
+    localStorage.setItem('whale-bucket-game', JSON.stringify({
+      players: [{ id: 'p1', name: 'Alice', isDead: false, roleId: 'washerwoman', preferences }],
+      phase: 'game',
+      timeOfDay: 'night',
+      dayNumber: 1,
+    }));
+
+    window.location.hash = '#/whale-bucket';
+    const storyteller = render(<WhaleBucket theme="dark" toggleTheme={vi.fn()} />);
+    const gameCode = localStorage.getItem('whale-bucket-game-code');
+
+    sessionStorage.setItem('joined-code', gameCode!);
+    sessionStorage.setItem('joined-name', 'Alice');
+    const joinPage = render(<JoinPage theme="dark" toggleTheme={vi.fn()} />);
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    });
+
+    fireEvent.click(within(storyteller.container).getByText('🌟 Good Wins'));
+
+    expect(within(storyteller.container).getByText(/Declare Good the winner\?/i)).toBeInTheDocument();
+
+    storyteller.unmount();
+    joinPage.unmount();
   });
 
   it('persists both name and notes when edited together and the modal is closed (regression: stale-closure race)', async () => {
