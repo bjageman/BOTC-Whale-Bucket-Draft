@@ -788,7 +788,10 @@ export default function GrimoireBoard({
 
                   {p.pronouns && (
                     <span
-                      style={{ fontSize: '1.7cqw' }}
+                      style={{
+                        fontSize: '1.7cqw',
+                        textShadow: '0 1px 2px rgba(255,255,255,1.0), 0 0 4px rgba(255,255,255,0.9)'
+                      }}
                       className="text-[#555] font-medium leading-none pointer-events-none select-none z-20 relative"
                     >
                       {p.pronouns}
