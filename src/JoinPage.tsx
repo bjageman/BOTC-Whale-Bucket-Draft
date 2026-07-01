@@ -644,7 +644,7 @@ export default function JoinPage({ theme, toggleTheme }: { theme: 'light' | 'dar
 
             <div className="space-y-2">
               <p className={cn("text-[10px] uppercase font-bold tracking-wider text-center", isLight ? "text-gray-400" : "text-gray-500")}>Pronouns (optional)</p>
-              <div className="flex flex-wrap gap-2 justify-center">
+              <div className="grid grid-cols-2 justify-items-center sm:flex sm:flex-wrap sm:justify-center gap-2">
                 {['He/Him', 'She/Her', 'They/Them', 'Ask Me'].map(p => (
                   <button
                     key={p}
