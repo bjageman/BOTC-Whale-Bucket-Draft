@@ -176,7 +176,15 @@ export default function WhaleBucketDraftEditModal({
                     : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
                 )}
               >
-                🍺 The Drunk
+                <span className="w-4 h-4 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm border border-gray-100">
+                  <img
+                    src="/icons/drunk.svg"
+                    alt=""
+                    className="w-3 h-3 object-contain"
+                    onError={e => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                  />
+                </span>
+                The Drunk
               </button>
             )}
             {canBeMarionette && (
@@ -191,7 +199,15 @@ export default function WhaleBucketDraftEditModal({
                     : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
                 )}
               >
-                🎭 The Marionette
+                <span className="w-4 h-4 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm border border-gray-100">
+                  <img
+                    src="/icons/marionette.svg"
+                    alt=""
+                    className="w-3 h-3 object-contain"
+                    onError={e => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                  />
+                </span>
+                The Marionette
               </button>
             )}
             {canBeLunatic && (
@@ -206,7 +222,15 @@ export default function WhaleBucketDraftEditModal({
                     : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
                 )}
               >
-                👹 The Lunatic
+                <span className="w-4 h-4 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm border border-gray-100">
+                  <img
+                    src="/icons/lunatic.svg"
+                    alt=""
+                    className="w-3 h-3 object-contain"
+                    onError={e => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                  />
+                </span>
+                The Lunatic
               </button>
             )}
             {canBeLilMonsta && (
@@ -220,7 +244,15 @@ export default function WhaleBucketDraftEditModal({
                     : "bg-gray-955 border-gray-855 text-gray-500 hover:text-gray-400"
                 )}
               >
-                😈 Lil' Monsta
+                <span className="w-4 h-4 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm border border-gray-100">
+                  <img
+                    src="/icons/lilmonsta.svg"
+                    alt=""
+                    className="w-3 h-3 object-contain"
+                    onError={e => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                  />
+                </span>
+                Lil' Monsta
               </button>
             )}
           </div>

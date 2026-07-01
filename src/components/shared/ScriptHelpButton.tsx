@@ -17,14 +17,14 @@ export default function ScriptHelpButton({ isLightModeActive }: ScriptHelpButton
         type="button"
         onClick={() => setIsOpen(true)}
         className={cn(
-          "absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center border transition-colors",
+          "absolute top-1 right-1 w-7 h-7 rounded-md flex items-center justify-center border transition-colors",
           isLightModeActive
             ? "bg-white/80 border-gray-300 text-gray-500 hover:text-clocktower-blood hover:border-clocktower-blood/40"
             : "bg-gray-900/80 border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"
         )}
         title="What is this?"
       >
-        <HelpCircle size={13} />
+        <HelpCircle size={16} />
       </button>
       <DialogModal
         isOpen={isOpen}
