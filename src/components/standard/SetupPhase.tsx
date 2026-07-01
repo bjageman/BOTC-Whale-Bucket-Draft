@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Shuffle, Upload, CheckCircle, AlertTriangle, Package } from 'lucide-react';
+import { Plus, Shuffle, Upload, CheckCircle, AlertTriangle, Package, HelpCircle } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import type { Player, Role } from '../../types';
 import { getScriptStats } from '../../utils/scriptUtils';
 import rolesData from '../../roles.json';
 import ScriptCharactersModal from '../shared/ScriptCharactersModal';
 import SelectCharactersModal from './SelectCharactersModal';
+import DialogModal from '../shared/DialogModal';
 import { getDistribution } from '../../constants';
 import CharacterAssignmentCircle from './CharacterAssignmentCircle';
 import type { ValidationSummary } from '../../utils/whaleBucketValidation';
@@ -86,6 +87,7 @@ export default function StandardSetupPhase({
   const [showGrimoireWarning, setShowGrimoireWarning] = useState(false);
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
   const [isSelectCharactersModalOpen, setIsSelectCharactersModalOpen] = useState(false);
+  const [isScriptHelpOpen, setIsScriptHelpOpen] = useState(false);
 
   const sortedRoles = useMemo(() => {
     const baseRoles = customScriptRoles || (rolesData as Role[]);
@@ -128,31 +130,47 @@ export default function StandardSetupPhase({
             accept=".json"
             className="hidden"
           />
-          <button
-            id="script-upload-button"
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className={cn(
-              "w-full border py-3.5 px-4 rounded-lg transition-all flex flex-col items-center justify-center gap-1 group text-center cursor-pointer",
-              isLightModeActive
-                ? "bg-gray-100/80 border-gray-300 hover:border-clocktower-blood/60 hover:bg-gray-150"
-                : "bg-gray-955 border-gray-800 hover:border-clocktower-blood"
-            )}
-            title="Click to upload script JSON"
-          >
-            <span className={cn(
-              "flex items-center gap-1.5 text-base font-extrabold transition-colors",
-              isLightModeActive
-                ? "text-gray-900 group-hover:text-clocktower-blood"
-                : "text-white group-hover:text-clocktower-blood"
-            )}>
-              📜 {scriptName}
-            </span>
-            <span className="text-[10px] text-gray-500 font-medium flex items-center gap-1">
-              <Upload size={12} />
-              {customScriptRoles ? `${getScriptStats(customScriptRoles)} — Click to change` : "Click to upload .json"}
-            </span>
-          </button>
+          <div className="relative">
+            <button
+              id="script-upload-button"
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className={cn(
+                "w-full border py-3.5 px-4 rounded-lg transition-all flex flex-col items-center justify-center gap-1 group text-center cursor-pointer",
+                isLightModeActive
+                  ? "bg-gray-100/80 border-gray-300 hover:border-clocktower-blood/60 hover:bg-gray-150"
+                  : "bg-gray-955 border-gray-800 hover:border-clocktower-blood"
+              )}
+              title="Click to upload script JSON"
+            >
+              <span className={cn(
+                "flex items-center gap-1.5 text-base font-extrabold transition-colors",
+                isLightModeActive
+                  ? "text-gray-900 group-hover:text-clocktower-blood"
+                  : "text-white group-hover:text-clocktower-blood"
+              )}>
+                📜 {scriptName}
+              </span>
+              <span className="text-[10px] text-gray-500 font-medium flex items-center gap-1">
+                <Upload size={12} />
+                {customScriptRoles ? `${getScriptStats(customScriptRoles)} — Click to change` : "Click to upload .json"}
+              </span>
+            </button>
+            <button
+              id="script-upload-help-button"
+              type="button"
+              onClick={() => setIsScriptHelpOpen(true)}
+              className={cn(
+                "absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center border transition-colors",
+                isLightModeActive
+                  ? "bg-white/80 border-gray-300 text-gray-500 hover:text-clocktower-blood hover:border-clocktower-blood/40"
+                  : "bg-gray-900/80 border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"
+              )}
+              title="What is this?"
+            >
+              <HelpCircle size={13} />
+            </button>
+          </div>
           {customScriptRoles && (
             <button
               id="script-reset-button"
@@ -485,6 +503,17 @@ export default function StandardSetupPhase({
       onAssign={randomlyAssignWithRoles}
       selectedIds={selectedCharacterIds}
       setSelectedIds={setSelectedCharacterIds}
+    />
+    <DialogModal
+      isOpen={isScriptHelpOpen}
+      type="alert"
+      title="Script"
+      message="Upload a script JSON file (exported from the Official Script Tool) to limit which characters can be assigned to players. The active script controls what shows up in View Characters, the Setup Bag, Randomly Assign, and the role search when assigning a character. If you don't upload one, every character from every script is available."
+      confirmLabel="Got it"
+      cancelLabel="Close"
+      onConfirm={() => setIsScriptHelpOpen(false)}
+      onCancel={() => setIsScriptHelpOpen(false)}
+      isLightModeActive={isLightModeActive}
     />
     </>
   );
