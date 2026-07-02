@@ -15,6 +15,7 @@ import WhaleBucketDraftEditModal from './components/whalebucket/DraftEditModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
 import { useStorytellerSync, getSyncParams } from './hooks/useStorytellerSync';
+import { usePersistedField, readPersistedField } from './hooks/usePersistedField';
 import PageLayout from './components/shared/PageLayout';
 import DialogModal from './components/shared/DialogModal';
 import RoomCodeModal from './components/shared/RoomCodeModal';
@@ -25,6 +26,8 @@ export type Player = Omit<BasePlayer, 'preferences'> & {
 };
 
 type Phase = 'setup' | 'draft' | 'game';
+
+const STORAGE_KEY = 'whale-bucket-game';
 
 interface SetupProps {
   theme: 'light' | 'dark';
@@ -57,105 +60,29 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   });
 
   const [players, setPlayers] = useState<Player[]>(() => {
-    const saved = localStorage.getItem('whale-bucket-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        const p = parsed.players || [];
-        type SavedPlayer = Omit<Player, 'preferences'> & { preferences?: Partial<Player['preferences']> };
-        return p.map((player: SavedPlayer) => ({
-          ...player,
-          preferences: {
-            townsfolk: player.preferences?.townsfolk || [],
-            outsider: player.preferences?.outsider || [],
-            minion: player.preferences?.minion || [],
-            demon: player.preferences?.demon || [],
-            traveler: player.preferences?.traveler || []
-          }
-        }));
-      } catch (e) {
-        console.error(e);
+    type SavedPlayer = Omit<Player, 'preferences'> & { preferences?: Partial<Player['preferences']> };
+    return readPersistedField<SavedPlayer[]>(STORAGE_KEY, 'players', []).map(player => ({
+      ...player,
+      preferences: {
+        townsfolk: player.preferences?.townsfolk || [],
+        outsider: player.preferences?.outsider || [],
+        minion: player.preferences?.minion || [],
+        demon: player.preferences?.demon || [],
+        traveler: player.preferences?.traveler || []
       }
-    }
-    return [];
+    }));
   });
-  const [isLilMonstaGame, setIsLilMonstaGame] = useState<boolean>(() => {
-    const saved = localStorage.getItem('whale-bucket-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.isLilMonstaGame || false;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return false;
-  });
-  const [phase, setPhase] = useState<Phase>(() => {
-    const saved = localStorage.getItem('whale-bucket-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.phase || 'setup';
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return 'setup';
-  });
+  const [isLilMonstaGame, setIsLilMonstaGame] = usePersistedField<boolean>(STORAGE_KEY, 'isLilMonstaGame', false);
+  const [phase, setPhase] = usePersistedField<Phase>(STORAGE_KEY, 'phase', 'setup');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeDraftPlayerId, setActiveDraftPlayerId] = useState<string | null>(null);
   const [newPlayerName, setNewPlayerName] = useState('');
-  const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>(() => {
-    const saved = localStorage.getItem('whale-bucket-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.timeOfDay || 'night';
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return 'night';
-  });
-  const [dayNumber, setDayNumber] = useState<number>(() => {
-    const saved = localStorage.getItem('whale-bucket-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.dayNumber || 1;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return 1;
-  });
+  const [timeOfDay, setTimeOfDay] = usePersistedField<'night' | 'day'>(STORAGE_KEY, 'timeOfDay', 'night');
+  const [dayNumber, setDayNumber] = usePersistedField<number>(STORAGE_KEY, 'dayNumber', 1);
 
   // Traveler states
-  const [allowTravelers, setAllowTravelers] = useState<boolean>(() => {
-    const saved = localStorage.getItem('whale-bucket-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.allowTravelers || false;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return false;
-  });
-  const [gameLog, setGameLog] = useState<string[]>(() => {
-    const saved = localStorage.getItem('whale-bucket-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.gameLog || [];
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return [];
-  });
+  const [allowTravelers, setAllowTravelers] = usePersistedField<boolean>(STORAGE_KEY, 'allowTravelers', false);
+  const [gameLog, setGameLog] = usePersistedField<string[]>(STORAGE_KEY, 'gameLog', []);
 
   // Refs so log callbacks always see current values without stale closures
   const timeOfDayRef = useRef(timeOfDay);
@@ -169,7 +96,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     const label = useTod === 'night' ? `Night ${useDn}` : `Day ${useDn}`;
     const clock = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     setGameLog(prev => [...prev, `[${label} · ${clock}] ${message}`]);
-  }, []);
+  }, [setGameLog]);
 
   const handleStartGame = useCallback(() => {
     const roleMap = new Map((rolesData as Role[]).map(r => [r.id, r]));
@@ -197,63 +124,21 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
     });
 
     setPhase('game');
-  }, [players, addLogEntry]);
+  }, [players, addLogEntry, setPhase]);
 
-  const [demonBluffs, setDemonBluffs] = useState<string[]>(() => {
-    const saved = localStorage.getItem('whale-bucket-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.demonBluffs || [];
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return [];
-  });
+  const [demonBluffs, setDemonBluffs] = usePersistedField<string[]>(STORAGE_KEY, 'demonBluffs', []);
   const [showRoomCodeModal, setShowRoomCodeModal] = useState(false);
   const [remotePlayerIds, setRemotePlayerIds] = useState<Set<string>>(new Set());
 
-  const [reminderTokens, setReminderTokens] = useState<PlacedReminder[]>(() => {
-    const saved = localStorage.getItem('whale-bucket-game');
-    if (saved) {
-      try {
-        return JSON.parse(saved).reminderTokens || [];
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return [];
-  });
+  const [reminderTokens, setReminderTokens] = usePersistedField<PlacedReminder[]>(STORAGE_KEY, 'reminderTokens', []);
 
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(() => {
-    const saved = localStorage.getItem('whale-bucket-game');
-    if (saved) {
-      try {
-        return JSON.parse(saved).checkedItems || {};
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return {};
-  });
+  const [checkedItems, setCheckedItems] = usePersistedField<Record<string, boolean>>(STORAGE_KEY, 'checkedItems', {});
 
   const [newTravelerName, setNewTravelerName] = useState('');
   const [newTravelerRoleId, setNewTravelerRoleId] = useState('beggar');
 
   // Exclusion states
-  const [excludedRoleIds, setExcludedRoleIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem('whale-bucket-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.excludedRoleIds || ['drunk', 'marionette', 'lunatic'];
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return ['drunk', 'marionette', 'lunatic'];
-  });
+  const [excludedRoleIds, setExcludedRoleIds] = usePersistedField<string[]>(STORAGE_KEY, 'excludedRoleIds', ['drunk', 'marionette', 'lunatic']);
 
   const broadcastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sendMessageRef = useRef<((payload: unknown) => Promise<void>) | null>(null);
@@ -275,18 +160,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
   }, [excludedRoleIds]);
 
   // Preference modal states
-  const [rotationOffset, setRotationOffset] = useState<number>(() => {
-    const saved = localStorage.getItem('whalebucket-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.rotationOffset || 0;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return 0;
-  });
+  const [rotationOffset, setRotationOffset] = usePersistedField<number>(STORAGE_KEY, 'rotationOffset', 0);
   const [activePreferencePlayerId, setActivePreferencePlayerId] = useState<string | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [isSearchingRole, setIsSearchingRole] = useState(false);
@@ -475,7 +349,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       setPhase(incoming.phase || 'setup');
       setTimeOfDay(incoming.timeOfDay || 'night');
       setDayNumber(incoming.dayNumber || 1);
-      setAllowTravelers(incoming.allowTravelers !== undefined ? incoming.allowTravelers : true);
+      setAllowTravelers(incoming.allowTravelers ?? false);
       setIsLilMonstaGame(incoming.isLilMonstaGame || false);
       setExcludedRoleIds(incoming.excludedRoleIds || ['drunk', 'marionette', 'lunatic']);
       setDemonBluffs(incoming.demonBluffs || []);
@@ -483,7 +357,10 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       setCheckedItems(incoming.checkedItems || {});
       setRotationOffset(incoming.rotationOffset ?? 0);
     }
-  }, [syncState]);
+  }, [
+    syncState, setPhase, setTimeOfDay, setDayNumber, setAllowTravelers, setIsLilMonstaGame,
+    setExcludedRoleIds, setDemonBluffs, setReminderTokens, setCheckedItems, setRotationOffset
+  ]);
 
   useStorytellerSync({
     isSecondary,
@@ -494,7 +371,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
 
   // Save to localStorage
   useEffect(() => {
-    localStorage.setItem('whale-bucket-game', JSON.stringify({
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
       players,
       phase,
       timeOfDay,
@@ -506,8 +383,9 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       demonBluffs,
       reminderTokens,
       checkedItems,
+      rotationOffset,
     }));
-  }, [players, phase, timeOfDay, dayNumber, allowTravelers, isLilMonstaGame, excludedRoleIds, gameLog, demonBluffs, reminderTokens, checkedItems]);
+  }, [players, phase, timeOfDay, dayNumber, allowTravelers, isLilMonstaGame, excludedRoleIds, gameLog, demonBluffs, reminderTokens, checkedItems, rotationOffset]);
 
   const toggleTimeOfDay = () => {
     setCheckedItems({});
@@ -894,7 +772,7 @@ export default function WhaleBucket({ theme, toggleTheme }: SetupProps) {
       setReminderTokens([]);
       setCheckedItems({});
       setRemotePlayerIds(new Set());
-      localStorage.removeItem('whale-bucket-game');
+      localStorage.removeItem(STORAGE_KEY);
       const newCode = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
       localStorage.setItem('whale-bucket-game-code', newCode);
       const newSync = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');

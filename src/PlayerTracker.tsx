@@ -12,11 +12,14 @@ import PlayerTrackerSetupPhase from './components/tracker/SetupPhase';
 import PlayerTrackerNameEditModal from './components/tracker/NameEditModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
+import { usePersistedField, readPersistedField } from './hooks/usePersistedField';
 import PageLayout from './components/shared/PageLayout';
 import DialogModal from './components/shared/DialogModal';
 import { useDialog } from './hooks/useDialog';
 
 type Phase = 'setup' | 'game';
+
+const STORAGE_KEY = 'player-tracker-botc-game';
 
 interface SetupProps {
   theme: 'light' | 'dark';
@@ -24,55 +27,11 @@ interface SetupProps {
 }
 
 export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
-  const [players, setPlayers] = useState<Player[]>(() => {
-    const saved = localStorage.getItem('player-tracker-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.players || [];
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return [];
-  });
-  const [phase, setPhase] = useState<Phase>(() => {
-    const saved = localStorage.getItem('player-tracker-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.phase || 'setup';
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return 'setup';
-  });
+  const [players, setPlayers] = usePersistedField<Player[]>(STORAGE_KEY, 'players', []);
+  const [phase, setPhase] = usePersistedField<Phase>(STORAGE_KEY, 'phase', 'setup');
   const [newPlayerName, setNewPlayerName] = useState('');
-  const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>(() => {
-    const saved = localStorage.getItem('player-tracker-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.timeOfDay || 'night';
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return 'night';
-  });
-  const [dayNumber, setDayNumber] = useState<number>(() => {
-    const saved = localStorage.getItem('player-tracker-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.dayNumber || 1;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return 1;
-  });
+  const [timeOfDay, setTimeOfDay] = usePersistedField<'night' | 'day'>(STORAGE_KEY, 'timeOfDay', 'night');
+  const [dayNumber, setDayNumber] = usePersistedField<number>(STORAGE_KEY, 'dayNumber', 1);
 
   // Traveler states
   const [newTravelerName, setNewTravelerName] = useState('');
@@ -85,55 +44,18 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
   const [modalRoleSearch, setModalRoleSearch] = useState('');
 
   // Script states
-  const [scriptName, setScriptName] = useState<string>(() => {
-    const saved = localStorage.getItem('player-tracker-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.scriptName || "All Roles";
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return "All Roles";
-  });
-  const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(() => {
-    const saved = localStorage.getItem('player-tracker-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.customScriptRoles || null;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return null;
-  });
+  const [scriptName, setScriptName] = usePersistedField<string>(STORAGE_KEY, 'scriptName', "All Roles");
+  const [customScriptRoles, setCustomScriptRoles] = usePersistedField<Role[] | null>(STORAGE_KEY, 'customScriptRoles', null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [gameCode, setGameCode] = useState<string | null>(() => {
-    const saved = localStorage.getItem('player-tracker-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.code) return parsed.code;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return sessionStorage.getItem('joined-code') || null;
-  });
+  const [gameCode, setGameCode] = useState<string | null>(() =>
+    readPersistedField<string | null>(STORAGE_KEY, 'code', null) || sessionStorage.getItem('joined-code') || null
+  );
 
   const isSynced = !!gameCode;
   const { dialogProps, showAlert, showConfirm } = useDialog();
 
-  const [gameNotes, setGameNotes] = useState<string>(() => {
-    const saved = localStorage.getItem('player-tracker-botc-game');
-    if (saved) {
-      try { return JSON.parse(saved).gameNotes || ''; } catch { return ''; }
-    }
-    return '';
-  });
+  const [gameNotes, setGameNotes] = usePersistedField<string>(STORAGE_KEY, 'gameNotes', '');
 
   const [winnerTeam, setWinnerTeam] = useState<'good' | 'evil' | null>(null);
 
@@ -193,12 +115,12 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
       showAlert('The Storyteller has quit the session. Reverting to local tracker.');
       sessionStorage.removeItem('joined-code');
       sessionStorage.removeItem('joined-name');
-      const saved = localStorage.getItem('player-tracker-botc-game');
+      const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           delete parsed.code;
-          localStorage.setItem('player-tracker-botc-game', JSON.stringify(parsed));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
         } catch (e) {
           console.error(e);
         }
@@ -219,12 +141,12 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
     showConfirm('Disconnect from this synced session? You\'ll keep your current players and notes locally, but stop receiving updates from the Storyteller.', () => {
       sessionStorage.removeItem('joined-code');
       sessionStorage.removeItem('joined-name');
-      const saved = localStorage.getItem('player-tracker-botc-game');
+      const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           delete parsed.code;
-          localStorage.setItem('player-tracker-botc-game', JSON.stringify(parsed));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
         } catch (e) {
           console.error(e);
         }
@@ -241,7 +163,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
       setDayNumber(1);
       setScriptName("All Roles");
       setCustomScriptRoles(null);
-      localStorage.removeItem('player-tracker-botc-game');
+      localStorage.removeItem(STORAGE_KEY);
       sessionStorage.removeItem('joined-code');
       sessionStorage.removeItem('joined-name');
       setGameNotes('');
@@ -280,7 +202,7 @@ export default function PlayerTracker({ theme, toggleTheme }: SetupProps) {
 
   // Save to localStorage
   useEffect(() => {
-    localStorage.setItem('player-tracker-botc-game', JSON.stringify({
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
       players,
       phase,
       timeOfDay,
