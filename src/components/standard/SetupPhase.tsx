@@ -238,7 +238,7 @@ export default function StandardSetupPhase({
               disabled={players.length >= 20}
               placeholder={players.length >= 20 ? "Maximum players reached (20)" : "Enter player name in seating order..."}
               autoCapitalize="words"
-              className="flex-1 bg-gray-955 border border-gray-800 rounded px-3 py-2 text-white focus:outline-none focus:border-clocktower-blood text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-gray-900 border border-gray-800 rounded px-3 py-2 text-white focus:outline-none focus:border-clocktower-blood text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <button 
               id="add-player-button"
