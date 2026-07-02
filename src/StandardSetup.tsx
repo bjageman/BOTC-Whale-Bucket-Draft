@@ -15,12 +15,15 @@ import SetupPlayerEditModal from './components/standard/SetupPlayerEditModal';
 import { usePlayerDragAndDrop } from './hooks/usePlayerDragAndDrop';
 import { useGameSocket } from './hooks/useGameSocket';
 import { useStorytellerSync, getSyncParams } from './hooks/useStorytellerSync';
+import { usePersistedField, readPersistedField } from './hooks/usePersistedField';
 import PageLayout from './components/shared/PageLayout';
 import DialogModal from './components/shared/DialogModal';
 import { useDialog } from './hooks/useDialog';
 import RoomCodeModal from './components/shared/RoomCodeModal';
 
 type Phase = 'setup' | 'game';
+
+const STORAGE_KEY = 'standard-botc-game';
 
 const generateId = (): string =>
   typeof crypto.randomUUID === 'function'
@@ -61,93 +64,18 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   const [showRoomCodeModal, setShowRoomCodeModal] = useState(false);
   const [grimoireConfirmed, setGrimoireConfirmed] = useState(false);
 
-  const [reminderTokens, setReminderTokens] = useState<PlacedReminder[]>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        return JSON.parse(saved).reminderTokens || [];
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return [];
-  });
+  const [reminderTokens, setReminderTokens] = usePersistedField<PlacedReminder[]>(STORAGE_KEY, 'reminderTokens', []);
 
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        return JSON.parse(saved).checkedItems || {};
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return {};
-  });
+  const [checkedItems, setCheckedItems] = usePersistedField<Record<string, boolean>>(STORAGE_KEY, 'checkedItems', {});
 
-  const [players, setPlayers] = useState<Player[]>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.players || [];
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return [];
-  });
-  const [isLilMonstaGame, setIsLilMonstaGame] = useState<boolean>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.isLilMonstaGame || false;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return false;
-  });
-  const [phase, setPhase] = useState<Phase>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.phase || 'setup';
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return 'setup';
-  });
+  const [players, setPlayers] = usePersistedField<Player[]>(STORAGE_KEY, 'players', []);
+  const [isLilMonstaGame, setIsLilMonstaGame] = usePersistedField<boolean>(STORAGE_KEY, 'isLilMonstaGame', false);
+  const [phase, setPhase] = usePersistedField<Phase>(STORAGE_KEY, 'phase', 'setup');
   const [newPlayerName, setNewPlayerName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [activePlayerId, setActivePlayerId] = useState<string | null>(null);
-  const [timeOfDay, setTimeOfDay] = useState<'night' | 'day'>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.timeOfDay || 'night';
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return 'night';
-  });
-  const [dayNumber, setDayNumber] = useState<number>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.dayNumber || 1;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return 1;
-  });
+  const [timeOfDay, setTimeOfDay] = usePersistedField<'night' | 'day'>(STORAGE_KEY, 'timeOfDay', 'night');
+  const [dayNumber, setDayNumber] = usePersistedField<number>(STORAGE_KEY, 'dayNumber', 1);
 
   // Traveler states
   const [newTravelerName, setNewTravelerName] = useState('');
@@ -159,73 +87,18 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
   const [modalRoleSearch, setModalRoleSearch] = useState('');
 
   // Script states
-  const [scriptName, setScriptName] = useState<string>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.scriptName || "All Roles";
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return "All Roles";
-  });
-  const [customScriptRoles, setCustomScriptRoles] = useState<Role[] | null>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.customScriptRoles || null;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return null;
-  });
+  const [scriptName, setScriptName] = usePersistedField<string>(STORAGE_KEY, 'scriptName', "All Roles");
+  const [customScriptRoles, setCustomScriptRoles] = usePersistedField<Role[] | null>(STORAGE_KEY, 'customScriptRoles', null);
   const [selectedCharacterIds, setSelectedCharacterIds] = useState<Set<string>>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    let loadedRoles: Role[] | null = null;
-    let loadedSelectedIds: string[] | null = null;
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        loadedRoles = parsed.customScriptRoles || null;
-        loadedSelectedIds = parsed.selectedCharacterIds || null;
-      } catch (e) {
-        console.error(e);
-      }
-    }
+    const loadedSelectedIds = readPersistedField<string[] | null>(STORAGE_KEY, 'selectedCharacterIds', null);
     if (loadedSelectedIds) {
       return new Set(loadedSelectedIds);
     }
-    const scriptRoles = loadedRoles || (rolesData as Role[]);
+    const scriptRoles = readPersistedField<Role[] | null>(STORAGE_KEY, 'customScriptRoles', null) || (rolesData as Role[]);
     return new Set(scriptRoles.map(r => r.id));
   });
-  const [demonBluffs, setDemonBluffs] = useState<string[]>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.demonBluffs || [];
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return [];
-  });
-  const [gameLog, setGameLog] = useState<string[]>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.gameLog || [];
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return [];
-  });
+  const [demonBluffs, setDemonBluffs] = usePersistedField<string[]>(STORAGE_KEY, 'demonBluffs', []);
+  const [gameLog, setGameLog] = usePersistedField<string[]>(STORAGE_KEY, 'gameLog', []);
 
   // timeOfDay/dayNumber refs so log callbacks always see current values without stale closures
   const timeOfDayRef = useRef(timeOfDay);
@@ -239,20 +112,9 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
     const label = useTod === 'night' ? `Night ${useDn}` : `Day ${useDn}`;
     const clock = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     setGameLog(prev => [...prev, `[${label} · ${clock}] ${message}`]);
-  }, []);
+  }, [setGameLog]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [rotationOffset, setRotationOffset] = useState<number>(() => {
-    const saved = localStorage.getItem('standard-botc-game');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.rotationOffset || 0;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return 0;
-  });
+  const [rotationOffset, setRotationOffset] = usePersistedField<number>(STORAGE_KEY, 'rotationOffset', 0);
   const broadcastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sendMessageRef = useRef<((payload: unknown) => Promise<void>) | null>(null);
 
@@ -300,7 +162,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       setGameLog([]);
       setReminderTokens([]);
       setCheckedItems({});
-      localStorage.removeItem('standard-botc-game');
+      localStorage.removeItem(STORAGE_KEY);
       const newCode = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
       localStorage.setItem('standard-botc-game-code', newCode);
       const newSync = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
@@ -501,7 +363,10 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       setCheckedItems(incoming.checkedItems || {});
       setRotationOffset(incoming.rotationOffset ?? 0);
     }
-  }, [syncState]);
+  }, [
+    syncState, setPlayers, setPhase, setTimeOfDay, setDayNumber, setCustomScriptRoles,
+    setScriptName, setIsLilMonstaGame, setDemonBluffs, setReminderTokens, setCheckedItems, setRotationOffset
+  ]);
 
   useStorytellerSync({
     isSecondary,
@@ -520,7 +385,7 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
 
   // Save to localStorage
   useEffect(() => {
-    localStorage.setItem('standard-botc-game', JSON.stringify({
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
       players,
       phase,
       timeOfDay,
@@ -533,8 +398,9 @@ export default function StandardSetup({ theme, toggleTheme }: SetupProps) {
       reminderTokens,
       checkedItems,
       selectedCharacterIds: [...selectedCharacterIds],
+      rotationOffset,
     }));
-  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, isLilMonstaGame, demonBluffs, gameLog, reminderTokens, checkedItems, selectedCharacterIds]);
+  }, [players, phase, timeOfDay, dayNumber, customScriptRoles, scriptName, isLilMonstaGame, demonBluffs, gameLog, reminderTokens, checkedItems, selectedCharacterIds, rotationOffset]);
 
   const toggleTimeOfDay = () => {
     setCheckedItems({});
